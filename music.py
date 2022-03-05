@@ -1,7 +1,8 @@
 from yandex_music import Best, Client, Search
-import config as aut
+import toml
+config = toml.load("config.toml")
 
-client = Client.from_token(aut.OAUTH)
+client = Client.from_token(config.get("tokenYandex"))
 
 def extractDirectLinkToTrack(track_id):
     track = client.tracks(track_id)[0]
@@ -15,3 +16,11 @@ def extractDirectLinkToTrack(track_id):
     for info in track_download_info:
         if is_track_suitable(info):
             return info.get_direct_link()
+def download(url, path):
+    trackID = url[-1]
+    track = client.tracks([trackID])[0]
+    trackDownloadInfo = track.get_download_info()[0]
+    track = client.tracks([trackID])[0]
+
+    track.download(f'{path}/{track.title}.mp3', 'mp3', 192)
+    return f"{path}/{track.title}.mp3"

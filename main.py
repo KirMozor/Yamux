@@ -30,6 +30,13 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 
                 # Проверяем на рабочий токен и то что интернет работает
                 try:
+                        if not config.get('tokenYandex'):
+                                text, ok = QInputDialog.getText(self, 'Добавить токен', 'Я не обнаружил токена YandexMusic в программе, введите его:')
+                                if ok:
+                                        file = open("config.toml", "w")
+                                        file.write(f'tokenYandex = "{text}"')
+                                        file.close()
+                        global client 
                         client = Client.from_token(config.get('tokenYandex'))
                 except yandex_music.exceptions.NetworkError:
                         print("Проблемы с интернетом")
@@ -42,47 +49,64 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                         error.exec_()
                 except yandex_music.exceptions.Unauthorized:
                         print("Неправильный токен")
-                        error = QMessageBox()
-                        error.setWindowTitle("Ошибка")
-                        error.setText("Yandex Music Api говорит что у вас нерабочий токен. Поменяйте токен в config.toml, он находится в корне программы")
-                        error.setIcon(QMessageBox.Warning)
-                        error.setStandardButtons(QMessageBox.Close)
-                        error.buttonClicked.connect(self.exit)
-                        error.exec_()
+                        text, ok = QInputDialog.getText(self, 'Добавить токен', 'Yandex Music Api говорит что у вас нерабочий токен')
+                        if ok:
+                                file = open("config.toml", "w")
+                                file.write(f'tokenYandex = "{text}"')
+                                file.close()
+                        self.exit()
                 except UnicodeEncodeError:
-                        print("Неправильный токен")
-                        error = QMessageBox()
-                        error.setWindowTitle("Ошибка")
-                        error.setText("Yandex Music Api говорит что у вас токен состоит из непонятных символов. Поменяйте токен в config.toml, он находится в корне программы")
-                        error.setIcon(QMessageBox.Warning)
-                        error.setStandardButtons(QMessageBox.Close)
-                        error.buttonClicked.connect(self.exit)
-                        error.exec_()
+                        print("Токен из непонятных символов")
+                        text, ok = QInputDialog.getText(self, 'Добавить токен', 'YandexMusic говорит что у вас токен из непонятных символов, ведите корректный токен сюда')
+                        if ok:
+                                file = open("config.toml", "w")
+                                file.write(f'tokenYandex = "{text}"')
+                                file.close()
+                        self.exit()
                 except NameError:
                         print("Только что создался конфиг, перезапустите программу")
-                        error = QMessageBox()
-                        error.setWindowTitle("Ошибка")
-                        error.setText("Только что создался конфиг, перезапустите программу")
-                        error.setIcon(QMessageBox.Warning)
-                        error.setStandardButtons(QMessageBox.Close)
-                        error.buttonClicked.connect(self.exit)
-                        error.exec_()
-
-                self.playButton.clicked.connect(self.play)
-                self.enterTokenButton.clicked.connect(self.enter)
+                        text, ok = QInputDialog.getText(self, 'Добавить токен', 'У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic')
+                        if ok:
+                                file = open("config.toml", "w")
+                                file.write(f'tokenYandex = "{text}"')
+                                file.close()
+                        self.exit
+                self.pushButtonToPlay.clicked.connect(self.enterLinkToPlay)
+                self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
         def exit(self):
                 sys.exit()
-        def play(self):
+        def playLocalFile(self):
                 wb_patch = QtWidgets.QFileDialog.getOpenFileName()[0]
                 locale.setlocale(locale.LC_NUMERIC, 'C')
                 player = mpv.MPV()
                 player.play(wb_patch)
-        def enter(self):
-                text = self.lineEditToken.text()
-                if text and text.strip():
-                        self.lineEditToken.setText("Спасибо за токен, сейчас проверю его")
+        def enterLinkToPlay(self):
+                import music
+                url = self.writeLinkToPlay.text()
+                if url and url.strip():
+                        self.writeLinkToPlay.setText("Запускаю трек")
+                        url_parts=url.split('/')
+                        trackID = url_parts[-1]
+                        track = music.extractDirectLinkToTrack(trackID)
+                        play(track)
                 else:
-                        self.lineEditToken.setText("Напишите сюда токен от YandexMusic, а не пустую строку :)")
+                        self.writeLinkToPlay.setText("Напиши сюда ссылку на трек из YandexMusic, а не пустую строку :)")
+        def enterLinkToDownload(self):
+                import music
+                url = self.writeLinkToPlay.text()
+                if url and url.strip():
+                        url = str(url)
+                        wb_patch = QtWidgets.QFileDialog.getExistingDirectory()
+                        if os.path.isdir(wb_patch):
+                                self.writeLinkToPlay.setText("Начинаю скачивать :)")
+                                path = music.download(url, wb_patch)
+                                self.writeLinkToPlay.setText(f"Скачалось по пути {path}")
+                else:
+                        self.writeLinkToPlay.setText("Напиши сюда ссылку на трек из YandexMusic, а не пустую строку :)")
+def play(url):
+        locale.setlocale(locale.LC_NUMERIC, 'C')
+        player = mpv.MPV()
+        player.play(url)
 def main():
         app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
         window = ExampleApp()  # Создаём объект класса ExampleApp

@@ -13,26 +13,34 @@
   <property name="windowTitle">
    <string>YandexMusic Client</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Svg/icon_main.svg</normaloff>Svg/icon_main.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QPushButton" name="playButton">
-        <property name="text">
-         <string>Play</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
+      <item row="2" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLineEdit" name="lineEditToken"/>
+         <widget class="QPushButton" name="pushButtonToDownload">
+          <property name="text">
+           <string>Скачать</string>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="enterTokenButton">
+         <widget class="QLineEdit" name="writeLinkToPlay">
           <property name="text">
-           <string>Enter</string>
+           <string>Введи ссылку на трек</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonToPlay">
+          <property name="text">
+           <string>Играть трек</string>
           </property>
          </widget>
         </item>
