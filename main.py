@@ -1,19 +1,42 @@
 import sys  # sys нужен для передачи argv в QApplication
 import mpv  # Модуль для проигрывания музыки
 import locale  # Какая-то зависимость без которой Mpv не работает
+import toml  #Библиотека для конфигов
+
 from PyQt5 import QtWidgets  #  Импорт PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+
+from yandex_music import Best, Client, Search  # Импорт библиотеки YandexMusic
+import yandex_music
+
 import os  # Автоматическая конвертация .ui файла в файл design.py, потому что мне лень лезть каждый раз в терминал
 os.system("pyuic5 Main.ui -o design.py ")
 import design # Это наш конвертированный файл дизайна
 
+try:
+        config = toml.load("config.toml")
+except FileNotFoundError:
+        file = open("config.toml", "w")
+        file.write('tokenYandex = ""')
+        file.close()
+        
 class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         def __init__(self):
                 # Это здесь нужно для доступа к переменным, методам
                 # и т.д. в файле design.py
                 super().__init__()
                 self.setupUi(self)  # Это нужно для инициализации нашего дизайна
+                
+                # Проверяем на рабочий токен и то что интернет работает
+                try:
+                        client = Client.from_token(config.get('tokenYandex'))
+                except yandex_music.exceptions.NetworkError:
+                        print("Проблемы с интернетом")
+                except yandex_music.exceptions.Unauthorized:
+                        print("Неправильный токен")
+                except NameError:
+                        print("Перезапустите программу")
 
                 self.playButton.clicked.connect(self.play)
                 self.enterTokenButton.clicked.connect(self.enter)
