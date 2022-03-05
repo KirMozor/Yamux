@@ -33,13 +33,45 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                         client = Client.from_token(config.get('tokenYandex'))
                 except yandex_music.exceptions.NetworkError:
                         print("Проблемы с интернетом")
+                        error = QMessageBox()
+                        error.setWindowTitle("Ошибка")
+                        error.setText("Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке")
+                        error.setIcon(QMessageBox.Warning)
+                        error.setStandardButtons(QMessageBox.Close)
+                        error.buttonClicked.connect(self.exit)
+                        error.exec_()
                 except yandex_music.exceptions.Unauthorized:
                         print("Неправильный токен")
+                        error = QMessageBox()
+                        error.setWindowTitle("Ошибка")
+                        error.setText("Yandex Music Api говорит что у вас нерабочий токен. Поменяйте токен в config.toml, он находится в корне программы")
+                        error.setIcon(QMessageBox.Warning)
+                        error.setStandardButtons(QMessageBox.Close)
+                        error.buttonClicked.connect(self.exit)
+                        error.exec_()
+                except UnicodeEncodeError:
+                        print("Неправильный токен")
+                        error = QMessageBox()
+                        error.setWindowTitle("Ошибка")
+                        error.setText("Yandex Music Api говорит что у вас токен состоит из непонятных символов. Поменяйте токен в config.toml, он находится в корне программы")
+                        error.setIcon(QMessageBox.Warning)
+                        error.setStandardButtons(QMessageBox.Close)
+                        error.buttonClicked.connect(self.exit)
+                        error.exec_()
                 except NameError:
-                        print("Перезапустите программу")
+                        print("Только что создался конфиг, перезапустите программу")
+                        error = QMessageBox()
+                        error.setWindowTitle("Ошибка")
+                        error.setText("Только что создался конфиг, перезапустите программу")
+                        error.setIcon(QMessageBox.Warning)
+                        error.setStandardButtons(QMessageBox.Close)
+                        error.buttonClicked.connect(self.exit)
+                        error.exec_()
 
                 self.playButton.clicked.connect(self.play)
                 self.enterTokenButton.clicked.connect(self.enter)
+        def exit(self):
+                sys.exit()
         def play(self):
                 wb_patch = QtWidgets.QFileDialog.getOpenFileName()[0]
                 locale.setlocale(locale.LC_NUMERIC, 'C')
