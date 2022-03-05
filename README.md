@@ -3,6 +3,8 @@ Description: This is a client for Yandex Music on Unix
 
 ### Install dependencies
 
+For the program to work correctly, you need a token from YandexMusic, instructions for obtaining it can be found here: https://yandex.ru/dev/direct/doc/start/index.html
+
 `pip install PyQt5 toml mpv yandex_music`
 
 You also need to install the package python-pyqt5 or python3-pyqt5
