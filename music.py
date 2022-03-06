@@ -2,7 +2,7 @@ from yandex_music import Best, Client, Search
 import toml
 config = toml.load("config.toml")
 
-client = Client.from_token(config.get("tokenYandex"))
+client = Client(config.get('tokenYandex')).init()
 
 def extractDirectLinkToTrack(track_id):
     track = client.tracks(track_id)[0]
