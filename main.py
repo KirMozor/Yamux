@@ -20,6 +20,8 @@ except FileNotFoundError:
         file = open("config.toml", "w")
         file.write('tokenYandex = ""')
         file.close()
+
+
 class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         def __init__(self):
                 logText = ""
@@ -68,10 +70,13 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                                 windowsTitle="Добавить токен")
                 self.pushButtonToPlay.clicked.connect(self.enterLinkToPlay)
                 self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
+
+
         def exit(self):
                 logText += "\nЗапускаю функцию exit"
                 self.showLog.setText(logText)
                 sys.exit()
+
         def playLocalFile(self):
                 logText += "\nЗапустился playLocalFile"
                 self.showLog.setText(logText)
@@ -79,6 +84,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 locale.setlocale(locale.LC_NUMERIC, 'C')
                 player = mpv.MPV()
                 player.play(wb_patch)
+
         def enterLinkToPlay(self):
                 import music
                 url = self.writeLinkToPlay.text()
@@ -93,6 +99,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                                 self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
                 else:
                         self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+
         def enterLinkToDownload(self):
                 import music
                 url = self.writeLinkToPlay.text()
@@ -108,6 +115,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                                 self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
                 else:
                         self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+
         def errorStandart(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
                 print(messageLog)
                 error = QMessageBox()
@@ -119,6 +127,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 if exitOrNo:
                         error.buttonClicked.connect(self.exit)
                 error.exec_()
+
         def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
                 print(messageLog)
                 text, ok = QInputDialog.getText(self, windowsTitle, description)
@@ -128,10 +137,14 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                         file.close()
                 if exitOrNo:
                         error.buttonClicked.connect(self.exit)
+
+
 def play(url):
         locale.setlocale(locale.LC_NUMERIC, 'C')
         player = mpv.MPV()
         player.play(url)
+
+        
 def main():
         app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
         window = ExampleApp()  # Создаём объект класса ExampleApp
