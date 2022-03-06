@@ -11,40 +11,61 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>YandexMusic Client</string>
+   <string>Yams - YandexMusic Client</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>Svg/icon.svg</normaloff>Svg/icon.svg</iconset>
+    <normaloff>../Svg/icon.svg</normaloff>../Svg/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QPushButton" name="pushButtonToDownload">
-          <property name="text">
-           <string>Скачать</string>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="1">
+         <widget class="QTextBrowser" name="showLog">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QLineEdit" name="writeLinkToPlay">
-          <property name="text">
-           <string>Введи ссылку на трек</string>
+        <item row="1" column="2">
+         <widget class="QScrollBar" name="verticalScrollBar">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonToPlay">
+        <item row="0" column="1">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Играть трек</string>
+           <string>                                                                 Логи</string>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonToDownload">
+        <property name="text">
+         <string>Скачать</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="writeLinkToPlay">
+        <property name="text">
+         <string>Введи ссылку на трек или плейлист</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonToPlay">
+        <property name="text">
+         <string>Играть трек</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
