@@ -7,12 +7,17 @@ My program requires a token from YandexMusic, to get it, follow this link: <a hr
 
 `pip install PyQt5 toml mpv yandex_music`
 
-You also need to install the package python-pyqt5 or python3-pyqt5
+Also you need to get libmpv.so. It contains in packages `libmpv1`, `mpv-devels` and `mpv-libs`, so install one of them.
+
+Sometimes you need to install the package python-pyqt5 or python3-pyqt5
 In ArchLinux I do it like this:
 
 `sudo pacman -S python-pyqt5`
 
-Tell me how to install this package on other systems, I will add it to the README.md
+In systems, which using apt, you can install it with this command:
+
+`sudo apt install python3-pyqt5`
+
 
 ### Launch
 
