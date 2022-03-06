@@ -1,7 +1,7 @@
 import sys  # sys нужен для передачи argv в QApplication
 import mpv  # Модуль для проигрывания музыки
 import locale  # Какая-то зависимость без которой Mpv не работает
-import toml  #Библиотека для конфигов
+import toml  #  Библиотека для конфигов
 
 from PyQt5 import QtWidgets  #  Импорт PyQt5
 from PyQt5.QtWidgets import *
@@ -11,7 +11,7 @@ from yandex_music import Best, Client, Search  # Импорт библиотек
 import yandex_music
 
 import os  # Автоматическая конвертация .ui файла в файл design.py, потому что мне лень лезть каждый раз в терминал
-os.system("pyuic5 Main.ui -o design.py ")
+os.system("pyuic5 Ui/Main.ui -o design.py ")
 import design # Это наш конвертированный файл дизайна
 
 try:

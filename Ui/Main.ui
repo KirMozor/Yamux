@@ -6,41 +6,49 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>425</height>
+    <width>500</width>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>YandexMusic client</string>
+   <string>YandexMusic Client</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>icon_main.svg</normaloff>icon_main.svg</iconset>
+    <normaloff>Svg/icon.svg</normaloff>Svg/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>290</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Play</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>120</width>
-      <height>80</height>
-     </rect>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="pushButtonToDownload">
+          <property name="text">
+           <string>Скачать</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="writeLinkToPlay">
+          <property name="text">
+           <string>Введи ссылку на трек</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonToPlay">
+          <property name="text">
+           <string>Играть трек</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

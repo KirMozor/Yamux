@@ -1,9 +1,10 @@
-# Yamux
+# YandexMusicClientForUnix
 Description: This is a client for Yandex Music on Unix
 
 ### Install dependencies
 
-For the program to work correctly, you need a token from YandexMusic, instructions for obtaining it can be found here: https://yandex.ru/dev/direct/doc/start/index.html
+My program requires a token from YandexMusic, to get it, follow this link: https://oauth.yandex.ru/authorize?response_type=token&client_id=ef4bf3db195c43739906b13dd7325e3f
+Then run the program and follow the instructions
 
 `pip install PyQt5 toml mpv yandex_music`
 

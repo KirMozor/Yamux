@@ -3,6 +3,7 @@ import toml
 config = toml.load("config.toml")
 
 client = Client.from_token(config.get("tokenYandex"))
+client = Client.generateTokenByUsernameAndPassword
 
 def extractDirectLinkToTrack(track_id):
     track = client.tracks(track_id)[0]
