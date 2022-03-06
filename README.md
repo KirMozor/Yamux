@@ -1,4 +1,4 @@
-# YandexMusicClientForUnix
+# Yamux
 Description: This is a client for Yandex Music on Unix
 
 ### Install dependencies
