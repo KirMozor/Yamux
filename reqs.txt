@@ -1,0 +1,6 @@
+PyQt5
+toml
+mpv
+yandex_music
+bs4
+lxml
