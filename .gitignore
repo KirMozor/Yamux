@@ -1,3 +1,4 @@
 config.toml
 *.mp3
 __pycache__
+*.dll
