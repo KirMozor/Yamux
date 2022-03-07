@@ -16,6 +16,11 @@ def extractDirectLinkToTrack(track_id):
     for info in track_download_info:
         if is_track_suitable(info):
             return info.get_direct_link()
+            
+def durationTrack(url):
+    trackID = url.split('/')[-1]
+    track = client.tracks([trackID])[0]
+    return track.duration_ms / 1000
 
 def download(url, path):
     trackID = url.split('/')[-1]

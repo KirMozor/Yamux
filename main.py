@@ -2,17 +2,17 @@ import sys  # sys нужен для передачи argv в QApplication
 import mpv  # Модуль для проигрывания музыки
 import locale  # Какая-то зависимость без которой Mpv не работает
 import toml  #  Библиотека для конфигов
+import time  #  Для того чтобы дожидался когда закончится трек
 
-from PyQt5 import QtWidgets  #  Импорт PyQt5
-from PyQt5.QtWidgets import *
+from PyQt5 import QtWidgets, uic  #  Импорт PyQt5
+from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
 from PyQt5.QtCore import *
 
 from yandex_music import Best, Client, Search  # Импорт библиотеки YandexMusic
 import yandex_music
 
-import os  # Автоматическая конвертация .ui файла в файл design.py, потому что мне лень лезть каждый раз в терминал
-os.system("pyuic5 Ui/Main.ui -o design.py ")
-import design # Это наш конвертированный файл дизайна
+from bs4 import BeautifulSoup  # Библиотеки для парсинга
+import requests
 
 try:
     config = toml.load("config.toml")
@@ -21,19 +21,20 @@ except FileNotFoundError:
     file.write('tokenYandex = ""')
     file.close()
 
-class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
+class ExampleApp(QtWidgets.QMainWindow):
     def __init__(self):
         logText = ""
         # Это здесь нужно для доступа к переменным, методам
         # и т.д. в файле design.py
         super().__init__()
         logText += "\nИнициализация интерфейса"
-        self.setupUi(self)  # Это нужно для инициализации нашего дизайна
+        uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
         self.showLog.setText(logText)
 
         # Проверяем на рабочий токен и то что интернет работает
         logText += "\nПроверяем на рабочий токен и на рабочий интернет"
         self.showLog.setText(logText)
+
         try:
             if not config.get('tokenYandex'):
                 text, ok = QInputDialog.getText(self, 'Добавить токен', 'Я не обнаружил токена YandexMusic в программе. Если у вас нет токена то инструкция по получению токена находится в README.md')
@@ -43,6 +44,9 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                     file.close()
             global client 
             client = Client(config.get('tokenYandex')).init()
+            logText += "\nВсё ок"
+            self.showLog.setText(logText)
+
         except yandex_music.exceptions.NetworkError:
             logText += "\nПроблемы с интернетом yandex_music.exceptions.NetworkError"
             self.showLog.setText(logText)
@@ -67,12 +71,15 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.errorConfig("Только что создался конфиг, перезапустите программу",
                 "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
                 windowsTitle="Добавить токен")
+
         self.pushButtonToPlay.clicked.connect(self.enterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
+
     def exit(self):
         logText += "\nЗапускаю функцию exit"
         self.showLog.setText(logText)
         sys.exit()
+
     def playLocalFile(self):
         logText += "\nЗапустился playLocalFile"
         self.showLog.setText(logText)
@@ -80,20 +87,49 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         locale.setlocale(locale.LC_NUMERIC, 'C')
         player = mpv.MPV()
         player.play(wb_patch)
+
+    def enterLinkToPlayThread(self):
+        self.url = self.writeLinkToPlay.text()
+        self.PlayMusicThread_instance = PlayMusicThread(url)
+        self.PlayMusicThread_instance.start()
+
     def enterLinkToPlay(self):
-        import music
-        url = self.writeLinkToPlay.text()
-        if url and url.strip():
-            if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
-                self.writeLinkToPlay.setText("Запускаю трек")
-                url_parts=url.split('/')
-                trackID = url_parts[-1]
-                track = music.extractDirectLinkToTrack(trackID)
-                play(track)
+            import music
+
+            url = self.writeLinkToPlay.text()
+            if url and url.strip():
+                    if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
+                            checkInTrack = url.split("/")
+                            if checkInTrack[-2] == "track":
+                                    self.writeLinkToPlay.setText("Запускаю трек")
+                                    url_parts=url.split('/')
+                                    trackID = url_parts[-1]
+                                    track = music.extractDirectLinkToTrack(trackID)
+                                    locale.setlocale(locale.LC_NUMERIC, 'C')
+                                    player = mpv.MPV()
+                                    player.play(track)
+                            else:
+                                    response = requests.get(url)
+                                    soup = BeautifulSoup(response.text, 'lxml')
+
+                                    quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
+                                    queue = []
+                                    for title in quotes:
+                                            s = title.text.strip(), title.get('href')   
+                                            url = "https://music.yandex.ru" + s[1]
+
+                                            url_parts=url.split('/')
+                                            trackID = url_parts[-1]
+                                            track = music.extractDirectLinkToTrack(trackID)
+
+                                            locale.setlocale(locale.LC_NUMERIC, 'C')
+                                            player = mpv.MPV()
+                                            player.play(track)
+                                            time.sleep(music.durationTrack(url))
+                    else:
+                            self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
             else:
-                self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
-        else:
-            self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+                    self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
 
     def enterLinkToDownload(self):
         import music
@@ -122,6 +158,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if exitOrNo:
             error.buttonClicked.connect(self.exit)
         error.exec_()
+
     def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
         print(messageLog)
         text, ok = QInputDialog.getText(self, windowsTitle, description)
@@ -132,12 +169,11 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if exitOrNo:
             error.buttonClicked.connect(self.exit)
 
-
-def play(url):
-    locale.setlocale(locale.LC_NUMERIC, 'C')
-    player = mpv.MPV()
-    player.play(url)
-
+class PlayMusicThread(QThread):
+    def __init__(self, parent=None):
+        super(PlayMusicThread, self).__init__(parent)
+    def run(self, url):
+        print(self.url)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
