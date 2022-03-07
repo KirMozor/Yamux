@@ -1,4 +1,5 @@
-config.toml
-*.mp3
-__pycache__
-*.dll
+./config.toml
+./*.mp3
+./__pycache__/
+./__pycache__/*
+./*.dll

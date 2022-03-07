@@ -3,9 +3,9 @@ Description: This is a client for Yandex Music on Unix
 
 ### Install dependencies
 
-My program requires a token from YandexMusic, to get it, follow this link: <a href="https://oauth.yandex.ru/authorize?response_type=token&client_id=ef4bf3db195c43739906b13dd7325e3f">Click*</a>. Then run the program and follow the instructions
+My program requires a token from YandexMusic, to get it, follow this link: <a href="https://oauth.yandex.ru/authorize?response_type=token&client_id=ef4bf3db195c43739906b13dd7325e3f">Click*</a>. Then run the program and follow the instructions:
 
-`pip install PyQt5 toml mpv yandex_music`
+`pip install -U -r reqs.txt`
 
 Also you need to get libmpv.so. It contains in packages `libmpv1`, `mpv-devels` and `mpv-libs`, so install one of them.
 

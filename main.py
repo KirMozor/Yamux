@@ -14,6 +14,8 @@ import yandex_music
 from bs4 import BeautifulSoup  # Библиотеки для парсинга
 import requests
 
+player = mpv.MPV()
+
 try:
     config = toml.load("config.toml")
 except FileNotFoundError:
@@ -53,8 +55,8 @@ class ExampleApp(QtWidgets.QMainWindow):
             self.errorStandart("Проблемы с интернетом",
                 "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
                 exitOrNo=True)
-        except yandex_music.exceptions.Unauthorized:
-            logText += "\nНеправильный токен yandex_music.exceptions.Unauthorized"
+        except yandex_music.exceptions.UnauthorizedError:
+            logText += "\nНеправильный токен yandex_music.exceptions.UnauthorizedError"
             self.showLog.setText(logText)
             self.errorConfig("Неправильный токен",
                 "Yandex Music Api говорит что у вас нерабочий токен. Инструкция по получению токена находится в README.md",
@@ -85,18 +87,19 @@ class ExampleApp(QtWidgets.QMainWindow):
         self.showLog.setText(logText)
         wb_patch = QtWidgets.QFileDialog.getOpenFileName()[0]
         locale.setlocale(locale.LC_NUMERIC, 'C')
-        player = mpv.MPV()
+        player.stop()
         player.play(wb_patch)
 
     def enterLinkToPlayThread(self):
-        self.url = self.writeLinkToPlay.text()
+        self.url = self.writeLinkToPlay.text().rstrip('/')
         self.PlayMusicThread_instance = PlayMusicThread(url)
+        player.stop()
         self.PlayMusicThread_instance.start()
 
     def enterLinkToPlay(self):
             import music
 
-            url = self.writeLinkToPlay.text()
+            url = self.writeLinkToPlay.text().rstrip('/')
             if url and url.strip():
                     if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
                             checkInTrack = url.split("/")
@@ -106,7 +109,7 @@ class ExampleApp(QtWidgets.QMainWindow):
                                     trackID = url_parts[-1]
                                     track = music.extractDirectLinkToTrack(trackID)
                                     locale.setlocale(locale.LC_NUMERIC, 'C')
-                                    player = mpv.MPV()
+                                    player.stop()
                                     player.play(track)
                             else:
                                     response = requests.get(url)
@@ -123,7 +126,7 @@ class ExampleApp(QtWidgets.QMainWindow):
                                             track = music.extractDirectLinkToTrack(trackID)
 
                                             locale.setlocale(locale.LC_NUMERIC, 'C')
-                                            player = mpv.MPV()
+                                            player.stop()
                                             player.play(track)
                                             time.sleep(music.durationTrack(url))
                     else:
