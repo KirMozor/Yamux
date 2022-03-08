@@ -113,7 +113,6 @@ class MainWindow(QtWidgets.QMainWindow):
                                     trackID = url_parts[-1]
                                     track = music.extractDirectLinkToTrack(trackID)
                                     locale.setlocale(locale.LC_NUMERIC, 'C')
-                                    player.stop()
                                     player.play(track)
                             else:
                                     response = requests.get(url)
@@ -165,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         error.setIcon(QMessageBox.Warning)
         error.setStandardButtons(QMessageBox.Close)
         if exitOrNo:
-            error.buttonClicked.connect(self.exit)
+            sys.exit()
         error.exec_()
 
     def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
@@ -176,7 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
             file.write(f'tokenYandex = "{text}"')
             file.close()
         if exitOrNo:
-            error.buttonClicked.connect(self.exit)
+            sys.exit()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
