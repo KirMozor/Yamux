@@ -3,6 +3,7 @@ import mpv  # Модуль для проигрывания музыки
 import locale  # Какая-то зависимость без которой Mpv не работает
 import toml  #  Библиотека для конфигов
 import time  #  Для того чтобы дожидался когда закончится трек
+import threading  #  Библиотека для ассинхронности
 
 from PyQt5 import QtWidgets, uic  #  Импорт PyQt5
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
@@ -23,7 +24,7 @@ except FileNotFoundError:
     file.write('tokenYandex = ""')
     file.close()
 
-class ExampleApp(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         logText = ""
         # Это здесь нужно для доступа к переменным, методам
@@ -44,6 +45,8 @@ class ExampleApp(QtWidgets.QMainWindow):
                     file = open("config.toml", "w")
                     file.write(f'tokenYandex = "{text}"')
                     file.close()
+                else:
+                    sys.exit()
             global client 
             client = Client(config.get('tokenYandex')).init()
             logText += "\nВсё ок"
@@ -73,8 +76,12 @@ class ExampleApp(QtWidgets.QMainWindow):
             self.errorConfig("Только что создался конфиг, перезапустите программу",
                 "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
                 windowsTitle="Добавить токен")
+        except toml.decoder.TomlDecodeError:
+            file = open("config.toml", "w")
+            file.write('tokenYandex = ""')
+            file.close()
 
-        self.pushButtonToPlay.clicked.connect(self.enterLinkToPlay)
+        self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
 
     def exit(self):
@@ -90,11 +97,8 @@ class ExampleApp(QtWidgets.QMainWindow):
         player.stop()
         player.play(wb_patch)
 
-    def enterLinkToPlayThread(self):
-        self.url = self.writeLinkToPlay.text().rstrip('/')
-        self.PlayMusicThread_instance = PlayMusicThread(url)
-        player.stop()
-        self.PlayMusicThread_instance.start()
+    def asyncEnterLinkToPlay(self):
+        threading.Thread(target=lambda:self.enterLinkToPlay()).start()
 
     def enterLinkToPlay(self):
             import music
@@ -116,19 +120,21 @@ class ExampleApp(QtWidgets.QMainWindow):
                                     soup = BeautifulSoup(response.text, 'lxml')
 
                                     quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
-                                    queue = []
-                                    for title in quotes:
-                                            s = title.text.strip(), title.get('href')   
-                                            url = "https://music.yandex.ru" + s[1]
+                                    if not quotes:
+                                        self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+                                    else:
+                                        for title in quotes:
+                                                s = title.text.strip(), title.get('href')   
+                                                url = "https://music.yandex.ru" + s[1]
 
-                                            url_parts=url.split('/')
-                                            trackID = url_parts[-1]
-                                            track = music.extractDirectLinkToTrack(trackID)
+                                                url_parts=url.split('/')
+                                                trackID = url_parts[-1]
+                                                track = music.extractDirectLinkToTrack(trackID)
 
-                                            locale.setlocale(locale.LC_NUMERIC, 'C')
-                                            player.stop()
-                                            player.play(track)
-                                            time.sleep(music.durationTrack(url))
+                                                locale.setlocale(locale.LC_NUMERIC, 'C')
+                                                player.stop()
+                                                player.play(track)
+                                                time.sleep(music.durationTrack(url))
                     else:
                             self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
             else:
@@ -172,16 +178,10 @@ class ExampleApp(QtWidgets.QMainWindow):
         if exitOrNo:
             error.buttonClicked.connect(self.exit)
 
-class PlayMusicThread(QThread):
-    def __init__(self, parent=None):
-        super(PlayMusicThread, self).__init__(parent)
-    def run(self, url):
-        print(self.url)
-
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
-    window = ExampleApp()  # Создаём объект класса ExampleApp
-    window.show()  # Показываем окно
+    mainWindow = MainWindow()  # Создаём объект класса MainWindow
+    mainWindow.show()  # Показываем окно
     app.exec_()  # и запускаем приложение
 
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
