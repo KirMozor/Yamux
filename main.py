@@ -131,7 +131,6 @@ class MainWindow(QtWidgets.QMainWindow):
                                                 track = music.extractDirectLinkToTrack(trackID)
 
                                                 locale.setlocale(locale.LC_NUMERIC, 'C')
-                                                player.stop()
                                                 player.play(track)
                                                 time.sleep(music.durationTrack(url))
                     else:
