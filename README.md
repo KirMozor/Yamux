@@ -4,7 +4,7 @@ Description: This is a client for Yandex Music on Unix
 ### Install dependencies
 
 My program requires a token from YandexMusic, to get it, run the authorization program using the command `python3 authorize.py`
-Dalle follow the instructions below
+. Dalle follow the instructions below
 
 `pip install -U -r reqs.txt`
 
