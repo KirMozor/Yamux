@@ -4,6 +4,7 @@ import locale  # Какая-то зависимость без которой Mp
 import toml  #  Библиотека для конфигов
 import time  #  Для того чтобы дожидался когда закончится трек
 import threading  #  Библиотека для ассинхронности
+import os  #  Для проверки на наличие папки, потом ещё функционалла докину
 
 from PyQt5 import QtWidgets, uic  #  Импорт PyQt5
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
@@ -23,7 +24,12 @@ except FileNotFoundError:
     file = open("config.toml", "w")
     file.write('tokenYandex = ""')
     file.close()
+except toml.decoder.TomlDecodeError:
+    file = open("config.toml", "w")
+    file.write('tokenYandex = ""')
+    file.close()
 
+    print("Перезайди в программу. Был кривой конфиг, я его пересоздал")
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         logText = ""
@@ -76,10 +82,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.errorConfig("Только что создался конфиг, перезапустите программу",
                 "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
                 windowsTitle="Добавить токен")
-        except toml.decoder.TomlDecodeError:
-            file = open("config.toml", "w")
-            file.write('tokenYandex = ""')
-            file.close()
 
         self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
@@ -98,45 +100,44 @@ class MainWindow(QtWidgets.QMainWindow):
         player.play(wb_patch)
 
     def asyncEnterLinkToPlay(self):
-        threading.Thread(target=lambda:self.enterLinkToPlay()).start()
+        threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
 
     def enterLinkToPlay(self):
-            import music
+        import music
+        url = self.writeLinkToPlay.text().rstrip('/')
+        if url and url.strip():
+            if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
+                checkInTrack = url.split("/")
+                if checkInTrack[-2] == "track":
+                    self.writeLinkToPlay.setText("Запускаю трек")
+                    url_parts=url.split('/')
+                    trackID = url_parts[-1]
+                    track = music.extractDirectLinkToTrack(trackID)
+                    locale.setlocale(locale.LC_NUMERIC, 'C')
+                    player.play(track)
+                else:
+                    response = requests.get(url)
+                    soup = BeautifulSoup(response.text, 'lxml')
 
-            url = self.writeLinkToPlay.text().rstrip('/')
-            if url and url.strip():
-                    if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
-                            checkInTrack = url.split("/")
-                            if checkInTrack[-2] == "track":
-                                    self.writeLinkToPlay.setText("Запускаю трек")
-                                    url_parts=url.split('/')
-                                    trackID = url_parts[-1]
-                                    track = music.extractDirectLinkToTrack(trackID)
-                                    locale.setlocale(locale.LC_NUMERIC, 'C')
-                                    player.play(track)
-                            else:
-                                    response = requests.get(url)
-                                    soup = BeautifulSoup(response.text, 'lxml')
-
-                                    quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
-                                    if not quotes:
-                                        self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
-                                    else:
-                                        for title in quotes:
-                                                s = title.text.strip(), title.get('href')   
-                                                url = "https://music.yandex.ru" + s[1]
-
-                                                url_parts=url.split('/')
-                                                trackID = url_parts[-1]
-                                                track = music.extractDirectLinkToTrack(trackID)
-
-                                                locale.setlocale(locale.LC_NUMERIC, 'C')
-                                                player.play(track)
-                                                time.sleep(music.durationTrack(url))
+                    quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
+                    if not quotes:
+                        self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
                     else:
-                            self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+                        for title in quotes:
+                            s = title.text.strip(), title.get('href')   
+                            url = "https://music.yandex.ru" + s[1]
+
+                            url_parts=url.split('/')
+                            trackID = url_parts[-1]
+                            track = music.extractDirectLinkToTrack(trackID)
+
+                            locale.setlocale(locale.LC_NUMERIC, 'C')
+                            player.play(track)
+                            time.sleep(music.durationTrack(url))
             else:
-                    self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+                self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+        else:
+            self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
 
     def enterLinkToDownload(self):
         import music
@@ -148,23 +149,37 @@ class MainWindow(QtWidgets.QMainWindow):
                 if os.path.isdir(wb_patch):
                     self.writeLinkToPlay.setText("Начинаю скачивать :)")
                     path = music.download(url, wb_patch)
-                    self.writeLinkToPlay.setText(f"Скачалось по пути {path}")
+                    if path.get('responce') == "ok":
+                        self.writeLinkToPlay.setText(f"Скачалось по пути {path.get('text')}")
+                    else:
+                        self.errorStandart("Ошибка скачивания", f"{path.get('text')}", exitOrNo=False, notButtonCancel=True)
             else:
                 self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
         else:
             self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
 
-    def errorStandart(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
+    def errorStandart(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True, notButtonCancel=False):
         print(messageLog)
         error = QMessageBox()
         error.setWindowTitle(windowsTitle)
         error.setIcon(QMessageBox.Warning)
         error.setText(description)
         error.setIcon(QMessageBox.Warning)
-        error.setStandardButtons(QMessageBox.Close)
-        if exitOrNo:
-            sys.exit()
-        error.exec_()
+        if not notButtonCancel:
+            error.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            error.buttonClicked.connect(self.msgbtn)
+            retval = error.exec_()
+            if exitOrNo:
+                player.stop()
+                sys.exit()
+            if retval == 4194304:
+                player.stop()
+                sys.exit()
+        else:
+            error.setStandardButtons(QMessageBox.Ok)
+            if exitOrNo:
+                player.stop()
+                sys.exit()
 
     def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
         print(messageLog)
@@ -173,14 +188,21 @@ class MainWindow(QtWidgets.QMainWindow):
             file = open("config.toml", "w")
             file.write(f'tokenYandex = "{text}"')
             file.close()
-        if exitOrNo:
-            sys.exit()
-
+        else:
+            if exitOrNo:
+                player.stop()
+                sys.exit()
+            
+    def msgbtn(self, i):
+        return i.text()
+    def closeEvent(self,event):
+        player.stop()
+        sys.exit()
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     mainWindow = MainWindow()  # Создаём объект класса MainWindow
     mainWindow.show()  # Показываем окно
-    app.exec_()  # и запускаем приложение
+    sys.exit( app.exec_() )  # и запускаем приложение
 
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     main()  # то запускаем функцию main()

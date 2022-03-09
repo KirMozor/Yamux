@@ -1,4 +1,5 @@
 from yandex_music import Best, Client, Search
+import yandex_music
 import toml
 config = toml.load("config.toml")
 
@@ -23,10 +24,15 @@ def durationTrack(url):
     return track.duration_ms / 1000
 
 def download(url, path):
-    trackID = url.split('/')[-1]
-    track = client.tracks([trackID])[0]
-    trackDownloadInfo = track.get_download_info()[0]
-    track = client.tracks([trackID])[0]
+    try:
+        trackID = url.split('/')[-1]
+        track = client.tracks([trackID])[0]
+        trackDownloadInfo = track.get_download_info()[0]
+        track = client.tracks([trackID])[0]
 
-    track.download(f'{path}/{track.title}.mp3', 'mp3', 192)
-    return f"{path}/{track.title}.mp3"
+        track.download(f'{path}/{track.title}.mp3', 'mp3', 192)
+        return {'responce':'ok', 'text':f'{path}/{track.title}.mp3'}
+    except yandex_music.exceptions.NetworkError:
+        return {'responce':'error', 'text':'NetworkError'}
+    except yandex_music.exceptions.TimedOutError:
+        return {'responce':'error', 'text':'TimedOutError'}
