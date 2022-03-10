@@ -1,6 +1,7 @@
 PyQt5
 toml
-mpv
+vlc
 yandex_music
 beautifulsoup4
 lxml
+requests

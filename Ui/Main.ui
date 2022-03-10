@@ -18,22 +18,22 @@
     <normaloff>../Svg/icon.svg</normaloff>../Svg/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="1">
-         <widget class="QTextBrowser" name="showLog">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="2">
          <widget class="QScrollBar" name="verticalScrollBar">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="writeLinkToPlay">
+          <property name="text">
+           <string>Введите ссылку на трек или плейлист</string>
           </property>
          </widget>
         </item>
@@ -44,7 +44,39 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="1">
+         <widget class="QTextBrowser" name="showLog">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
        </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButtonToPlay">
+        <property name="text">
+         <string>Играть</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonToPause">
+        <property name="text">
+         <string>Пауза</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonToDownload">
@@ -53,21 +85,14 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLineEdit" name="writeLinkToPlay">
-        <property name="text">
-         <string>Введи ссылку на трек или плейлист</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonToPlay">
-        <property name="text">
-         <string>Играть трек</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -8,7 +8,9 @@ My program requires a token from YandexMusic, to get it, run the authorization p
 
 `pip install -U -r reqs.txt`
 
-Also you need to get libmpv.so. It contains in packages `libmpv1`, `mpv-devels` and `mpv-libs`, so install one of them.
+Install VLC, how to install, look on the Internet for a manual specifically for your distribution. In Arch Linux, this is done like this:
+
+`sudo pacman -S vlc`
 
 Sometimes you need to install the package python-pyqt5 or python3-pyqt5
 In ArchLinux I do it like this:

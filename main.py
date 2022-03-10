@@ -1,6 +1,5 @@
 import sys  # sys нужен для передачи argv в QApplication
-import mpv  # Модуль для проигрывания музыки
-import locale  # Какая-то зависимость без которой Mpv не работает
+import vlc  # Модуль для проигрывания музыки
 import toml  #  Библиотека для конфигов
 import time  #  Для того чтобы дожидался когда закончится трек
 import threading  #  Библиотека для ассинхронности
@@ -15,8 +14,6 @@ import yandex_music
 
 from bs4 import BeautifulSoup  # Библиотеки для парсинга
 import requests
-
-player = mpv.MPV()
 
 try:
     config = toml.load("config.toml")
@@ -85,19 +82,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
+        self.pushButtonToPause.clicked.connect(self.pressButtonPause)
 
     def exit(self):
         logText += "\nЗапускаю функцию exit"
         self.showLog.setText(logText)
         sys.exit()
 
-    def playLocalFile(self):
-        logText += "\nЗапустился playLocalFile"
-        self.showLog.setText(logText)
-        wb_patch = QtWidgets.QFileDialog.getOpenFileName()[0]
-        locale.setlocale(locale.LC_NUMERIC, 'C')
-        player.stop()
-        player.play(wb_patch)
+    def pressButtonPause(self):
+        self.player.pause()
 
     def asyncEnterLinkToPlay(self):
         threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
@@ -113,8 +106,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     url_parts=url.split('/')
                     trackID = url_parts[-1]
                     track = music.extractDirectLinkToTrack(trackID)
-                    locale.setlocale(locale.LC_NUMERIC, 'C')
-                    player.play(track)
+                    self.player = vlc.MediaPlayer(track)
+                    self.player.play()
                 else:
                     response = requests.get(url)
                     soup = BeautifulSoup(response.text, 'lxml')
@@ -130,9 +123,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             url_parts=url.split('/')
                             trackID = url_parts[-1]
                             track = music.extractDirectLinkToTrack(trackID)
-
-                            locale.setlocale(locale.LC_NUMERIC, 'C')
-                            player.play(track)
+                            self.player = vlc.MediaPlayer(track)
+                            self.player.play()
                             time.sleep(music.durationTrack(url))
             else:
                 self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
@@ -196,7 +188,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def msgbtn(self, i):
         return i.text()
     def closeEvent(self,event):
-        player.stop()
         sys.exit()
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
