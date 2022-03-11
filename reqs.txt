@@ -1,6 +1,6 @@
 PyQt5
 toml
-vlc
+python-vlc
 yandex_music
 beautifulsoup4
 lxml
