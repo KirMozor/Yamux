@@ -83,6 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
         self.pushButtonToPause.clicked.connect(self.pressButtonPause)
+        self.pushButtonToStop.clicked.connect(self.pressButtonStop)
 
     def exit(self):
         logText += "\nЗапускаю функцию exit"
@@ -91,6 +92,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def pressButtonPause(self):
         self.player.pause()
+
+    def pressButtonStop(self):
+        self.player.stop()
 
     def asyncEnterLinkToPlay(self):
         threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
@@ -107,6 +111,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     trackID = url_parts[-1]
                     track = music.extractDirectLinkToTrack(trackID)
                     self.player = vlc.MediaPlayer(track)
+                    self.player.audio_set_volume(80)
                     self.player.play()
                 else:
                     response = requests.get(url)
@@ -124,6 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             trackID = url_parts[-1]
                             track = music.extractDirectLinkToTrack(trackID)
                             self.player = vlc.MediaPlayer(track)
+                            self.player.audio_set_volume(80)
                             self.player.play()
                             time.sleep(music.durationTrack(url))
             else:
