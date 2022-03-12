@@ -33,9 +33,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Это здесь нужно для доступа к переменным, методам
         # и т.д. в файле design.py
         super().__init__()
-        logText += "\nИнициализация интерфейса"
+        logText += "Инициализация интерфейса"
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
         self.showLog.setText(logText)
+
+        self.notRunMusic = True
 
         # Проверяем на рабочий токен и то что интернет работает
         logText += "\nПроверяем на рабочий токен и на рабочий интернет"
@@ -80,24 +82,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
                 windowsTitle="Добавить токен")
 
+        self.pressButtonPause = lambda: self.mediaPlayer.pause()
+        self.pressButtonStop = lambda: self.mediaPlayer.stop()
+        self.pressButtonToPreviousTrack = lambda: self.mediaPlayer.previous()
+        self.pressButtonToNextTrack = lambda: self.mediaPlayer.next()
+        self.asyncEnterLinkToPlay = lambda: threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
+        self.msgbtn = lambda i: i.text()
+        self.closeEvent = lambda event: sys.exit()
+
         self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
         self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
         self.pushButtonToPause.clicked.connect(self.pressButtonPause)
         self.pushButtonToStop.clicked.connect(self.pressButtonStop)
-
-    def exit(self):
-        logText += "\nЗапускаю функцию exit"
-        self.showLog.setText(logText)
-        sys.exit()
-
-    def pressButtonPause(self):
-        self.player.pause()
-
-    def pressButtonStop(self):
-        self.player.stop()
-
-    def asyncEnterLinkToPlay(self):
-        threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
+        self.pushButtonToPreviousTrack.clicked.connect(self.pressButtonToPreviousTrack)
+        self.pushButtonToNextTrack.clicked.connect(self.pressButtonToNextTrack)
 
     def enterLinkToPlay(self):
         import music
@@ -106,13 +104,13 @@ class MainWindow(QtWidgets.QMainWindow):
             if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
                 checkInTrack = url.split("/")
                 if checkInTrack[-2] == "track":
-                    self.writeLinkToPlay.setText("Запускаю трек")
                     url_parts=url.split('/')
                     trackID = url_parts[-1]
                     track = music.extractDirectLinkToTrack(trackID)
-                    self.player = vlc.MediaPlayer(track)
-                    self.player.audio_set_volume(80)
-                    self.player.play()
+
+                    self.mediaPlayer = vlc.MediaPlayer(track)
+                    self.mediaPlayer.play()
+                    time.sleep(music.durationTrack(url))
                 else:
                     response = requests.get(url)
                     soup = BeautifulSoup(response.text, 'lxml')
@@ -121,17 +119,23 @@ class MainWindow(QtWidgets.QMainWindow):
                     if not quotes:
                         self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
                     else:
+                        self.mediaPlayer = vlc.MediaListPlayer()
+                        player = vlc.Instance()
+                        self.mediaList = player.media_list_new()
                         for title in quotes:
-                            s = title.text.strip(), title.get('href')   
-                            url = "https://music.yandex.ru" + s[1]
+                                s = title.text.strip(), title.get('href')   
+                                url = "https://music.yandex.ru" + s[1]
 
-                            url_parts=url.split('/')
-                            trackID = url_parts[-1]
-                            track = music.extractDirectLinkToTrack(trackID)
-                            self.player = vlc.MediaPlayer(track)
-                            self.player.audio_set_volume(80)
-                            self.player.play()
-                            time.sleep(music.durationTrack(url))
+                                url_parts=url.split('/')
+                                trackID = url_parts[-1]
+                                track = music.extractDirectLinkToTrack(trackID)
+
+                                media = player.media_new(track)
+                                self.mediaList.add_media(media)
+                        self.mediaPlayer.set_media_list(self.mediaList)
+                        new = player.media_player_new()
+                        self.mediaPlayer.set_media_player(new)
+                        self.mediaPlayer.play()
             else:
                 self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
         else:
@@ -168,15 +172,15 @@ class MainWindow(QtWidgets.QMainWindow):
             error.buttonClicked.connect(self.msgbtn)
             retval = error.exec_()
             if exitOrNo:
-                player.stop()
+                self.mediaPlayer.stop()
                 sys.exit()
             if retval == 4194304:
-                player.stop()
+                self.mediaPlayer.stop()
                 sys.exit()
         else:
             error.setStandardButtons(QMessageBox.Ok)
             if exitOrNo:
-                player.stop()
+                self.mediaPlayer.stop()
                 sys.exit()
 
     def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
@@ -188,13 +192,9 @@ class MainWindow(QtWidgets.QMainWindow):
             file.close()
         else:
             if exitOrNo:
-                player.stop()
+                self.mediaPlayer.stop()
                 sys.exit()
-            
-    def msgbtn(self, i):
-        return i.text()
-    def closeEvent(self,event):
-        sys.exit()
+
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     mainWindow = MainWindow()  # Создаём объект класса MainWindow
