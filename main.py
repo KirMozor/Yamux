@@ -1,19 +1,19 @@
-import sys  # sys нужен для передачи argv в QApplication
-import vlc  # Модуль для проигрывания музыки
-import toml  #  Библиотека для конфигов
-import time  #  Для того чтобы дожидался когда закончится трек
-import threading  #  Библиотека для ассинхронности
-import os  #  Для проверки на наличие папки, потом ещё функционалла докину
-import logging  # Для логирования
+import sys  
+import vlc  
+import toml  
+import time  
+import threading
+import os
+import logging
 
-from PyQt5 import QtWidgets, uic  #  Импорт PyQt5
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
 from PyQt5.QtCore import *
 
-from yandex_music import Best, Client, Search  # Импорт библиотеки YandexMusic
+from yandex_music import Best, Client, Search
 import yandex_music
 
-from bs4 import BeautifulSoup  # Библиотеки для парсинга
+from bs4 import BeautifulSoup
 import requests
 
 logger = logging.getLogger('Yamux logger') 
