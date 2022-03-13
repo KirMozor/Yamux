@@ -4,6 +4,7 @@ import toml  #  Библиотека для конфигов
 import time  #  Для того чтобы дожидался когда закончится трек
 import threading  #  Библиотека для ассинхронности
 import os  #  Для проверки на наличие папки, потом ещё функционалла докину
+import logging  # Для логирования
 
 from PyQt5 import QtWidgets, uic  #  Импорт PyQt5
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
@@ -15,184 +16,179 @@ import yandex_music
 from bs4 import BeautifulSoup  # Библиотеки для парсинга
 import requests
 
+logger = logging.getLogger('Yamux logger') 
+
 try:
     config = toml.load("config.toml")
-except FileNotFoundError:
-    file = open("config.toml", "w")
-    file.write('tokenYandex = ""')
-    file.close()
-except toml.decoder.TomlDecodeError:
-    file = open("config.toml", "w")
-    file.write('tokenYandex = ""')
-    file.close()
-
-    print("Перезайди в программу. Был кривой конфиг, я его пересоздал")
+    logger.debug("Загрузка config")
+except FileNotFoundError and toml.decoder.TomlDecodeError:
+    with open("config.toml", "w") as file:
+        file.write('token_yandex = ""')
+    logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
+    
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
-        logText = ""
-        # Это здесь нужно для доступа к переменным, методам
-        # и т.д. в файле design.py
         super().__init__()
-        logText += "Инициализация интерфейса"
+        logger.debug("Инициализация интерфейса")
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
-        self.showLog.setText(logText)
-
-        self.notRunMusic = True
 
         # Проверяем на рабочий токен и то что интернет работает
-        logText += "\nПроверяем на рабочий токен и на рабочий интернет"
-        self.showLog.setText(logText)
+        logger.debug("Проверяем на рабочий токен и на рабочий интернет")
 
         try:
-            if not config.get('tokenYandex'):
+            if not config.get('token_yandex'):
                 text, ok = QInputDialog.getText(self, 'Добавить токен', 'Я не обнаружил токена YandexMusic в программе. Если у вас нет токена то инструкция по получению токена находится в README.md')
+                logger.warning("Не найден токен в конфиге, жду ввод от пользователя")
                 if ok:
-                    file = open("config.toml", "w")
-                    file.write(f'tokenYandex = "{text}"')
-                    file.close()
+                    with open("config.toml", "w") as file:
+                        file.write(f'token_yandex = "{text}"')
+                        logger.debug(f"Записан токен в конфиг config.toml. Токен: {text}")
                 else:
+                    logger.debug("Нажана кнопка exit, выход")
                     sys.exit()
-            global client 
-            client = Client(config.get('tokenYandex')).init()
-            logText += "\nВсё ок"
-            self.showLog.setText(logText)
+            client = Client(config.get('token_yandex')).init()
+            logger.debug("Всё ок, токен загружен")
 
         except yandex_music.exceptions.NetworkError:
-            logText += "\nПроблемы с интернетом yandex_music.exceptions.NetworkError"
-            self.showLog.setText(logText)
-            self.errorStandart("Проблемы с интернетом",
+            logger.error("Проблемы с интернетом yandex_music.exceptions.NetworkError")
+            self.error_standart("Проблемы с интернетом",
                 "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
-                exitOrNo=True)
+                exit_or_no=True)
         except yandex_music.exceptions.UnauthorizedError:
-            logText += "\nНеправильный токен yandex_music.exceptions.UnauthorizedError"
-            self.showLog.setText(logText)
-            self.errorConfig("Неправильный токен",
+            logger.error("Неправильный токен yandex_music.exceptions.UnauthorizedError")
+            self.error_config("Неправильный токен",
                 "Yandex Music Api говорит что у вас нерабочий токен. Инструкция по получению токена находится в README.md",
-                windowsTitle="Добавить токен")
+                windows_title="Добавить токен")
         except UnicodeEncodeError:
-            logText += "\nТокен из непонятных символов UnicodeEncodeError"
-            self.showLog.setText(logText)
-            self.errorConfig("Токен из непонятных символов", 
+            logger.error("Токен из непонятных символов UnicodeEncodeError")
+            self.error_config("Токен из непонятных символов", 
                 "YandexMusic говорит что у вас токен из непонятных символов, ведите корректный токен сюда. Инструкция по получению токена находится в README.md",
-                windowsTitle="Добавить токен")
+                windows_title="Добавить токен")
         except NameError:
-            logText += "\nТолько что создался конфиг, перезапустите программу NameError"
-            self.showLog.setText(logText)
-            self.errorConfig("Только что создался конфиг, перезапустите программу",
+            logger.error("Только что создался конфиг, перезапустите программу NameError")
+            self.error_config("Только что создался конфиг, перезапустите программу",
                 "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
-                windowsTitle="Добавить токен")
+                windows_title="Добавить токен")
 
-        self.pressButtonPause = lambda: self.mediaPlayer.pause()
-        self.pressButtonStop = lambda: self.mediaPlayer.stop()
-        self.pressButtonToPreviousTrack = lambda: self.mediaPlayer.previous()
-        self.pressButtonToNextTrack = lambda: self.mediaPlayer.next()
-        self.asyncEnterLinkToPlay = lambda: threading.Thread(target=lambda:self.enterLinkToPlay(), daemon=True).start()
-        self.msgbtn = lambda i: i.text()
-        self.closeEvent = lambda event: sys.exit()
+        self.press_button_pause = lambda: self.media_player.pause()
+        self.press_button_stop = lambda: self.media_player.stop()
+        self.press_button_to_previous_track = lambda: self.media_player.previous()
+        self.press_button_to_next_track = lambda: self.media_player.next()
+        self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
+        self.msg_btn = lambda i: i.text()
+        self.close_event = lambda event: sys.exit()
 
-        self.pushButtonToPlay.clicked.connect(self.asyncEnterLinkToPlay)
-        self.pushButtonToDownload.clicked.connect(self.enterLinkToDownload)
-        self.pushButtonToPause.clicked.connect(self.pressButtonPause)
-        self.pushButtonToStop.clicked.connect(self.pressButtonStop)
-        self.pushButtonToPreviousTrack.clicked.connect(self.pressButtonToPreviousTrack)
-        self.pushButtonToNextTrack.clicked.connect(self.pressButtonToNextTrack)
+        self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
+        self.push_button_to_download.clicked.connect(self.enter_link_to_download)
+        self.push_button_to_pause.clicked.connect(self.press_button_pause)
+        self.push_button_to_stop.clicked.connect(self.press_button_stop)
+        self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
+        self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
 
-    def enterLinkToPlay(self):
+    def enter_link_to_play(self):
+        logger.debug("Запустилась функция enterLinkToPlay")
         import music
-        url = self.writeLinkToPlay.text().rstrip('/')
+        url = self.write_link_to_play.text().rstrip('/')
+        logger.debug(f"url = {url}")
+
         if url and url.strip():
             if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
-                checkInTrack = url.split("/")
-                if checkInTrack[-2] == "track":
+                check_in_track = url.split("/")
+                if check_in_track[-2] == "track":
+                    logger.debug("Это трек")
                     url_parts=url.split('/')
-                    trackID = url_parts[-1]
-                    track = music.extractDirectLinkToTrack(trackID)
+                    track_id = url_parts[-1]
+                    logger.debug(f"track")
+                    track = music.extract_direct_link_to_track(track_id)
 
-                    self.mediaPlayer = vlc.MediaPlayer(track)
-                    self.mediaPlayer.play()
-                    time.sleep(music.durationTrack(url))
+                    self.media_player = vlc.MediaPlayer(track)
+                    self.media_player.play()
+                    time.sleep(music.duration_track(url))
                 else:
                     response = requests.get(url)
                     soup = BeautifulSoup(response.text, 'lxml')
 
                     quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
                     if not quotes:
-                        self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+                        self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
                     else:
-                        self.mediaPlayer = vlc.MediaListPlayer()
+                        self.media_player = vlc.MediaListPlayer()
                         player = vlc.Instance()
-                        self.mediaList = player.media_list_new()
+                        self.media_list = player.media_list_new()
                         for title in quotes:
-                                s = title.text.strip(), title.get('href')   
-                                url = "https://music.yandex.ru" + s[1]
+                            s = title.text.strip(), title.get('href')
+                            print(s)
+                            url = "https://music.yandex.ru" + s[1]
 
-                                url_parts=url.split('/')
-                                trackID = url_parts[-1]
-                                track = music.extractDirectLinkToTrack(trackID)
+                            url_parts=url.split('/')
+                            track_id = url_parts[-1]
+                            track = music.extract_direct_link_to_track(track_id)
 
-                                media = player.media_new(track)
-                                self.mediaList.add_media(media)
-                        self.mediaPlayer.set_media_list(self.mediaList)
+                            media = player.media_new(track)
+                            self.media_list.add_media(media)
+
+                        self.media_player.set_media_list(self.media_list)
                         new = player.media_player_new()
-                        self.mediaPlayer.set_media_player(new)
-                        self.mediaPlayer.play()
+                        self.media_player.set_media_player(new)
+                        self.media_player.play()
             else:
-                self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+                logger.debug("Неправильная ссылка")
+                self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
         else:
-            self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+            logger.debug("Пустая строка")
+            self.write_link_to_play.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
 
-    def enterLinkToDownload(self):
+    def enter_link_to_download(self):
         import music
-        url = self.writeLinkToPlay.text()
+        url = self.write_link_to_play.text()
         if url and url.strip():
             if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
                 url = str(url)
                 wb_patch = QtWidgets.QFileDialog.getExistingDirectory()
                 if os.path.isdir(wb_patch):
-                    self.writeLinkToPlay.setText("Начинаю скачивать :)")
+                    self.write_link_to_play.setText("Начинаю скачивать :)")
                     path = music.download(url, wb_patch)
                     if path.get('responce') == "ok":
-                        self.writeLinkToPlay.setText(f"Скачалось по пути {path.get('text')}")
+                        self.write_link_to_play.setText(f"Скачалось по пути {path.get('text')}")
                     else:
-                        self.errorStandart("Ошибка скачивания", f"{path.get('text')}", exitOrNo=False, notButtonCancel=True)
+                        self.error_standart("Ошибка скачивания", f"{path.get('text')}", exit_or_no=False, not_button_cancel=True)
             else:
-                self.errorStandart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exitOrNo=False)
+                self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
         else:
-            self.writeLinkToPlay.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+            self.write_link_to_play.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
 
-    def errorStandart(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True, notButtonCancel=False):
-        print(messageLog)
+    def error_standart(self, message_log, description, windows_title="Ошибка", exit_or_no=True, not_button_cancel=False):
+        logger.error(message_log)
         error = QMessageBox()
-        error.setWindowTitle(windowsTitle)
+        error.setWindowTitle(windows_title)
         error.setIcon(QMessageBox.Warning)
         error.setText(description)
         error.setIcon(QMessageBox.Warning)
-        if not notButtonCancel:
+        if not not_button_cancel:
             error.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            error.buttonClicked.connect(self.msgbtn)
+            error.buttonClicked.connect(self.msg_btn)
             retval = error.exec_()
-            if exitOrNo:
-                self.mediaPlayer.stop()
+            if exit_or_no:
+                self.media_player.stop()
                 sys.exit()
             if retval == 4194304:
-                self.mediaPlayer.stop()
+                self.media_player.stop()
                 sys.exit()
         else:
             error.setStandardButtons(QMessageBox.Ok)
-            if exitOrNo:
-                self.mediaPlayer.stop()
+            if exit_or_no:
+                self.media_player.stop()
                 sys.exit()
 
-    def errorConfig(self, messageLog, description, windowsTitle="Ошибка", exitOrNo=True):
-        print(messageLog)
-        text, ok = QInputDialog.getText(self, windowsTitle, description)
+    def error_config(self, message_log, description, windows_title="Ошибка", exit_or_no=True):
+        logger.error(message_log)
+        text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
-            file = open("config.toml", "w")
-            file.write(f'tokenYandex = "{text}"')
-            file.close()
+            with open("config.toml", "w") as file:
+                file.write(f'token_yandex = "{text}"')
         else:
-            if exitOrNo:
-                self.mediaPlayer.stop()
+            if exit_or_no:
+                self.media_player.stop()
                 sys.exit()
 
 def main():

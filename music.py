@@ -3,9 +3,9 @@ import yandex_music
 import toml
 config = toml.load("config.toml")
 
-client = Client(config.get('tokenYandex')).init()
+client = Client(config.get('token_yandex')).init()
 
-def extractDirectLinkToTrack(track_id):
+def extract_direct_link_to_track(track_id):
     track = client.tracks(track_id)[0]
     track_download_info = track.get_download_info()
 
@@ -18,16 +18,16 @@ def extractDirectLinkToTrack(track_id):
         if is_track_suitable(info):
             return info.get_direct_link()
             
-def durationTrack(url):
+def duration_track(url):
     trackID = url.split('/')[-1]
     track = client.tracks([trackID])[0]
     return track.duration_ms / 1000
 
 def download(url, path):
     try:
-        trackID = url.split('/')[-1]
+        track_id = url.split('/')[-1]
         track = client.tracks([trackID])[0]
-        trackDownloadInfo = track.get_download_info()[0]
+        track_download_info = track.get_download_info()[0]
         track = client.tracks([trackID])[0]
 
         track.download(f'{path}/{track.title}.mp3', 'mp3', 192)

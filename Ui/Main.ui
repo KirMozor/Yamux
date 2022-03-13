@@ -24,14 +24,14 @@
       <item>
        <layout class="QGridLayout" name="gridLayout">
         <item row="1" column="2">
-         <widget class="QScrollBar" name="verticalScrollBar">
+         <widget class="QScrollBar" name="vertical_scroll_bar">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QLineEdit" name="writeLinkToPlay">
+         <widget class="QLineEdit" name="write_link_to_play">
           <property name="text">
            <string>Введите ссылку на трек или плейлист</string>
           </property>
@@ -45,7 +45,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QTextBrowser" name="showLog">
+         <widget class="QTextBrowser" name="show_log">
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -65,42 +65,42 @@
     <item>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="2">
-       <widget class="QPushButton" name="pushButtonToDownload">
+       <widget class="QPushButton" name="push_button_to_download">
         <property name="text">
          <string>Скачать</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButtonToPlay">
+       <widget class="QPushButton" name="push_button_to_play">
         <property name="text">
          <string>Играть</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="pushButtonToPause">
+       <widget class="QPushButton" name="push_button_to_pause">
         <property name="text">
          <string>Пауза</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QPushButton" name="pushButtonToStop">
+       <widget class="QPushButton" name="push_button_to_stop">
         <property name="text">
          <string>Стоп</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="pushButtonToPreviousTrack">
+       <widget class="QPushButton" name="push_button_to_previous_track">
         <property name="text">
          <string>Предыдущий трек</string>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QPushButton" name="pushButtonToNextTrack">
+       <widget class="QPushButton" name="push_button_to_next_track">
         <property name="text">
          <string>Следующий трек</string>
         </property>
