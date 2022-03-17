@@ -92,6 +92,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
     def like(self):
         pass
+        #Какой любопытный и внимательный (или внимательная ;)
 
     def play_my_wave(self, text, ok):
         import music
