@@ -19,9 +19,24 @@ def extract_direct_link_to_track(track_id):
             return info.get_direct_link()
             
 def duration_track(url):
-    trackID = url.split('/')[-1]
-    track = client.tracks([trackID])[0]
+    track_id = url.split('/')[-1]
+    track = client.tracks([track_id])[0]
     return track.duration_ms / 1000
+
+def duration_track_id(track_id):
+    track = client.tracks([track_id])[0]
+    return track.duration_ms / 1000
+
+def my_wave():
+    try:
+        wave = client.rotor_station_tracks("user:onyourwave")
+        for i in wave.sequence:
+            artist = i.track.artists[0]
+            return {'responce':'ok', 'id':i.track.id, 'title':i.track.title, 'artist':artist.name}
+    except yandex_music.exceptions.NetworkError:
+        return {'responce':'error', 'text':'NetworkError'}
+    except yandex_music.exceptions.TimedOutError:
+        return {'responce':'error', 'text':'TimedOutError'}
 
 def download(url, path):
     try:
@@ -36,3 +51,6 @@ def download(url, path):
         return {'responce':'error', 'text':'NetworkError'}
     except yandex_music.exceptions.TimedOutError:
         return {'responce':'error', 'text':'TimedOutError'}
+
+if __name__ == "__main__":
+    print(my_wave())

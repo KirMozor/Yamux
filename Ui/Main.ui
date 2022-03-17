@@ -64,31 +64,10 @@
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="2">
-       <widget class="QPushButton" name="push_button_to_download">
-        <property name="text">
-         <string>Скачать</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="push_button_to_play">
         <property name="text">
          <string>Играть</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="push_button_to_pause">
-        <property name="text">
-         <string>Пауза</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="push_button_to_stop">
-        <property name="text">
-         <string>Стоп</string>
         </property>
        </widget>
       </item>
@@ -103,6 +82,34 @@
        <widget class="QPushButton" name="push_button_to_next_track">
         <property name="text">
          <string>Следующий трек</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="push_button_to_download">
+        <property name="text">
+         <string>Скачать</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="push_button_to_stop">
+        <property name="text">
+         <string>Стоп</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="push_button_to_pause">
+        <property name="text">
+         <string>Пауза</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="push_button_to_my_wave">
+        <property name="text">
+         <string>Моя волна</string>
         </property>
        </widget>
       </item>

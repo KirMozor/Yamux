@@ -21,14 +21,14 @@ logger = logging.getLogger('Yamux logger')
 try:
     config = toml.load("config.toml")
     logger.debug("Загрузка config")
-except FileNotFoundError and toml.decoder.TomlDecodeError:
+except:
     with open("config.toml", "w") as file:
         file.write('token_yandex = ""')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
     
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow, QObject):
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__()
         logger.debug("Инициализация интерфейса")
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
 
@@ -74,16 +74,44 @@ class MainWindow(QtWidgets.QMainWindow):
         self.press_button_stop = lambda: self.media_player.stop()
         self.press_button_to_previous_track = lambda: self.media_player.previous()
         self.press_button_to_next_track = lambda: self.media_player.next()
+        self.async_my_wave = lambda: threading.Thread(target=lambda:self.play_my_wave(), daemon=True).start()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
+        self.push_button_to_my_wave.clicked.connect(lambda: threading.Thread(target=lambda:self.play_my_wave(), daemon=True).start())
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
+
+    def play_my_wave(self):
+        import music
+
+        self.media_player = vlc.MediaListPlayer()
+        player = vlc.Instance()
+        self.media_list = player.media_list_new()
+
+        text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
+        if ok:
+            try:
+                for i in range(0, int(text)):
+                    my_wave = music.my_wave()
+                    if my_wave.get('responce') == "ok":
+                        track = music.extract_direct_link_to_track(my_wave.get('id'))
+                        print(f"\n{track}")
+                        media = player.media_new(track)
+                        self.media_list.add_media(media)
+                    else:
+                        self.error_standart("Ошибка", f"Ошибка: {my_wave.get('text')}", exit_or_no=False)
+                self.media_player.set_media_list(self.media_list)
+                new = player.media_player_new()
+                self.media_player.set_media_player(new)
+                self.media_player.play()
+            except ValueError:
+               self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False) 
 
     def enter_link_to_play(self):
         logger.debug("Запустилась функция enterLinkToPlay")
