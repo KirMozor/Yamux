@@ -23,6 +23,19 @@ def duration_track(url):
     track = client.tracks([track_id])[0]
     return track.duration_ms / 1000
 
+def info_track(url):
+    url_parts=url.split('/')
+    track_id = url_parts[-1]
+    album_id = url_parts[-3]
+    track = client.tracks([track_id])[0]
+    album = client.albums([album_id])[0]
+    
+    artists = ""
+    for i in track.artists_name():
+        artists = artists + f" {i}"
+    s = {'name' : f'{track.title}', 'artists' : f'{artists}', 'album' : f'{album.title}', 'genre' : f'{album.genre}', 'duration' : f'{track.duration_ms / 1000}'}
+    return s
+
 def duration_track_id(track_id):
     track = client.tracks([track_id])[0]
     return track.duration_ms / 1000

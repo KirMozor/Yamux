@@ -74,27 +74,32 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.press_button_stop = lambda: self.media_player.stop()
         self.press_button_to_previous_track = lambda: self.media_player.previous()
         self.press_button_to_next_track = lambda: self.media_player.next()
-        self.async_my_wave = lambda: threading.Thread(target=lambda:self.play_my_wave(), daemon=True).start()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
-        self.push_button_to_my_wave.clicked.connect(lambda: threading.Thread(target=lambda:self.play_my_wave(), daemon=True).start())
+        self.push_button_to_my_wave.clicked.connect(self.play_my_wave_start)
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
 
-    def play_my_wave(self):
+    def play_my_wave_start(self):
+        text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
+        threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
+
+    def like(self):
+        pass
+
+    def play_my_wave(self, text, ok):
         import music
 
         self.media_player = vlc.MediaListPlayer()
         player = vlc.Instance()
         self.media_list = player.media_list_new()
 
-        text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
         if ok:
             try:
                 for i in range(0, int(text)):
@@ -131,6 +136,8 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
                     self.media_player = vlc.MediaPlayer(track)
                     self.media_player.play()
+                    info = music.info_track(url)
+                    self.current_track.setText(f" {info.get('name')} - {info.get('artists')}")
                     time.sleep(music.duration_track(url))
                 else:
                     response = requests.get(url)
@@ -143,22 +150,36 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         self.media_player = vlc.MediaListPlayer()
                         player = vlc.Instance()
                         self.media_list = player.media_list_new()
+                        block = 1
+                        list_source = []
                         for title in quotes:
                             s = title.text.strip(), title.get('href')
-                            print(s)
                             url = "https://music.yandex.ru" + s[1]
 
                             url_parts=url.split('/')
                             track_id = url_parts[-1]
                             track = music.extract_direct_link_to_track(track_id)
+                            list_source.append(track)
+                            print(f"\n{track}")
+                            block += 1
+                            if block == 11:
+                                for i in list_source:
+                                    media = player.media_new(i)
+                                    self.media_list.add_media(media)
+                                    print(f"\n{i}")
 
-                            media = player.media_new(track)
-                            self.media_list.add_media(media)
+                                self.media_player.set_media_list(self.media_list)
+                                new = player.media_player_new()
+                                self.media_player.set_media_player(new)
+                                self.media_player.play()
+                                time.sleep(10)
+                                while True:
+                                    if self.media_player.get_state() == vlc.State.Ended:
+                                        block = 1
+                                        break
+                                    else:
+                                        time.sleep(10)
 
-                        self.media_player.set_media_list(self.media_list)
-                        new = player.media_player_new()
-                        self.media_player.set_media_player(new)
-                        self.media_player.play()
             else:
                 logger.debug("Неправильная ссылка")
                 self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
