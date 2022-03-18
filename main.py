@@ -89,7 +89,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
         threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
-        threading.Thread(target=lambda:self.check(), daemon=True).start()
+        #threading.Thread(target=lambda:self.check(), daemon=True).start()
     def like(self):
         pass
         #Какой любопытный и внимательный (или внимательная ;)
