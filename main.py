@@ -89,7 +89,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
         threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
-
+        threading.Thread(target=lambda:self.check(), daemon=True).start()
     def like(self):
         pass
         #Какой любопытный и внимательный (или внимательная ;)
@@ -103,13 +103,31 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
         if ok:
             try:
-                for i in range(0, int(text)):
+                block = 1
+                text = int(text)
+                list_source = []
+                for i in range(0, text):
                     my_wave = music.my_wave()
                     if my_wave.get('responce') == "ok":
                         track = music.extract_direct_link_to_track(my_wave.get('id'))
                         print(f"\n{track}")
-                        media = player.media_new(track)
-                        self.media_list.add_media(media)
+                        list_source.append(track)
+                        block += 1
+                        if block == 11 or text != 10 and block == text + 1:
+                            for i in list_source:
+                                media = player.media_new(i)
+                                self.media_list.add_media(media)
+                            self.media_player.set_media_list(self.media_list)
+                            new = player.media_player_new()
+                            self.media_player.set_media_player(new)
+                            self.media_player.play()
+                            time.sleep(10)
+                            while True:
+                                if self.media_player.get_state() == vlc.State.Ended:
+                                    block = 1
+                                    break
+                                else:
+                                    time.sleep(10)
                     else:
                         self.error_standart("Ошибка", f"Ошибка: {my_wave.get('text')}", exit_or_no=False)
                 self.media_player.set_media_list(self.media_list)
@@ -159,10 +177,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
                             url_parts=url.split('/')
                             track_id = url_parts[-1]
-                            track = music.extract_direct_link_to_track(track_id)
-                            list_source.append(track)
-                            print(f"\n{track}")
-                            block += 1
                             if block == 11:
                                 for i in list_source:
                                     media = player.media_new(i)
@@ -180,6 +194,11 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                                         break
                                     else:
                                         time.sleep(10)
+                            else:
+                                track = music.extract_direct_link_to_track(track_id)
+                                list_source.append(track)
+                                print(f"\n{track}")
+                                block += 1
 
             else:
                 logger.debug("Неправильная ссылка")
