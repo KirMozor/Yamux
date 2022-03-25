@@ -1,7 +1,7 @@
-import sys  
-import vlc  
-import toml  
-import time  
+import sys
+import vlc
+import toml
+import time
 import threading
 import os
 import logging
@@ -16,7 +16,7 @@ import yandex_music
 from bs4 import BeautifulSoup
 import requests
 
-logger = logging.getLogger('Yamux logger') 
+logger = logging.getLogger('Yamux logger')
 
 try:
     config = toml.load("config.toml")
@@ -25,12 +25,13 @@ except:
     with open("config.toml", "w") as file:
         file.write('token_yandex = ""')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
-    
+
 class MainWindow(QtWidgets.QMainWindow, QObject):
     def __init__(self):
         super(MainWindow, self).__init__()
         logger.debug("Инициализация интерфейса")
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
+        self.page = 1
 
         # Проверяем на рабочий токен и то что интернет работает
         logger.debug("Проверяем на рабочий токен и на рабочий интернет")
@@ -61,8 +62,8 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 windows_title="Добавить токен")
         except UnicodeEncodeError:
             logger.error("Токен из непонятных символов UnicodeEncodeError")
-            self.error_config("Токен из непонятных символов", 
-                "YandexMusic говорит что у вас токен из непонятных символов, ведите корректный токен сюда. Инструкция по получению токена находится в README.md",
+            self.error_config("Токен из непонятных символов",
+                              "YandexMusic говорит что у вас токен из непонятных символов, ведите корректный токен сюда. Инструкция по получению токена находится в README.md",
                 windows_title="Добавить токен")
         except NameError:
             logger.error("Только что создался конфиг, перезапустите программу NameError")
@@ -78,6 +79,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
+        self.push_button_to_search.clicked.connect(self.get_text_write_sound)
+        self.push_button_to_next_page.clicked.connect(self.next_page_search)
+        self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
         self.push_button_to_my_wave.clicked.connect(self.play_my_wave_start)
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
@@ -85,6 +89,45 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
+
+    def get_text_write_sound(self):
+        self.load_sound(self.write_search.text(), self.page)
+
+    def parsing_sound(self, text):
+        import music
+        result = music.send_search_request_and_print_result(text, "albums")
+        self.total_result.setText(f"Я нащёл {result.total} альбомов")
+        return result
+
+    def load_sound(self, text, page):
+        result = self.parsing_sound(text)
+        list_result = []
+        for i in result.results:
+            list_result.append(i.id)
+            list_result.append(i.title)
+            list_result.append(i.artists[0].name)
+        element = self.page * 4
+        if element > 4:
+            for i in range(0, 12):
+                list_result.pop(0)
+            self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
+            self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
+            self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
+            self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+        else:
+            self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
+            self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
+            self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
+            self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+
+    def next_page_search(self):
+        self.page += 1
+        self.load_sound(self.write_search.text(), self.page)
+
+    def previous_page_search(self):
+        if self.page > 1:
+            self.page -= 1
+            self.load_sound(self.write_search.text(), self.page)
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
@@ -135,7 +178,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 self.media_player.set_media_player(new)
                 self.media_player.play()
             except ValueError:
-               self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False) 
+               self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
 
     def enter_link_to_play(self):
         logger.debug("Запустилась функция enterLinkToPlay")
@@ -264,7 +307,8 @@ def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     mainWindow = MainWindow()  # Создаём объект класса MainWindow
     mainWindow.show()  # Показываем окно
-    sys.exit( app.exec_() )  # и запускаем приложение
+    sys.exit(app.exec_())  # и запускаем приложение
 
-if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
+if __name__ == '__main__': # Если мы запускаем файл напрямую, а не импортируем
+    print("Запуск Yamux")
     main()  # то запускаем функцию main()

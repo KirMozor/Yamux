@@ -5,6 +5,17 @@ config = toml.load("config.toml")
 
 client = Client(config.get('token_yandex')).init()
 
+type_to_name = {
+    'track': 'трек',
+    'artist': 'исполнитель',
+    'album': 'альбом',
+    'playlist': 'плейлист',
+    'video': 'видео',
+    'user': 'пользователь',
+    'podcast': 'подкаст',
+    'podcast_episode': 'эпизод подкаста',
+}
+
 def extract_direct_link_to_track(track_id):
     track = client.tracks(track_id)[0]
     track_download_info = track.get_download_info()
@@ -17,7 +28,7 @@ def extract_direct_link_to_track(track_id):
     for info in track_download_info:
         if is_track_suitable(info):
             return info.get_direct_link()
-            
+
 def duration_track(url):
     track_id = url.split('/')[-1]
     track = client.tracks([track_id])[0]
@@ -29,7 +40,7 @@ def info_track(url):
     album_id = url_parts[-3]
     track = client.tracks([track_id])[0]
     album = client.albums([album_id])[0]
-    
+
     artists = ""
     for i in track.artists_name():
         artists = artists + f" {i}"
@@ -51,6 +62,20 @@ def my_wave():
     except yandex_music.exceptions.TimedOutError:
         return {'responce':'error', 'text':'TimedOutError'}
 
+def send_search_request_and_print_result(query, what_to_search):
+    search_result = client.search(query)
+
+    if search_result.best and what_to_search == "best":
+        return search_result.best
+    if search_result.albums and what_to_search == "albums":
+        return search_result.albums
+    if search_result.tracks and what_to_search == "tracks":
+        return search_result.tracks
+    if search_result.playlists and what_to_search == "playlists":
+       return search_result.playlists
+    if search_result.videos and what_to_search == "videos":
+        return search_result.videos
+
 def download(url, path):
     try:
         track_id = url.split('/')[-1]
@@ -66,4 +91,11 @@ def download(url, path):
         return {'responce':'error', 'text':'TimedOutError'}
 
 if __name__ == "__main__":
-    print(my_wave())
+    result = send_search_request_and_print_result("Skrillex", "tracks")
+    for i in range(0, len(result)):
+        try:
+            print(f"id: {result[0]}, title: {result[1]}")
+            result.pop(0)
+            result.pop(0)
+        except IndexError:
+            pass
