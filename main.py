@@ -32,6 +32,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         logger.debug("Инициализация интерфейса")
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
         self.page = 1
+        self.list_result = []
 
         # Проверяем на рабочий токен и то что интернет работает
         logger.debug("Проверяем на рабочий токен и на рабочий интернет")
@@ -76,6 +77,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.press_button_to_previous_track = lambda: self.media_player.previous()
         self.press_button_to_next_track = lambda: self.media_player.next()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
+        self.select_play_1_play = lambda: threading.Thread(target=lambda:self.select_play_1(), daemon=True).start()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
@@ -89,6 +91,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
+        self.push_button_to_select_play1.clicked.connect(self.select_play_1_play)
+        self.push_button_to_select_play2.clicked.connect(self.select_play_2)
+        self.push_button_to_select_play3.clicked.connect(self.select_play_3)
+        self.push_button_to_select_play4.clicked.connect(self.select_play_4)
 
     def get_text_write_sound(self):
         self.load_sound(self.write_search.text(), self.page)
@@ -103,25 +109,25 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def load_sound(self, text, page):
         if len(text.split()) != 0:
             result = self.parsing_sound(text)
-            if result != None:
-                list_result = []
+            if result is not None:
+                self.list_result = []
                 for i in result.results:
-                    list_result.append(i.id)
-                    list_result.append(i.title)
-                    list_result.append(i.artists[0].name)
+                    self.list_result.append(i.id)
+                    self.list_result.append(i.title)
+                    self.list_result.append(i.artists[0].name)
                 element = self.page * 4
                 if element > 4:
                     for i in range(0, 12):
-                        list_result.pop(0) 
-                    self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
-                    self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
-                    self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
-                    self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+                        self.list_result.pop(0)
+                    self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                    self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                    self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                    self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
                 else:
-                    self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
-                    self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
-                    self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
-                    self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+                    self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                    self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                    self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                    self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
             else:
                 self.result_search0.setText("Ничего не найдено")
         else:
@@ -136,6 +142,60 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         if self.page > 1:
             self.page -= 1
             self.load_sound(self.write_search.text(), self.page)
+#Я знаю что это плохой код. Но я не знаю как повесить на одну функцию 4 обработчика клавиш. Вообщем, пишите в тг если вы эксперт в PyQt и вы знаете как можно сделать лучше, или сделайте пулл реквест :)
+    def select_play_1(self):
+        import music
+        if self.list_result != []:
+            list_source = []
+            album = music.client.albums_with_tracks(self.list_result[0])
+            block = 1
+            for i in album.volumes[0]:
+                track = music.extract_direct_link_to_track(i.id)
+                print(f"\n{track}")
+                list_source.append(track)
+                block += 1
+                if block == 11:
+                    self.play_media_list(list_source)
+
+    def select_play_2(self):
+        import music
+        if self.list_result != []:
+            list_source = []
+            album = music.client.albums_with_tracks(self.list_result[3])
+            block = 1
+            for i in album.volumes[0]:
+                track = music.extract_direct_link_to_track(i.id)
+                print(f"\n{track}")
+                list_source.append(track)
+                block += 1
+                if block == 11:
+                    self.play_media_list(list_source)
+    def select_play_3(self):
+        import music
+        if self.list_result != []:
+            list_source = []
+            album = music.client.albums_with_tracks(self.list_result[6])
+            block = 1
+            for i in album.volumes[0]:
+                track = music.extract_direct_link_to_track(i.id)
+                print(f"\n{track}")
+                list_source.append(track)
+                block += 1
+                if block == 11:
+                    self.play_media_list(list_source)
+    def select_play_4(self):
+        import music
+        if self.list_result != []:
+            list_source = []
+            album = music.client.albums_with_tracks(self.list_result[9])
+            block = 1
+            for i in album.volumes[0]:
+                track = music.extract_direct_link_to_track(i.id)
+                print(f"\n{track}")
+                list_source.append(track)
+                block += 1
+                if block == 11:
+                    self.play_media_list(list_source)
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
@@ -147,10 +207,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
     def play_my_wave(self, text, ok):
         import music
-
-        self.media_player = vlc.MediaListPlayer()
-        player = vlc.Instance()
-        self.media_list = player.media_list_new()
 
         if ok:
             try:
@@ -165,28 +221,35 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         list_source.append(track)
                         block += 1
                         if block == 11 or text != 10 and block == text + 1:
-                            for i in list_source:
-                                media = player.media_new(i)
-                                self.media_list.add_media(media)
-                            self.media_player.set_media_list(self.media_list)
-                            new = player.media_player_new()
-                            self.media_player.set_media_player(new)
-                            self.media_player.play()
-                            time.sleep(10)
-                            while True:
-                                if self.media_player.get_state() == vlc.State.Ended:
-                                    block = 1
-                                    break
-                                else:
-                                    time.sleep(10)
+                            self.play_media_list(list_source)
+                            block = 1
                     else:
                         self.error_standart("Ошибка", f"Ошибка: {my_wave.get('text')}", exit_or_no=False)
-                self.media_player.set_media_list(self.media_list)
-                new = player.media_player_new()
-                self.media_player.set_media_player(new)
-                self.media_player.play()
             except ValueError:
                self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
+
+    def play_media_list(self, list_source):
+        self.media_player = vlc.MediaListPlayer()
+        player = vlc.Instance()
+        self.media_list = player.media_list_new()
+        for i in list_source:
+            media = player.media_new(i)
+            self.media_list.add_media(media)
+        self.media_player.set_media_list(self.media_list)
+        new = player.media_player_new()
+        self.media_player.set_media_player(new)
+        self.media_player.play()
+        time.sleep(10)
+        while True:
+            if self.media_player.get_state() == vlc.State.Ended:
+                break
+            else:
+                time.sleep(10)
+
+    def play_one_track(self, track):
+        self.media_player = vlc.MediaPlayer(track)
+        self.media_player.play()
+        time.sleep(music.duration_track(url))
 
     def enter_link_to_play(self):
         logger.debug("Запустилась функция enterLinkToPlay")
@@ -201,14 +264,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     logger.debug("Это трек")
                     url_parts=url.split('/')
                     track_id = url_parts[-1]
-                    logger.debug(f"track")
+                    logger.debug(f"{track}")
                     track = music.extract_direct_link_to_track(track_id)
-
-                    self.media_player = vlc.MediaPlayer(track)
-                    self.media_player.play()
-                    info = music.info_track(url)
-                    self.current_track.setText(f" {info.get('name')} - {info.get('artists')}")
-                    time.sleep(music.duration_track(url))
+                    self.play_one_track(track)
                 else:
                     response = requests.get(url)
                     soup = BeautifulSoup(response.text, 'lxml')
@@ -217,9 +275,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if not quotes:
                         self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
                     else:
-                        self.media_player = vlc.MediaListPlayer()
-                        player = vlc.Instance()
-                        self.media_list = player.media_list_new()
                         block = 1
                         list_source = []
                         for title in quotes:
@@ -229,28 +284,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                             url_parts=url.split('/')
                             track_id = url_parts[-1]
                             if block == 11:
-                                for i in list_source:
-                                    media = player.media_new(i)
-                                    self.media_list.add_media(media)
-                                    print(f"\n{i}")
-
-                                self.media_player.set_media_list(self.media_list)
-                                new = player.media_player_new()
-                                self.media_player.set_media_player(new)
-                                self.media_player.play()
-                                time.sleep(10)
-                                while True:
-                                    if self.media_player.get_state() == vlc.State.Ended:
-                                        block = 1
-                                        break
-                                    else:
-                                        time.sleep(10)
+                                self.play_media_list(list_source)
                             else:
                                 track = music.extract_direct_link_to_track(track_id)
                                 list_source.append(track)
                                 print(f"\n{track}")
                                 block += 1
-
             else:
                 logger.debug("Неправильная ссылка")
                 self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
