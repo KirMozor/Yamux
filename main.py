@@ -96,33 +96,41 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def parsing_sound(self, text):
         import music
         result = music.send_search_request_and_print_result(text, "albums")
-        self.total_result.setText(f"Я нащёл {result.total} альбомов")
+        if result != None:
+            self.total_result.setText(f"Я нащёл {result.total} альбомов")
         return result
 
     def load_sound(self, text, page):
-        result = self.parsing_sound(text)
-        list_result = []
-        for i in result.results:
-            list_result.append(i.id)
-            list_result.append(i.title)
-            list_result.append(i.artists[0].name)
-        element = self.page * 4
-        if element > 4:
-            for i in range(0, 12):
-                list_result.pop(0)
-            self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
-            self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
-            self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
-            self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+        if len(text.split()) != 0:
+            result = self.parsing_sound(text)
+            if result != None:
+                list_result = []
+                for i in result.results:
+                    list_result.append(i.id)
+                    list_result.append(i.title)
+                    list_result.append(i.artists[0].name)
+                element = self.page * 4
+                if element > 4:
+                    for i in range(0, 12):
+                        list_result.pop(0) 
+                    self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
+                    self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
+                    self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
+                    self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+                else:
+                    self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
+                    self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
+                    self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
+                    self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+            else:
+                self.result_search0.setText("Ничего не найдено")
         else:
-            self.result_search0.setText(f"{list_result[1]} - {list_result[2]}")
-            self.result_search1.setText(f"{list_result[4]} - {list_result[5]}")
-            self.result_search2.setText(f"{list_result[7]} - {list_result[8]}")
-            self.result_search3.setText(f"{list_result[10]} - {list_result[11]}")
+            self.result_search0.setText("Вводи не пустую строку")
 
     def next_page_search(self):
-        self.page += 1
-        self.load_sound(self.write_search.text(), self.page)
+        if self.page != 2:
+            self.page += 1
+            self.load_sound(self.write_search.text(), self.page)
 
     def previous_page_search(self):
         if self.page > 1:
