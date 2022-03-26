@@ -1,35 +1,32 @@
 # Yamux
-Description: This is a client for Yandex Music on Unix
+Описание: Это клиент для Яндекс Музыки в Unix
 
-### Install dependencies
+### Установка зависимостей
 
-My program requires a token from YandexMusic, to get it, run the authorization program using the command `python3 authorize.py`
-. Dalle follow the instructions below
+Моя программа требует токен от Яндекс Музыки, для его получения запустите следующию команду в корне программы: `python3 authorize.py`. Ещё надо установить зависимости при помощи этой команды:
 
 `pip install -U -r reqs.txt`
 
-Install VLC, how to install, look on the Internet for a manual specifically for your distribution. In Arch Linux, this is done like this:
+Надо установить VLC, как установить, ищите конкретно для своего дистрибутива. В ArchLinux устанавливается так:
 
 `sudo pacman -S vlc`
 
-Sometimes you need to install the package python-pyqt5 or python3-pyqt5
-In ArchLinux I do it like this:
+Иногда для работы программы надо установить пакеты `python-pyqt5` или `python3-pyqt5`. В ArchLinux это делается так
 
 `sudo pacman -S python-pyqt5`
 
-In systems, which using apt, you can install it with this command:
+Если ваша система использует apt, то устанавливайие при помощи этой команды
 
 `sudo apt install python3-pyqt5`
 
 
-### Launch
+### Запуск
 
-You need to run the main.py file at the root of the program
+Для запуска надо запустить main.py в корне программы, для этого введите эту команду
 
 `python3 main.py`
 
-### By the way
+### Кстатиии
 
-I have my own Telegram blog, where I talk about the progress and progress of development
-There you can contact me as soon as possible.
-Link: https://t.me/kirmozor
+У меня есть телеграм блог куда я пишу прогресс разработки. Ссылочка внизу, подписывайся!
+https://t.me/kirmozor
