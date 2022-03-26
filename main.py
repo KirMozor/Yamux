@@ -78,6 +78,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.press_button_to_next_track = lambda: self.media_player.next()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
         self.select_play_1_play = lambda: threading.Thread(target=lambda:self.select_play_1(), daemon=True).start()
+        self.select_play_2_play = lambda: threading.Thread(target=lambda:self.select_play_2(), daemon=True).start()
+        self.select_play_3_play = lambda: threading.Thread(target=lambda:self.select_play_3(), daemon=True).start()
+        self.select_play_4_play = lambda: threading.Thread(target=lambda:self.select_play_4(), daemon=True).start()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
@@ -154,8 +157,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 11:
+                if block == 10:
                     self.play_media_list(list_source)
+                    list_source = []
+                    block = 0
 
     def select_play_2(self):
         import music
@@ -168,8 +173,11 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 11:
+                if block == 10:
                     self.play_media_list(list_source)
+                    list_source = []
+                    block = 0
+
     def select_play_3(self):
         import music
         if self.list_result != []:
@@ -181,8 +189,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 11:
+                if block == 10:
                     self.play_media_list(list_source)
+                    list_source = []
+                    block = 0
     def select_play_4(self):
         import music
         if self.list_result != []:
@@ -194,8 +204,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 11:
+                if block == 10:
                     self.play_media_list(list_source)
+                    list_source = []
+                    block = 0
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
@@ -239,12 +251,13 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         new = player.media_player_new()
         self.media_player.set_media_player(new)
         self.media_player.play()
-        time.sleep(10)
+        print(list_source)
         while True:
             if self.media_player.get_state() == vlc.State.Ended:
+                self.media_player.stop()
                 break
             else:
-                time.sleep(10)
+                time.sleep(1)
 
     def play_one_track(self, track):
         self.media_player = vlc.MediaPlayer(track)
