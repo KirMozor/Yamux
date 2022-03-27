@@ -152,15 +152,15 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[0])
             block = 1
+            print(len(album.volumes[0]))
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
-                block += 1
-                if block == 10:
-                    self.play_media_list(list_source)
+                if block == 10 or len(album.volumes[0]) + 1 == block:
+                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
                     list_source = []
-                    block = 0
+                    block = 1
 
     def select_play_2(self):
         import music
@@ -173,10 +173,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 10:
-                    self.play_media_list(list_source)
+                if block == 10 or len(album.volumes[0]) + 1 == block:
+                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
                     list_source = []
-                    block = 0
+                    block = 1
 
     def select_play_3(self):
         import music
@@ -189,10 +189,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 10:
-                    self.play_media_list(list_source)
+                if block == 10 or len(album.volumes[0] + 1 == block):
+                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
                     list_source = []
-                    block = 0
+                    block = 1
     def select_play_4(self):
         import music
         if self.list_result != []:
@@ -204,10 +204,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 10:
-                    self.play_media_list(list_source)
+                print(block)
+                print(len(album.volumes[0]))
+                if block == 10 or len(album.volumes[0]) + 1 == block:
+                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
                     list_source = []
-                    block = 0
+                    block = 1
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
