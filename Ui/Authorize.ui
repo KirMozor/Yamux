@@ -68,7 +68,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="set_login"/>
+     <widget class="QLineEdit" name="set_login">
+      <property name="echoMode">
+       <enum>QLineEdit::Normal</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="pass_text">
@@ -78,7 +82,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="set_password"/>
+     <widget class="QLineEdit" name="set_password">
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QPushButton" name="reg_button">
