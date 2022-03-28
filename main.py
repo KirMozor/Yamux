@@ -28,54 +28,19 @@ except:
 
 class MainWindow(QtWidgets.QMainWindow, QObject):
     def __init__(self):
+        # Проверяем на рабочий токен и то что интернет работает
+        logger.debug("Проверяем на рабочий токен и на рабочий интернет")
         super(MainWindow, self).__init__()
         logger.debug("Инициализация интерфейса")
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
         self.page = 1
+        self.current_track = -1
         self.list_result = []
-
-        # Проверяем на рабочий токен и то что интернет работает
-        logger.debug("Проверяем на рабочий токен и на рабочий интернет")
-
-        try:
-            if not config.get('token_yandex'):
-                text, ok = QInputDialog.getText(self, 'Добавить токен', 'Я не обнаружил токена YandexMusic в программе. Если у вас нет токена то инструкция по получению токена находится в README.md')
-                logger.warning("Не найден токен в конфиге, жду ввод от пользователя")
-                if ok:
-                    with open("config.toml", "w") as file:
-                        file.write(f'token_yandex = "{text}"')
-                        logger.debug(f"Записан токен в конфиг config.toml. Токен: {text}")
-                else:
-                    logger.debug("Нажана кнопка exit, выход")
-                    sys.exit()
-            client = Client(config.get('token_yandex')).init()
-            logger.debug("Всё ок, токен загружен")
-
-        except yandex_music.exceptions.NetworkError:
-            logger.error("Проблемы с интернетом yandex_music.exceptions.NetworkError")
-            self.error_standart("Проблемы с интернетом",
-                "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
-                exit_or_no=True)
-        except yandex_music.exceptions.UnauthorizedError:
-            logger.error("Неправильный токен yandex_music.exceptions.UnauthorizedError")
-            self.error_config("Неправильный токен",
-                "Yandex Music Api говорит что у вас нерабочий токен. Инструкция по получению токена находится в README.md",
-                windows_title="Добавить токен")
-        except UnicodeEncodeError:
-            logger.error("Токен из непонятных символов UnicodeEncodeError")
-            self.error_config("Токен из непонятных символов",
-                              "YandexMusic говорит что у вас токен из непонятных символов, ведите корректный токен сюда. Инструкция по получению токена находится в README.md",
-                windows_title="Добавить токен")
-        except NameError:
-            logger.error("Только что создался конфиг, перезапустите программу NameError")
-            self.error_config("Только что создался конфиг, перезапустите программу",
-                "У вас нету файла с настройками программы, я его создам, но мне нужно знать токен от YandexMusic. Инструкция по получению токена находится в README.md",
-                windows_title="Добавить токен")
 
         self.press_button_pause = lambda: self.media_player.pause()
         self.press_button_stop = lambda: self.media_player.stop()
-        self.press_button_to_previous_track = lambda: self.media_player.previous()
-        self.press_button_to_next_track = lambda: self.media_player.next()
+        self.press_button_to_previous_track = lambda: self.previous_track()
+        self.press_button_to_next_track = lambda: self.next_track()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
         self.select_play_1_play = lambda: threading.Thread(target=lambda:self.select_play_1(), daemon=True).start()
         self.select_play_2_play = lambda: threading.Thread(target=lambda:self.select_play_2(), daemon=True).start()
@@ -95,12 +60,24 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
         self.push_button_to_select_play1.clicked.connect(self.select_play_1_play)
-        self.push_button_to_select_play2.clicked.connect(self.select_play_2)
-        self.push_button_to_select_play3.clicked.connect(self.select_play_3)
-        self.push_button_to_select_play4.clicked.connect(self.select_play_4)
+        self.push_button_to_select_play2.clicked.connect(self.select_play_2_play)
+        self.push_button_to_select_play3.clicked.connect(self.select_play_3_play)
+        self.push_button_to_select_play4.clicked.connect(self.select_play_4_play)
 
     def get_text_write_sound(self):
         self.load_sound(self.write_search.text(), self.page)
+
+    def next_track(self):
+        if self.current_track is None:
+            pass
+        else:
+            self.current_track += 1
+
+    def previous_track(self):
+        if self.current_track is None:
+            pass
+        else:
+            self.current_track -= 1
 
     def parsing_sound(self, text):
         import music
@@ -152,7 +129,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[0])
             block = 1
-            print(len(album.volumes[0]))
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
@@ -198,18 +174,13 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         if self.list_result != []:
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[9])
-            block = 1
+            block = 0
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
-                block += 1
-                print(block)
-                print(len(album.volumes[0]))
-                if block == 10 or len(album.volumes[0]) + 1 == block:
-                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
-                    list_source = []
-                    block = 1
+                self.play_media_list(list_source)
+                list_source = []
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
@@ -243,23 +214,24 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
 
     def play_media_list(self, list_source):
-        self.media_player = vlc.MediaListPlayer()
-        player = vlc.Instance()
-        self.media_list = player.media_list_new()
-        for i in list_source:
-            media = player.media_new(i)
-            self.media_list.add_media(media)
-        self.media_player.set_media_list(self.media_list)
-        new = player.media_player_new()
-        self.media_player.set_media_player(new)
-        self.media_player.play()
-        print(list_source)
-        while True:
-            if self.media_player.get_state() == vlc.State.Ended:
-                self.media_player.stop()
-                break
-            else:
+        if self.current_track == -1:
+            self.media_player = vlc.MediaPlayer(list_source[0])
+            self.media_player.play()
+            self.current_track += 1
+            current_track = self.current_track
+            time.sleep(10)
+            while True:
                 time.sleep(1)
+                print(self.media_player.get_state())
+                if self.media_player.get_state() == vlc.State.Ended:
+                    break
+                if current_track < self.current_track:
+                    self.media_player.play(list_source[self.current_track])
+                    current_track = self.current_track
+                    break
+                if current_track > self.current_track:
+                    self.media_player.play(list_source[self.current_track])
+                    current_track = self.current_track
 
     def play_one_track(self, track):
         self.media_player = vlc.MediaPlayer(track)
@@ -365,12 +337,118 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 self.media_player.stop()
                 sys.exit()
 
+class Check(QtWidgets.QMainWindow, QObject):
+    def __init__(self):
+        # Проверяем на рабочий токен и то что интернет работает
+        logger.debug("Проверяем на рабочий токен и на рабочий интернет")
+        super(Check, self).__init__()
+        logger.debug("Инициализация интерфейса")
+        uic.loadUi('Ui/Authorize.ui', self)  # Это нужно для инициализации нашего дизайна
+        config = toml.load("config.toml")
+
+        try:
+            if not config.get('token_yandex'):
+                self.show()
+                self.reg_button.clicked.connect(self.reg_button_click)
+                self.msg_btn = lambda i: i.text()
+            else:
+                client = Client(config.get('token_yandex')).init()
+                logger.debug("Всё ок, токен загружен")
+                mainWindow = MainWindow()
+                mainWindow.show()
+
+        except yandex_music.exceptions.NetworkError:
+            logger.error("Проблемы с интернетом yandex_music.exceptions.NetworkError")
+            self.error_standart("Проблемы с интернетом",
+                "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
+                exit_or_no=True)
+            self.show()
+            self.reg_button.clicked.connect(self.reg_button_click)
+            self.msg_btn = lambda i: i.text()
+
+        except yandex_music.exceptions.UnauthorizedError:
+            logger.error("Неправильный токен yandex_music.exceptions.UnauthorizedError")
+            self.show()
+            self.error_standart("Неправильный токен", "YandexMusic говорит у вас неправильный токен, перезарегистрируйтесь", exit_or_no=False)
+            self.reg_button.clicked.connect(self.reg_button_click)
+            self.msg_btn = lambda i: i.text()
+        except UnicodeEncodeError:
+            self.show()
+            logger.error("Токен из непонятных символов UnicodeEncodeError")
+            self.error_standart("Токен из непонятных символов",
+                              "YandexMusic говорит что у вас токен из непонятных символов, перезарегистрируйтесь", exit_or_no=False)
+            self.reg_button.clicked.connect(self.reg_button_click)
+            self.msg_btn = lambda i: i.text()
+        except NameError:
+            self.show()
+            logger.error("Только что создался конфиг, перезапустите программу NameError")
+            self.error_standart("Что-то не то с конфигом",
+                "У вас что-то не то было с конфигом, перезарегистрируйтесь", exit_or_no=False)
+            self.reg_button.clicked.connect(self.reg_button_click)
+            self.msg_btn = lambda i: i.text()
+
+    def error_standart(self, message_log, description, windows_title="Ошибка", exit_or_no=True, not_button_cancel=False):
+        logger.error(message_log)
+        error = QMessageBox()
+        error.setWindowTitle(windows_title)
+        error.setIcon(QMessageBox.Warning)
+        error.setText(description)
+        error.setIcon(QMessageBox.Warning)
+        if not not_button_cancel:
+            error.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            error.buttonClicked.connect(self.msg_btn)
+            retval = error.exec_()
+            if exit_or_no:
+                sys.exit()
+        else:
+            error.setStandardButtons(QMessageBox.Ok)
+            if exit_or_no:
+                sys.exit()
+
+    def error_config(self, message_log, description, windows_title="Ошибка", exit_or_no=True):
+        logger.error(message_log)
+        text, ok = QInputDialog.getText(self, windows_title, description)
+        if ok:
+            with open("config.toml", "w") as file:
+                file.write(f'token_yandex = "{text}"')
+        else:
+            if exit_or_no:
+                sys.exit()
+
+    def reg_button_click(self):
+        login = self.set_login.text()
+        password = self.set_password.text()
+
+        if len(login.split()) != 0 and len(password.split()) != 0:
+            link_post = "https://oauth.yandex.com/token"
+            user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
+            header = {
+                "user-agent": user_agent
+            }
+
+            try:
+                request_post = f"grant_type=password&client_id=23cabbbdc6cd418abb4b39c32c41195d&client_secret=53bc75238f0c4d08a118e51fe9203300&username={login}&password={password}"
+                request_auth = requests.post(link_post, data=request_post, headers=header)
+
+                if request_auth.status_code == 400:
+                    self.error_standart("Неправильные данные", "Yandex сказал мне что вы ввели неправильные данные, введите правильные", exit_or_no=False)
+                if request_auth.status_code == 200:
+                    json_data = request_auth.json()
+                    text = json_data.get('access_token')
+                    with open("config.toml", "w") as file:
+                        file.write(f'token_yandex = "{text}"')
+                    self.hide()
+                    mainWindow = MainWindow()
+                    mainWindow.show()
+            except requests.exceptions.ConnectionError:
+                self.error_standart("Проблемы с интернетом", "Проверьте интернет подключенние", exit_or_no=False)
+        else:
+            self.error_standart("Ввели пустую строку", "Вы ввели пустую строку :)", exit_or_no=False)
+
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
-    mainWindow = MainWindow()  # Создаём объект класса MainWindow
-    mainWindow.show()  # Показываем окно
+    check = Check()  # Создаём объект класса MainWindow
     sys.exit(app.exec_())  # и запускаем приложение
-
 if __name__ == '__main__': # Если мы запускаем файл напрямую, а не импортируем
     print("Запуск Yamux")
     main()  # то запускаем функцию main()

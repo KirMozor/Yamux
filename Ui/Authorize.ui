@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>339</height>
+    <width>430</width>
+    <height>315</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,6 +19,34 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Для корректной работы программы нужно знать токен</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>от вашего профиля в Яндекс Музыке, чтобы его получить нужно знать</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>ваш логин и пароль.</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QLabel" name="description">
       <property name="layoutDirection">
@@ -33,36 +61,29 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="loginText">
+     <widget class="QLabel" name="login_text">
       <property name="text">
        <string>Логин</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="setLogin"/>
+     <widget class="QLineEdit" name="set_login"/>
     </item>
     <item>
-     <widget class="QLabel" name="passText">
+     <widget class="QLabel" name="pass_text">
       <property name="text">
        <string>Пароль</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="setPassword"/>
+     <widget class="QLineEdit" name="set_password"/>
     </item>
     <item>
-     <widget class="QPushButton" name="regButton">
+     <widget class="QPushButton" name="reg_button">
       <property name="text">
        <string>Регистрация</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="setToken">
-      <property name="text">
-       <string>У меня уже есть токен для программы</string>
       </property>
      </widget>
     </item>
