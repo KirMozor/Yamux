@@ -35,12 +35,14 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         uic.loadUi('Ui/Main.ui', self)  # Это нужно для инициализации нашего дизайна
         self.page = 1
         self.current_track = -1
+        self.current_track_changed = self.current_track
         self.list_result = []
 
         self.press_button_pause = lambda: self.media_player.pause()
-        self.press_button_stop = lambda: self.media_player.stop()
+        self.press_button_stop = lambda: self.stop_media_player()
         self.press_button_to_previous_track = lambda: self.previous_track()
         self.press_button_to_next_track = lambda: self.next_track()
+        self.press_button_to_like = lambda: threading.Thread(target = lambda:self.like(), daemon = True).start()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
         self.select_play_1_play = lambda: threading.Thread(target=lambda:self.select_play_1(), daemon=True).start()
         self.select_play_2_play = lambda: threading.Thread(target=lambda:self.select_play_2(), daemon=True).start()
@@ -54,6 +56,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
         self.push_button_to_my_wave.clicked.connect(self.play_my_wave_start)
+        self.push_button_to_like.clicked.connect(self.press_button_to_like)
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
@@ -67,17 +70,17 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def get_text_write_sound(self):
         self.load_sound(self.write_search.text(), self.page)
 
+    def stop_media_player(self):
+        self.media_player.stop()
+        self.current_track -= 1
+        self.current_track_changed = self.current_track
+
     def next_track(self):
-        if self.current_track is None:
-            pass
-        else:
-            self.current_track += 1
+        self.current_track_changed += 1
 
     def previous_track(self):
-        if self.current_track is None:
-            pass
-        else:
-            self.current_track -= 1
+        if self.current_track_changed > 0:
+            self.current_track_changed -= 1
 
     def parsing_sound(self, text):
         import music
@@ -94,7 +97,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 for i in result.results:
                     self.list_result.append(i.id)
                     self.list_result.append(i.title)
-                    self.list_result.append(i.artists[0].name)
+                    try:
+                        self.list_result.append(i.artists[0].name)
+                    except IndexError:
+                        self.list_result.append("")
                 element = self.page * 4
                 if element > 4:
                     for i in range(0, 12):
@@ -127,68 +133,85 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         import music
         if self.list_result != []:
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[0])
-            block = 1
+            album = music.client.albums_with_tracks(self.list_result[9])
+            block = 0
+            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
-                if block == 10 or len(album.volumes[0]) + 1 == block:
-                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
-                    list_source = []
-                    block = 1
-
+                block += 1
+                print(block)
+                print(album.volumes)
+                print(len(album.volumes))
+                print(len(album.volumes[0]))
+                if block >= 10 or len(album.volumes[0]) == block:
+                    block = 0
+                    self.play_media_list(list_source)
     def select_play_2(self):
         import music
         if self.list_result != []:
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[3])
-            block = 1
+            album = music.client.albums_with_tracks(self.list_result[9])
+            block = 0
+            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 10 or len(album.volumes[0]) + 1 == block:
-                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
-                    list_source = []
-                    block = 1
-
+                print(block)
+                print(album.volumes)
+                print(len(album.volumes))
+                print(len(album.volumes[0]))
+                if block >= 10 or len(album.volumes[0]) == block:
+                    block = 0
+                    self.play_media_list(list_source)
     def select_play_3(self):
         import music
         if self.list_result != []:
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[6])
-            block = 1
+            album = music.client.albums_with_tracks(self.list_result[9])
+            block = 0
+            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                if block == 10 or len(album.volumes[0] + 1 == block):
-                    threading.Thread(target=lambda:self.play_media_list(list_source), daemon=True).start()
-                    list_source = []
-                    block = 1
+                print(album.volumes)
+                print(len(album.volumes))
+                print(len(album.volumes[0]))
+                if block >= 10 or len(album.volumes[0]) == block:
+                    block = 0
+                    self.play_media_list(list_source)
     def select_play_4(self):
         import music
         if self.list_result != []:
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[9])
             block = 0
+            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
-                self.play_media_list(list_source)
-                list_source = []
+                block += 1
+                print(album.volumes)
+                print(len(album.volumes))
+                print(len(album.volumes[0]))
+                if block >= 10 or len(album.volumes[0]) == block:
+                    block = 0
+                    self.play_media_list(list_source)
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
         threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
         #threading.Thread(target=lambda:self.check(), daemon=True).start()
     def like(self):
-        pass
-        #Какой любопытный и внимательный (или внимательная ;)
+        data = self.json_album_data
+        print(data)
+        print(data[self.current_track].id)
 
     def play_my_wave(self, text, ok):
         import music
@@ -214,26 +237,31 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
 
     def play_media_list(self, list_source):
-        if self.current_track == -1:
-            self.media_player = vlc.MediaPlayer(list_source[0])
-            self.media_player.play()
-            self.current_track += 1
-            current_track = self.current_track
-            time.sleep(10)
-            while True:
-                time.sleep(1)
-                print(self.media_player.get_state())
-                if self.media_player.get_state() == vlc.State.Ended:
-                    break
-                if current_track < self.current_track:
-                    self.media_player.play(list_source[self.current_track])
-                    current_track = self.current_track
-                    break
-                if current_track > self.current_track:
-                    self.media_player.play(list_source[self.current_track])
-                    current_track = self.current_track
+        while True:
+            if self.current_track != len(list_source):
+                self.current_track += 1
+                self.current_track_changed += 1
+                self.media_player = vlc.MediaPlayer(list_source[self.current_track])
+                self.media_player.play()
+                while True:
+                    if self.current_track_changed > self.current_track:
+                        self.media_player.stop()
+                        self.current_track_changed = self.current_track
+                        break
+                    if self.current_track_changed < self.current_track:
+                        self.media_player.stop()
+                        self.current_track -= 2
+                        self.current_track_changed = self.current_track
+                        break
+                    else:
+                        time.sleep(0.2)
+            else:
+                self.current_track = -1
+                self.current_track_changed = self.current_track
+                break
 
     def play_one_track(self, track):
+        import music
         self.media_player = vlc.MediaPlayer(track)
         self.media_player.play()
         time.sleep(music.duration_track(url))
@@ -251,7 +279,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     logger.debug("Это трек")
                     url_parts=url.split('/')
                     track_id = url_parts[-1]
-                    logger.debug(f"{track}")
                     track = music.extract_direct_link_to_track(track_id)
                     self.play_one_track(track)
                 else:

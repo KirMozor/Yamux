@@ -91,7 +91,7 @@
     <item>
      <widget class="QPushButton" name="reg_button">
       <property name="text">
-       <string>Регистрация</string>
+       <string>Войти</string>
       </property>
      </widget>
     </item>

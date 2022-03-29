@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>589</width>
-    <height>321</height>
+    <height>339</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,6 +70,13 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="push_button_to_like">
+        <property name="text">
+         <string>Лайк</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="0" column="0">
@@ -90,24 +97,38 @@
       </item>
       <item row="2" column="0" colspan="5">
        <layout class="QGridLayout" name="gridLayout">
+        <item row="4" column="1">
+         <widget class="QPushButton" name="push_button_to_search">
+          <property name="text">
+           <string>Поиск</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="push_button_to_select_play4">
+          <property name="text">
+           <string>Играть</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="current_track">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="result_search3">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="push_button_to_select_play1">
           <property name="text">
            <string>Играть</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QPushButton" name="push_button_to_select_play3">
-          <property name="text">
-           <string>Играть</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="result_search2">
-          <property name="text">
-           <string/>
           </property>
          </widget>
         </item>
@@ -132,29 +153,8 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="QPushButton" name="push_button_to_search">
-          <property name="text">
-           <string>Поиск</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLineEdit" name="write_link_to_play">
-          <property name="text">
-           <string>Введите ссылку на трек или плейлист</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="result_search3">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QPushButton" name="push_button_to_select_play4">
+        <item row="2" column="1">
+         <widget class="QPushButton" name="push_button_to_select_play3">
           <property name="text">
            <string>Играть</string>
           </property>
@@ -167,8 +167,15 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="current_track">
+        <item row="6" column="0">
+         <widget class="QLineEdit" name="write_link_to_play">
+          <property name="text">
+           <string>Введите ссылку на трек или плейлист</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="result_search2">
           <property name="text">
            <string/>
           </property>
