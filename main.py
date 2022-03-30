@@ -111,10 +111,22 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
                     self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
                 else:
-                    self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                    self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                    self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                    self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                    try:
+                        self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                    except IndexError:
+                        pass
+                    try:
+                        self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                    except IndexError:
+                        pass
+                    try:
+                        self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                    except IndexError:
+                        pass
+                    try:
+                        self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                    except IndexError:
+                        pass
             else:
                 self.result_search0.setText("Ничего не найдено")
         else:
@@ -138,18 +150,20 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     self.stop_media_player()
             except AttributeError:
                 pass
+
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[0])
-            self.json_data_track = album
-            block = 0
-            for i in album.volumes[0]:
-                track = music.extract_direct_link_to_track(i.id)
-                print(f"\n{track}")
-                list_source.append(track)
-                block += 1
-                if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                    self.play_media_list(list_source)
-                    block = 0
+            if len(self.list_result) > 0:
+                album = music.client.albums_with_tracks(self.list_result[0])
+                self.json_data_track = album
+                block = 0
+                for i in album.volumes[0]:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
+                        self.play_media_list(list_source)
+                        block = 0
 
     def select_play_2(self):
         import music
@@ -159,18 +173,20 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     self.stop_media_player()
             except AttributeError:
                 pass
+
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[3])
-            self.json_data_track = album
-            block = 0
-            for i in album.volumes[0]:
-                track = music.extract_direct_link_to_track(i.id)
-                print(f"\n{track}")
-                list_source.append(track)
-                block += 1
-                if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                    self.play_media_list(list_source)
-                    block = 0
+            if len(self.list_result) > 3:
+                album = music.client.albums_with_tracks(self.list_result[3])
+                self.json_data_track = album
+                block = 0
+                for i in album.volumes[0]:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
+                        self.play_media_list(list_source)
+                        block = 0
 
     def select_play_3(self):
         import music
@@ -180,18 +196,20 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     self.stop_media_player()
             except AttributeError:
                 pass
+
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[6])
-            self.json_data_track = album
-            block = 0
-            for i in album.volumes[0]:
-                track = music.extract_direct_link_to_track(i.id)
-                print(f"\n{track}")
-                list_source.append(track)
-                block += 1
-                if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                    self.play_media_list(list_source)
-                    block = 0
+            if len(self.list_result) > 6:
+                album = music.client.albums_with_tracks(self.list_result[6])
+                self.json_data_track = album
+                block = 0
+                for i in album.volumes[0]:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
+                        self.play_media_list(list_source)
+                        block = 0
 
     def select_play_4(self):
         import music
@@ -201,18 +219,20 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     self.stop_media_player()
             except AttributeError:
                 pass
+
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[9])
-            self.json_data_track = album
-            block = 0
-            for i in album.volumes[0]:
-                track = music.extract_direct_link_to_track(i.id)
-                print(f"\n{track}")
-                list_source.append(track)
-                block += 1
-                if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                    self.play_media_list(list_source)
-                    block = 0
+            if len(self.list_result) > 9:
+                album = music.client.albums_with_tracks(self.list_result[9])
+                self.json_data_track = album
+                block = 0
+                for i in album.volumes[0]:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
+                        self.play_media_list(list_source)
+                        block = 0
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
