@@ -24,7 +24,7 @@ try:
 except:
     with open("config.toml", "w") as file:
         file.write('''token_yandex = ""
-                   block = 10''')
+block = 10''')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
 
 class MainWindow(QtWidgets.QMainWindow, QObject):
@@ -140,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 pass
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[0])
+            self.json_data_track = album
             block = 0
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
@@ -160,6 +161,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 pass
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[3])
+            self.json_data_track = album
             block = 0
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
@@ -180,6 +182,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 pass
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[6])
+            self.json_data_track = album
             block = 0
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
@@ -200,6 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 pass
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[9])
+            self.json_data_track = album
             block = 0
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
@@ -215,10 +219,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
         #threading.Thread(target=lambda:self.check(), daemon=True).start()
     def like(self):
-        data = self.json_album_data
-        print(data)
-        print(data[self.current_track].id)
-
+        import music
+        data = self.json_data_track.volumes[0]
+        music.client.users_likes_tracks_add(data[self.current_track].id)
     def play_my_wave(self, text, ok):
         import music
 
@@ -247,7 +250,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             if self.current_track != len(list_source):
                 self.current_track += 1
                 self.current_track_changed += 1
-                self.media_player = vlc.MediaPlayer(list_source[self.current_track])
+                try:
+                    self.media_player = vlc.MediaPlayer(list_source[self.current_track])
+                except IndexError:
+                    self.current_track = -1
+                    self.current_track_changed = self.current_track
+                    break
                 self.media_player.play()
                 while True:
                     if self.current_track_changed > self.current_track:
@@ -261,7 +269,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         break
                     else:
                         time.sleep(0.2)
-            else:
+            if self.current_track >= len(list_source):
                 self.current_track = -1
                 self.current_track_changed = self.current_track
                 break
@@ -364,7 +372,8 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
             with open("config.toml", "w") as file:
-                file.write(f'token_yandex = "{text}"')
+                file.write(f'''token_yandex = "{text}"
+block = 10''')
         else:
             if exit_or_no:
                 self.media_player.stop()
@@ -444,7 +453,7 @@ class Check(QtWidgets.QMainWindow, QObject):
         if ok:
             with open("config.toml", "w") as file:
                 file.write(f'''token_yandex = "{text}"
-                           block = 10''')
+block = 10''')
         else:
             if exit_or_no:
                 sys.exit()
@@ -471,7 +480,7 @@ class Check(QtWidgets.QMainWindow, QObject):
                     text = json_data.get('access_token')
                     with open("config.toml", "w") as file:
                         file.write(f'''token_yandex = "{text}"
-                                   block = 10''')
+block = 10''')
                     self.hide()
                     mainWindow = MainWindow()
                     mainWindow.show()
