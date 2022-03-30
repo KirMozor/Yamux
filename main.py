@@ -247,7 +247,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
         if ok:
             try:
-                block = 1
+                block = 0
                 text = int(text)
                 list_source = []
                 for i in range(0, text):
@@ -257,9 +257,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         print(f"\n{track}")
                         list_source.append(track)
                         block += 1
-                        if block == 11 or text != 10 and block == text + 1:
+                        if block == config.get("block") or text != config.get("block") and block == text:
                             self.play_media_list(list_source)
-                            block = 1
+                            block = 0
                     else:
                         self.error_standart("Ошибка", f"Ошибка: {my_wave.get('text')}", exit_or_no=False)
             except ValueError:
@@ -294,56 +294,48 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 self.current_track_changed = self.current_track
                 break
 
-    def play_one_track(self, track):
+    def play_one_track(self, track_id):
         import music
+        track = music.extract_direct_link_to_track(track_id)
         self.media_player = vlc.MediaPlayer(track)
         self.media_player.play()
-        time.sleep(music.duration_track(url))
+        time.sleep(music.duration_track(track_id))
 
     def enter_link_to_play(self):
-        logger.debug("Запустилась функция enterLinkToPlay")
-        import music
-        url = self.write_link_to_play.text().rstrip('/')
-        logger.debug(f"url = {url}")
+        url = self.write_link_to_play.text()
+        if url and url.strip() or url.split(".") == "https://music" and url.split(".")[1] == "yandex":
+            check_in_track = url.split("/")
+            url_parts=url.split('/')
+            id_ = url_parts[-1]
+            list_source = []
+            import music
+            if check_in_track[-2] == "track":
+                self.play_one_track(id_)
 
-        if url and url.strip():
-            if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
-                check_in_track = url.split("/")
-                if check_in_track[-2] == "track":
-                    logger.debug("Это трек")
-                    url_parts=url.split('/')
-                    track_id = url_parts[-1]
-                    track = music.extract_direct_link_to_track(track_id)
-                    self.play_one_track(track)
+            if check_in_track[-2] != "track":
+                response = requests.get(url)
+                soup = BeautifulSoup(response.text, 'lxml')
+                quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
+                if not quotes:
+                    self.write_link_to_play.setText("Похоже вы вставили неправильную ссылку")
                 else:
-                    response = requests.get(url)
-                    soup = BeautifulSoup(response.text, 'lxml')
+                    block = 0
+                    list_source = []
+                    for title in quotes:
+                        s = title.text.strip(), title.get('href')
+                        url = "https://music.yandex.ru" + s[1]
 
-                    quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
-                    if not quotes:
-                        self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
-                    else:
-                        block = 0
-                        list_source = []
-                        for title in quotes:
-                            s = title.text.strip(), title.get('href')
-                            url = "https://music.yandex.ru" + s[1]
-
-                            url_parts=url.split('/')
-                            track_id = url_parts[-1]
-                            if block == int(config.get("block")):
-                                self.play_media_list(list_source)
-                            else:
-                                track = music.extract_direct_link_to_track(track_id)
-                                list_source.append(track)
-                                print(f"\n{track}")
-                                block += 1
-            else:
-                logger.debug("Неправильная ссылка")
-                self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
+                        url_parts=url.split('/')
+                        track_id = url_parts[-1]
+                        if block == int(config.get("block")):
+                            self.play_media_list(list_source)
+                        else:
+                            track = music.extract_direct_link_to_track(track_id)
+                            list_source.append(track)
+                            print(f"\n{track}")
+                            block += 1
         else:
-            logger.debug("Пустая строка")
-            self.write_link_to_play.setText("Напиши сюда ссылку на трек или плейлист из YandexMusic, а не пустую строку :)")
+            self.write_link_to_play.setText(f"Похоже вы вставили неправильную ссылку")
 
     def enter_link_to_download(self):
         import music

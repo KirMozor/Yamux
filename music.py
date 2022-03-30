@@ -29,8 +29,7 @@ def extract_direct_link_to_track(track_id):
         if is_track_suitable(info):
             return info.get_direct_link()
 
-def duration_track(url):
-    track_id = url.split('/')[-1]
+def duration_track(track_id):
     track = client.tracks([track_id])[0]
     return track.duration_ms / 1000
 
