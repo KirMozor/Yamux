@@ -23,7 +23,8 @@ try:
     logger.debug("Загрузка config")
 except:
     with open("config.toml", "w") as file:
-        file.write('token_yandex = ""')
+        file.write('''token_yandex = ""
+                   block = 10''')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
 
 class MainWindow(QtWidgets.QMainWindow, QObject):
@@ -132,77 +133,82 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def select_play_1(self):
         import music
         if self.list_result != []:
+            try:
+                if self.media_player.get_state != vlc.State.Ended:
+                    self.stop_media_player()
+            except AttributeError:
+                pass
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[9])
+            album = music.client.albums_with_tracks(self.list_result[0])
             block = 0
-            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                print(block)
-                print(album.volumes)
-                print(len(album.volumes))
-                print(len(album.volumes[0]))
-                if block >= 10 or len(album.volumes[0]) == block:
-                    block = 0
+                if block == int(config.get("block")) or len(album.volumes[0]) == block:
                     self.play_media_list(list_source)
+                    block = 0
+
     def select_play_2(self):
         import music
         if self.list_result != []:
+            try:
+                if self.media_player.get_state != vlc.State.Ended:
+                    self.stop_media_player()
+            except AttributeError:
+                pass
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[9])
+            album = music.client.albums_with_tracks(self.list_result[3])
             block = 0
-            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                print(block)
-                print(album.volumes)
-                print(len(album.volumes))
-                print(len(album.volumes[0]))
-                if block >= 10 or len(album.volumes[0]) == block:
-                    block = 0
+                if block == int(config.get("block")) or len(album.volumes[0]) == block:
                     self.play_media_list(list_source)
+                    block = 0
+
     def select_play_3(self):
         import music
         if self.list_result != []:
+            try:
+                if self.media_player.get_state != vlc.State.Ended:
+                    self.stop_media_player()
+            except AttributeError:
+                pass
             list_source = []
-            album = music.client.albums_with_tracks(self.list_result[9])
+            album = music.client.albums_with_tracks(self.list_result[6])
             block = 0
-            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                print(album.volumes)
-                print(len(album.volumes))
-                print(len(album.volumes[0]))
-                if block >= 10 or len(album.volumes[0]) == block:
-                    block = 0
+                if block == int(config.get("block")) or len(album.volumes[0]) == block:
                     self.play_media_list(list_source)
+                    block = 0
+
     def select_play_4(self):
         import music
         if self.list_result != []:
+            try:
+                if self.media_player.get_state != vlc.State.Ended:
+                    self.stop_media_player()
+            except AttributeError:
+                pass
             list_source = []
             album = music.client.albums_with_tracks(self.list_result[9])
             block = 0
-            self.json_album_data = album.volumes[0]
             for i in album.volumes[0]:
                 track = music.extract_direct_link_to_track(i.id)
                 print(f"\n{track}")
                 list_source.append(track)
                 block += 1
-                print(album.volumes)
-                print(len(album.volumes))
-                print(len(album.volumes[0]))
-                if block >= 10 or len(album.volumes[0]) == block:
-                    block = 0
+                if block == int(config.get("block")) or len(album.volumes[0]) == block:
                     self.play_media_list(list_source)
+                    block = 0
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
@@ -289,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if not quotes:
                         self.error_standart("Неправильная ссылка", "Похоже вы вставили неправильную ссылку", exit_or_no=False)
                     else:
-                        block = 1
+                        block = 0
                         list_source = []
                         for title in quotes:
                             s = title.text.strip(), title.get('href')
@@ -297,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
                             url_parts=url.split('/')
                             track_id = url_parts[-1]
-                            if block == 11:
+                            if block == int(config.get("block")):
                                 self.play_media_list(list_source)
                             else:
                                 track = music.extract_direct_link_to_track(track_id)
@@ -437,7 +443,8 @@ class Check(QtWidgets.QMainWindow, QObject):
         text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
             with open("config.toml", "w") as file:
-                file.write(f'token_yandex = "{text}"')
+                file.write(f'''token_yandex = "{text}"
+                           block = 10''')
         else:
             if exit_or_no:
                 sys.exit()
@@ -463,7 +470,8 @@ class Check(QtWidgets.QMainWindow, QObject):
                     json_data = request_auth.json()
                     text = json_data.get('access_token')
                     with open("config.toml", "w") as file:
-                        file.write(f'token_yandex = "{text}"')
+                        file.write(f'''token_yandex = "{text}"
+                                   block = 10''')
                     self.hide()
                     mainWindow = MainWindow()
                     mainWindow.show()

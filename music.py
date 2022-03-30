@@ -91,11 +91,7 @@ def download(url, path):
         return {'responce':'error', 'text':'TimedOutError'}
 
 if __name__ == "__main__":
-    result = send_search_request_and_print_result("Skrillex", "tracks")
-    for i in range(0, len(result)):
-        try:
-            print(f"id: {result[0]}, title: {result[1]}")
-            result.pop(0)
-            result.pop(0)
-        except IndexError:
-            pass
+    result = send_search_request_and_print_result("Skrillex", "albums")
+    for i in result.results:
+        id_album = i.id
+        print(client.albums_with_tracks(id_album).id)
