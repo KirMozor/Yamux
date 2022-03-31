@@ -112,7 +112,7 @@
          </widget>
         </item>
         <item row="5" column="0">
-         <widget class="QLabel" name="current_track">
+         <widget class="QLabel" name="inference_current_track">
           <property name="text">
            <string/>
           </property>

@@ -267,6 +267,8 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
     def play_media_list(self, list_source):
         while True:
+            print(self.current_track)
+            print(len(list_source))
             if self.current_track != len(list_source):
                 self.current_track += 1
                 self.current_track_changed += 1
@@ -278,6 +280,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     break
                 self.media_player.play()
                 while True:
+                    print(self.media_player.get_state())
+                    if self.media_player.get_state() == vlc.State.Ended:
+                        print("Конец трека")
+                        break
+                    if self.media_player.get_state() == vlc.State.Stopped:
+                        continue
                     if self.current_track_changed > self.current_track:
                         self.media_player.stop()
                         self.current_track_changed = self.current_track
@@ -417,29 +425,29 @@ class Check(QtWidgets.QMainWindow, QObject):
                 "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
                 exit_or_no=True)
             self.show()
-            self.reg_button.clicked.connect(self.reg_button_click)
             self.msg_btn = lambda i: i.text()
+            self.reg_button.clicked.connect(self.reg_button_click)
 
         except yandex_music.exceptions.UnauthorizedError:
             logger.error("Неправильный токен yandex_music.exceptions.UnauthorizedError")
             self.show()
             self.error_standart("Неправильный токен", "YandexMusic говорит у вас неправильный токен, перезарегистрируйтесь", exit_or_no=False)
-            self.reg_button.clicked.connect(self.reg_button_click)
             self.msg_btn = lambda i: i.text()
+            self.reg_button.clicked.connect(self.reg_button_click)
         except UnicodeEncodeError:
             self.show()
             logger.error("Токен из непонятных символов UnicodeEncodeError")
             self.error_standart("Токен из непонятных символов",
                               "YandexMusic говорит что у вас токен из непонятных символов, перезарегистрируйтесь", exit_or_no=False)
-            self.reg_button.clicked.connect(self.reg_button_click)
             self.msg_btn = lambda i: i.text()
+            self.reg_button.clicked.connect(self.reg_button_click)
         except NameError:
             self.show()
             logger.error("Только что создался конфиг, перезапустите программу NameError")
             self.error_standart("Что-то не то с конфигом",
                 "У вас что-то не то было с конфигом, перезарегистрируйтесь", exit_or_no=False)
-            self.reg_button.clicked.connect(self.reg_button_click)
             self.msg_btn = lambda i: i.text()
+            self.reg_button.clicked.connect(self.reg_button_click)
 
     def error_standart(self, message_log, description, windows_title="Ошибка", exit_or_no=True, not_button_cancel=False):
         logger.error(message_log)
