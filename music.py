@@ -74,6 +74,8 @@ def send_search_request_and_print_result(query, what_to_search):
        return search_result.playlists
     if search_result.videos and what_to_search == "videos":
         return search_result.videos
+    if search_result.artists and what_to_search == "artists":
+        return search_result.artists
 
 def download(url, path):
     try:
