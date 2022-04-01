@@ -54,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
-        self.push_button_to_search.clicked.connect(self.get_text_write_sound)
+        self.push_button_to_search.clicked.connect(self.get_text_write_albums)
         self.push_button_to_next_page.clicked.connect(self.next_page_search)
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
@@ -63,6 +63,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
+        self.push_button_to_search_tracks.clicked.connect(self.get_text_write_tracks)
         self.push_button_to_search_artists.clicked.connect(self.press_button_to_search_artist)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
@@ -75,8 +76,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.type_search = "artists"
         self.load_sound(self.write_search.text(), self.page)
 
-    def get_text_write_sound(self):
+    def get_text_write_albums(self):
         self.type_search = "albums"
+        self.load_sound(self.write_search.text(), self.page)
+
+    def get_text_write_tracks(self):
+        self.type_search = "tracks"
         self.load_sound(self.write_search.text(), self.page)
 
     def stop_media_player(self):
@@ -103,75 +108,79 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             if result != None:
                 self.total_result.setText(f"Я нащёл {result.total} артистов")
             return result
+        if self.type_search == "tracks":
+            result = music.send_search_request_and_print_result(text, "tracks")
+            if result != None:
+                self.total_result.setText(f"Я нащёл {result.total} треков")
+            return result
 
     def load_sound(self, text, page, type_search="albums"):
         if len(text.split()) != 0:
             result = self.parsing_sound(text)
-            if self.type_search == "artists":
-                if result is not None:
-                    self.list_result = []
-                    for i in result.results:
-                        self.list_result.append(i.id)
-                        if self.type_search == "artists":
-                            self.list_result.append(i.name)
-                        else:
-                            self.list_result.append(i.title)
-                            try:
-                                self.list_result.append(i.artists[0].name)
-                            except IndexError:
-                                self.list_result.append("")
-                    element = self.page * 4
-                    if element > 4:
-                        for i in range(0, 12):
-                            self.list_result.pop(0)
-                    if self.type_search == "albums":
-                        if element > 4:
-                            self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                            self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                            self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                            self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                        else:
-                            try:
-                                self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                            except IndexError:
-                                pass
+            if result is not None:
+                self.list_result = []
+                for i in result.results:
+                    self.list_result.append(i.id)
                     if self.type_search == "artists":
-                        if element > 4:
+                        self.list_result.append(i.name)
+                    if self.type_search == "albums" or "tracks":
+                        self.list_result.append(i.title)
+                        try:
+                            self.list_result.append(i.artists[0].name)
+                        except IndexError:
+                            self.list_result.append("")
+                element = self.page * 4
+                if element > 4:
+                    for i in range(0, 12):
+                        self.list_result.pop(0)
+                if self.type_search == "albums" or "tracks":
+                    if element > 4:
+                        self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                        self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                        self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                        self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                    else:
+                        try:
+                            self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                        except IndexError:
+                            pass
+                        try:
+                            self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                        except IndexError:
+                            pass
+                        try:
+                            self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                        except IndexError:
+                            pass
+                        try:
+                            self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                        except IndexError:
+                            pass
+                if self.type_search == "artists":
+                    if element > 4:
+                        self.result_search0.setText(f"{self.list_result[1]}")
+                        self.result_search1.setText(f"{self.list_result[3]}")
+                        self.result_search2.setText(f"{self.list_result[5]}")
+                        self.result_search3.setText(f"{self.list_result[7]}")
+                    else:
+                        try:
                             self.result_search0.setText(f"{self.list_result[1]}")
+                        except IndexError:
+                            pass
+                        try:
                             self.result_search1.setText(f"{self.list_result[3]}")
+                        except IndexError:
+                            pass
+                        try:
                             self.result_search2.setText(f"{self.list_result[5]}")
+                        except IndexError:
+                            pass
+                        try:
                             self.result_search3.setText(f"{self.list_result[7]}")
-                        else:
-                            try:
-                                self.result_search0.setText(f"{self.list_result[1]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search1.setText(f"{self.list_result[3]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search2.setText(f"{self.list_result[5]}")
-                            except IndexError:
-                                pass
-                            try:
-                                self.result_search3.setText(f"{self.list_result[7]}")
-                            except IndexError:
-                                pass
-                else:
-                    self.result_search0.setText("Ничего не найдено")
+                        except IndexError:
+                            pass
+            else:
+                self.result_search0.setText("Ничего не найдено")
         else:
             self.result_search0.setText("Вводи не пустую строку")
 
@@ -220,6 +229,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         if block == int(config.get("block")) or len(artist_track.tracks) == block:
                             self.play_media_list(list_source)
                             block = 0
+                if self.type_search == "tracks":
+                    self.play_one_track(self.list_result[0])
+
     def select_play_2(self):
         import music
         if self.list_result != []:
@@ -255,6 +267,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+            if self.type_search == "tracks":
+                self.play_one_track(self.list_result[3])
+
     def select_play_3(self):
         import music
         if self.list_result != []:
@@ -290,6 +305,8 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+            if self.type_search == "tracks":
+                self.play_one_track(self.list_result[6])
 
     def select_play_4(self):
         import music
@@ -326,6 +343,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+            if self.type_search == "tracks":
+                self.play_one_track(self.list_result[9])
+
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
         threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
