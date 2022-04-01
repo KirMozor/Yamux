@@ -63,6 +63,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
+        self.push_button_to_seach_playlist.clicked.connect(self.get_text_write_playlists)
         self.push_button_to_search_tracks.clicked.connect(self.get_text_write_tracks)
         self.push_button_to_search_artists.clicked.connect(self.press_button_to_search_artist)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
@@ -82,6 +83,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
     def get_text_write_tracks(self):
         self.type_search = "tracks"
+        self.load_sound(self.write_search.text(), self.page)
+
+    def get_text_write_playlists(self):
+        self.type_search = "playlists"
         self.load_sound(self.write_search.text(), self.page)
 
     def stop_media_player(self):
@@ -113,6 +118,11 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             if result != None:
                 self.total_result.setText(f"Я нащёл {result.total} треков")
             return result
+        if self.type_search == "playlists":
+            result = music.send_search_request_and_print_result(text, "playlists")
+            if result != None:
+                self.total_result.setText(f"Я нащел {result.total} плейлистов")
+            return result
 
     def load_sound(self, text, page, type_search="albums"):
         if len(text.split()) != 0:
@@ -120,10 +130,14 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             if result is not None:
                 self.list_result = []
                 for i in result.results:
-                    self.list_result.append(i.id)
+                    print(result.results)
                     if self.type_search == "artists":
+                        self.list_result.append(i.id)
                         self.list_result.append(i.name)
-                    if self.type_search == "albums" or "tracks":
+                    if self.type_search == "playlists":
+                        print(i)
+                    if self.type_search == "albums" or self.type_search == "tracks":
+                        self.list_result.append(i.id)
                         self.list_result.append(i.title)
                         try:
                             self.list_result.append(i.artists[0].name)
