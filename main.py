@@ -146,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     output = output.results
                 if best is None:
                     for i in output:
-                        print(result.results)
                         if self.type_search == "artists":
                             self.list_result.append(i.id)
                             self.list_result.append(i.name)
