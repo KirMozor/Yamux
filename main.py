@@ -54,7 +54,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
-        self.push_button_to_search.clicked.connect(self.get_text_write_albums)
         self.push_button_to_next_page.clicked.connect(self.next_page_search)
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
         self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
@@ -63,8 +62,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
         self.push_button_to_pause.clicked.connect(self.press_button_pause)
         self.push_button_to_stop.clicked.connect(self.press_button_stop)
+        self.push_button_to_search_albums.clicked.connect(self.get_text_write_albums)
         self.push_button_to_seach_playlist.clicked.connect(self.get_text_write_playlists)
         self.push_button_to_search_tracks.clicked.connect(self.get_text_write_tracks)
+        self.push_button_to_best_result.clicked.connect(self.get_text_write_best)
         self.push_button_to_search_artists.clicked.connect(self.press_button_to_search_artist)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
@@ -87,6 +88,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
 
     def get_text_write_playlists(self):
         self.type_search = "playlists"
+        self.load_sound(self.write_search.text(), self.page)
+
+    def get_text_write_best(self):
+        self.type_search = "best"
         self.load_sound(self.write_search.text(), self.page)
 
     def stop_media_player(self):
@@ -123,76 +128,104 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             if result != None:
                 self.total_result.setText(f"Я нащел {result.total} плейлистов")
             return result
+        if self.type_search == "best":
+            result = music.send_search_request_and_print_result(text, "best")
+            if result != None:
+                self.total_result.setText(f"Лучший результат это {result.type}")
+            return result
 
     def load_sound(self, text, page, type_search="albums"):
         if len(text.split()) != 0:
-            result = self.parsing_sound(text)
-            if result is not None:
+            output = self.parsing_sound(text)
+            if output is not None:
                 self.list_result = []
-                for i in result.results:
-                    print(result.results)
-                    if self.type_search == "artists":
-                        self.list_result.append(i.id)
-                        self.list_result.append(i.name)
-                    if self.type_search == "playlists":
-                        print(i)
-                    if self.type_search == "albums" or self.type_search == "tracks":
-                        self.list_result.append(i.id)
-                        self.list_result.append(i.title)
+                if self.type_search == "best":
+                    best = "best"
+                else:
+                    best = None
+                    output = output.results
+                if best is None:
+                    for i in output:
+                        print(result.results)
+                        if self.type_search == "artists":
+                            self.list_result.append(i.id)
+                            self.list_result.append(i.name)
+                        if self.type_search == "albums" or self.type_search == "tracks":
+                            self.list_result.append(i.id)
+                            self.list_result.append(i.title)
+                            try:
+                                self.list_result.append(i.artists[0].name)
+                            except IndexError:
+                                self.list_result.append("")
+                        element = self.page * 4
+                        if element > 4:
+                            for i in range(0, 12):
+                                self.list_result.pop(0)
+                        if self.type_search == "albums" or "tracks":
+                            if element > 4:
+                                self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                                self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                                self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                                self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                            else:
+                                try:
+                                    self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                                except IndexError:
+                                    pass
+                        if self.type_search == "artists":
+                            if element > 4:
+                                self.result_search0.setText(f"{self.list_result[1]}")
+                                self.result_search1.setText(f"{self.list_result[3]}")
+                                self.result_search2.setText(f"{self.list_result[5]}")
+                                self.result_search3.setText(f"{self.list_result[7]}")
+                            else:
+                                try:
+                                    self.result_search0.setText(f"{self.list_result[1]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search1.setText(f"{self.list_result[3]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search2.setText(f"{self.list_result[5]}")
+                                except IndexError:
+                                    pass
+                                try:
+                                    self.result_search3.setText(f"{self.list_result[7]}")
+                                except IndexError:
+                                    pass
+                else:
+                    self.type_search = output.type
+                    output = output.result
+                    if self.type_search == "artist":
+                        self.list_result.append(output.id)
+                        self.list_result.append(output.name)
+                    if self.type_search == "album" or self.type_search == "track":
+                        self.list_result.append(output.id)
+                        self.list_result.append(output.title)
                         try:
-                            self.list_result.append(i.artists[0].name)
+                            self.list_result.append(output.artists[0].name)
                         except IndexError:
                             self.list_result.append("")
-                element = self.page * 4
-                if element > 4:
-                    for i in range(0, 12):
-                        self.list_result.pop(0)
-                if self.type_search == "albums" or "tracks":
-                    if element > 4:
+                    self.type_search += "s"
+                    print(self.list_result)
+                    try:
                         self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                        self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                        self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                        self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                    else:
-                        try:
-                            self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                        except IndexError:
-                            pass
-                if self.type_search == "artists":
-                    if element > 4:
+                    except IndexError:
                         self.result_search0.setText(f"{self.list_result[1]}")
-                        self.result_search1.setText(f"{self.list_result[3]}")
-                        self.result_search2.setText(f"{self.list_result[5]}")
-                        self.result_search3.setText(f"{self.list_result[7]}")
-                    else:
-                        try:
-                            self.result_search0.setText(f"{self.list_result[1]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search1.setText(f"{self.list_result[3]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search2.setText(f"{self.list_result[5]}")
-                        except IndexError:
-                            pass
-                        try:
-                            self.result_search3.setText(f"{self.list_result[7]}")
-                        except IndexError:
-                            pass
             else:
                 self.result_search0.setText("Ничего не найдено")
         else:
@@ -392,6 +425,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
 
     def play_media_list(self, list_source):
+        try:
+            self.media_player.stop()
+        except AttributeError:
+            pass
         while True:
             if self.current_track != len(list_source):
                 self.current_track += 1

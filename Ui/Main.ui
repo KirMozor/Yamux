@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>589</width>
-    <height>339</height>
+    <width>691</width>
+    <height>391</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,13 +25,6 @@
        <widget class="QPushButton" name="push_button_to_pause">
         <property name="text">
          <string>Пауза</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QPushButton" name="push_button_to_my_wave">
-        <property name="text">
-         <string>Моя волна</string>
         </property>
        </widget>
       </item>
@@ -77,6 +70,13 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="5">
+       <widget class="QPushButton" name="push_button_to_my_wave">
+        <property name="text">
+         <string>Моя волна</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="0" column="0">
@@ -84,7 +84,7 @@
       <item row="1" column="0">
        <widget class="QPushButton" name="push_button_to_search_artists">
         <property name="text">
-         <string>Артисты</string>
+         <string>Поиск по артистам</string>
         </property>
        </widget>
       </item>
@@ -97,13 +97,6 @@
       </item>
       <item row="2" column="0" colspan="5">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="4" column="1">
-         <widget class="QPushButton" name="push_button_to_search">
-          <property name="text">
-           <string>Поиск</string>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="1">
          <widget class="QPushButton" name="push_button_to_select_play4">
           <property name="text">
@@ -193,28 +186,28 @@
       <item row="1" column="1">
        <widget class="QPushButton" name="push_button_to_search_tracks">
         <property name="text">
-         <string>Треки</string>
+         <string>Поиск по трекам</string>
         </property>
        </widget>
       </item>
       <item row="1" column="4">
        <widget class="QPushButton" name="push_button_to_search_albums">
         <property name="text">
-         <string>Альбомы</string>
+         <string>Поиск по альбомам</string>
         </property>
        </widget>
       </item>
       <item row="1" column="3">
        <widget class="QPushButton" name="push_button_to_seach_playlist">
         <property name="text">
-         <string>Плейлисты</string>
+         <string>Поиск по плейлистам</string>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="push_button_to_best_result">
         <property name="text">
-         <string>Лучший результат</string>
+         <string>Лучший результата поиска</string>
         </property>
        </widget>
       </item>
