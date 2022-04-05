@@ -149,6 +149,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         if self.type_search == "artists":
                             self.list_result.append(i.id)
                             self.list_result.append(i.name)
+                        if self.type_search == "playlists":
+                            self.list_result.append(i.kind)
+                            self.list_result.append(i.uid)
+                            self.list_result.append(i.title)
                         if self.type_search == "albums" or self.type_search == "tracks":
                             self.list_result.append(i.id)
                             self.list_result.append(i.title)
@@ -160,52 +164,75 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         if element > 4:
                             for i in range(0, 12):
                                 self.list_result.pop(0)
-                        if self.type_search == "albums" or "tracks":
-                            if element > 4:
+                    if self.type_search == "albums" or self.type_search == "tracks":
+                        if element > 4:
+                            self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                            self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                            self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                            self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                        else:
+                            try:
                                 self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                            else:
-                                try:
-                                    self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
-                                except IndexError:
-                                    pass
-                        if self.type_search == "artists":
-                            if element > 4:
+                            except IndexError:
+                                pass
+                    if self.type_search == "artists":
+                        if element > 4:
+                            self.result_search0.setText(f"{self.list_result[1]}")
+                            self.result_search1.setText(f"{self.list_result[3]}")
+                            self.result_search2.setText(f"{self.list_result[5]}")
+                            self.result_search3.setText(f"{self.list_result[7]}")
+                        else:
+                            try:
                                 self.result_search0.setText(f"{self.list_result[1]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search1.setText(f"{self.list_result[3]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search2.setText(f"{self.list_result[5]}")
+                            except IndexError:
+                                pass
+                            try:
                                 self.result_search3.setText(f"{self.list_result[7]}")
-                            else:
-                                try:
-                                    self.result_search0.setText(f"{self.list_result[1]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search1.setText(f"{self.list_result[3]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search2.setText(f"{self.list_result[5]}")
-                                except IndexError:
-                                    pass
-                                try:
-                                    self.result_search3.setText(f"{self.list_result[7]}")
-                                except IndexError:
-                                    pass
+                            except IndexError:
+                                pass
+                    if self.type_search == "playlists":
+                        if element > 4:
+                            self.result_search0.setText(f"{self.list_result[2]}")
+                            self.result_search1.setText(f"{self.list_result[5]}")
+                            self.result_search2.setText(f"{self.list_result[8]}")
+                            self.result_search3.setText(f"{self.list_result[11]}")
+                        else:
+                            try:
+                                self.result_search0.setText(f"{self.list_result[2]}")
+                            except IndexError:
+                                pass
+                            try:
+                                self.result_search1.setText(f"{self.list_result[5]}")
+                            except IndexError:
+                                pass
+                            try:
+                                self.result_search2.setText(f"{self.list_result[8]}")
+                            except IndexError:
+                                pass
+                            try:
+                                self.result_search3.setText(f"{self.list_result[11]}")
+                            except IndexError:
+                                pass
                 else:
                     self.type_search = output.type
                     output = output.result
@@ -275,6 +302,19 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                         if block == int(config.get("block")) or len(artist_track.tracks) == block:
                             self.play_media_list(list_source)
                             block = 0
+                if self.type_search == "playlists":
+                    block = 0
+                    playlist_track = music.client.users_playlists(self.list_result[0], self.list_result[1])
+                    print(playlist_track.tracks)
+                    self.json_data_track = playlist_track
+                    for i in playlist_track.tracks:
+                        track = music.extract_direct_link_to_track(i.id)
+                        print(f"\n{track}")
+                        list_source.append(track)
+                        block += 1
+                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                            self.play_media_list(list_source)
+                            block = 0
                 if self.type_search == "tracks":
                     self.play_one_track(self.list_result[0])
 
@@ -313,6 +353,19 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+                if self.type_search == "playlists":
+                    block = 0
+                    playlist_track = music.client.users_playlists(self.list_result[3], self.list_result[4])
+                    print(playlist_track.tracks)
+                    self.json_data_track = playlist_track
+                    for i in playlist_track.tracks:
+                        track = music.extract_direct_link_to_track(i.id)
+                        print(f"\n{track}")
+                        list_source.append(track)
+                        block += 1
+                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                            self.play_media_list(list_source)
+                            block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[3])
 
@@ -351,6 +404,19 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+                if self.type_search == "playlists":
+                    block = 0
+                    playlist_track = music.client.users_playlists(self.list_result[6], self.list_result[7])
+                    print(playlist_track.tracks)
+                    self.json_data_track = playlist_track
+                    for i in playlist_track.tracks:
+                        track = music.extract_direct_link_to_track(i.id)
+                        print(f"\n{track}")
+                        list_source.append(track)
+                        block += 1
+                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                            self.play_media_list(list_source)
+                            block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[6])
 
@@ -389,6 +455,19 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
+                if self.type_search == "playlists":
+                    block = 0
+                    playlist_track = music.client.users_playlists(self.list_result[9], self.list_result[10])
+                    print(playlist_track.tracks)
+                    self.json_data_track = playlist_track
+                    for i in playlist_track.tracks:
+                        track = music.extract_direct_link_to_track(i.id)
+                        print(f"\n{track}")
+                        list_source.append(track)
+                        block += 1
+                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                            self.play_media_list(list_source)
+                            block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[9])
 

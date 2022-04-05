@@ -1,4 +1,4 @@
-from yandex_music import Best, Client, Search
+from yandex_music import Best, Client, Search, Playlist
 import yandex_music
 import toml
 config = toml.load("config.toml")
