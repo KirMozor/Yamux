@@ -305,7 +305,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                 if self.type_search == "playlists":
                     block = 0
                     playlist_track = music.client.users_playlists(self.list_result[0], self.list_result[1])
-                    print(playlist_track.tracks)
                     self.json_data_track = playlist_track
                     for i in playlist_track.tracks:
                         track = music.extract_direct_link_to_track(i.id)
@@ -353,19 +352,18 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
-                if self.type_search == "playlists":
-                    block = 0
-                    playlist_track = music.client.users_playlists(self.list_result[3], self.list_result[4])
-                    print(playlist_track.tracks)
-                    self.json_data_track = playlist_track
-                    for i in playlist_track.tracks:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                            self.play_media_list(list_source)
-                            block = 0
+            if self.type_search == "playlists":
+                block = 0
+                playlist_track = music.client.users_playlists(self.list_result[3], self.list_result[4])
+                self.json_data_track = playlist_track
+                for i in playlist_track.tracks:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                        self.play_media_list(list_source)
+                        block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[3])
 
@@ -404,19 +402,18 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
-                if self.type_search == "playlists":
-                    block = 0
-                    playlist_track = music.client.users_playlists(self.list_result[6], self.list_result[7])
-                    print(playlist_track.tracks)
-                    self.json_data_track = playlist_track
-                    for i in playlist_track.tracks:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                            self.play_media_list(list_source)
-                            block = 0
+            if self.type_search == "playlists":
+                block = 0
+                playlist_track = music.client.users_playlists(self.list_result[6], self.list_result[7])
+                self.json_data_track = playlist_track
+                for i in playlist_track.tracks:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                        self.play_media_list(list_source)
+                        block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[6])
 
@@ -455,19 +452,18 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
                     if block == int(config.get("block")) or len(artist_track.tracks) == block:
                         self.play_media_list(list_source)
                         block = 0
-                if self.type_search == "playlists":
-                    block = 0
-                    playlist_track = music.client.users_playlists(self.list_result[9], self.list_result[10])
-                    print(playlist_track.tracks)
-                    self.json_data_track = playlist_track
-                    for i in playlist_track.tracks:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                            self.play_media_list(list_source)
-                            block = 0
+            if self.type_search == "playlists":
+                block = 0
+                playlist_track = music.client.users_playlists(self.list_result[9], self.list_result[10])
+                self.json_data_track = playlist_track
+                for i in playlist_track.tracks:
+                    track = music.extract_direct_link_to_track(i.id)
+                    print(f"\n{track}")
+                    list_source.append(track)
+                    block += 1
+                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
+                        self.play_media_list(list_source)
+                        block = 0
             if self.type_search == "tracks":
                 self.play_one_track(self.list_result[9])
 
