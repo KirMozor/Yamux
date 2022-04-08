@@ -5,6 +5,7 @@ import time
 import threading
 import os
 import logging
+import webbrowser
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
@@ -645,6 +646,7 @@ class Check(QtWidgets.QMainWindow, QObject):
             if not config.get('token_yandex'):
                 self.show()
                 self.reg_button.clicked.connect(self.reg_button_click)
+                self.password_recovery.clicked.connect(self.password_recovery_click)
                 self.msg_btn = lambda i: i.text()
             else:
                 client = Client(config.get('token_yandex')).init()
@@ -710,6 +712,8 @@ block = 10''')
         else:
             if exit_or_no:
                 sys.exit()
+    def password_recovery_click(self):
+        webbrowser.open("https://passport.yandex.kz/auth/restore/login?mode=add-user", new=2)
 
     def reg_button_click(self):
         login = self.set_login.text()
