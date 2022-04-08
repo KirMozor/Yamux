@@ -17,9 +17,12 @@
    <iconset>
     <normaloff>../Svg/icon.svg</normaloff>../Svg/icon.svg</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color:#ffffff</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">color:#ffffff</string>
+    <string notr="true"/>
    </property>
    <layout class="QGridLayout" name="gridLayout_8">
     <item row="0" column="0">
@@ -139,6 +142,9 @@ padding:3px;
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
            </property>
            <property name="readOnly">
             <bool>false</bool>
