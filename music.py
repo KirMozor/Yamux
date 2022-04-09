@@ -82,7 +82,6 @@ def download(url, path):
         track_id = url.split('/')[-1]
         track = client.tracks([trackID])[0]
         track_download_info = track.get_download_info()[0]
-        track = client.tracks([trackID])[0]
 
         track.download(f'{path}/{track.title}.mp3', 'mp3', 192)
         return {'responce':'ok', 'text':f'{path}/{track.title}.mp3'}
