@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtCore, QtWidgets, uic
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QCursor
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QCursor, QMovie
 from PyQt5.QtCore import QObject
 from yandex_music import Best, Client, Search
+from concurrent.futures import ThreadPoolExecutor
 import yandex_music
 import webbrowser
-import threading
 import requests
 import toml
+import time
 import sys
 
 try:
@@ -29,6 +31,27 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.hide_bar_menu_button.clicked.connect(self.hide_menu_bar_or_show)
         self.hide_bar_menu_button_2.clicked.connect(self.hide_menu_bar_or_show)
 
+        self.main_page_select_button.clicked.connect(self.select_main_page_clicked)
+        self.main_page_select_button_2.clicked.connect(self.select_main_page_clicked)
+        self.radio_page_select_button.clicked.connect(self.select_radio_clicked)
+        self.radio_page_select_button_2.clicked.connect(self.select_radio_clicked)
+        self.podcasts_page_select_button.clicked.connect(self.select_podcasts_clicked)
+        self.podcasts_page_select_button_2.clicked.connect(self.select_podcasts_clicked)
+        self.select_playlist_button.clicked.connect(self.select_users_playlist_clicked)
+        self.select_playlist_button_2.clicked.connect(self.select_users_playlist_clicked)
+
+    def select_main_page_clicked(self):
+        self.description_text.setText("Главная")
+
+    def select_users_playlist_clicked(self):
+        self.description_text.setText("Плейлисты")
+
+    def select_podcasts_clicked(self):
+        self.description_text.setText("Подкасты")
+
+    def select_radio_clicked(self):
+        self.description_text.setText("Радио")
+
     def hide_menu_bar_or_show(self):
         if self.hide_or_show_menu:
             self.widget_4.show()
@@ -38,7 +61,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             self.widget_4.hide()
             self.widget_3.show()
             self.hide_or_show_menu = True
-
 class Check(QtWidgets.QMainWindow, QObject):
     def __init__(self):
         # Проверяем на рабочий токен и то что интернет работает
@@ -53,10 +75,16 @@ class Check(QtWidgets.QMainWindow, QObject):
                 self.password_recovery.clicked.connect(self.password_recovery_click)
                 self.msg_btn = lambda i: i.text()
             else:
-                client = Client(config.get('token_yandex')).init()
-                mainWindow = MainWindow()
-                mainWindow.show()
+                uic.loadUi("Ui/Loading.ui", self)
+                self.movie = QMovie("/home/kirill/MyProject/Git/Yamux/Assets/Gif/icons8-loading-circle.gif")
+                self.label.setMovie(self.movie)
+                self.movie.start()
+                self.show()
 
+                self.my_thread = CheckToken()
+                self.my_thread.start()
+
+                self.my_thread.mysignal.connect(self.show_main_window, QtCore.Qt.QueuedConnection)
         except yandex_music.exceptions.NetworkError:
             self.error_standart("Проблемы с интернетом",
                 "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
@@ -82,6 +110,12 @@ class Check(QtWidgets.QMainWindow, QObject):
                 "У вас что-то не то было с конфигом, перезарегистрируйтесь", exit_or_no=False)
             self.msg_btn = lambda i: i.text()
             self.reg_button.clicked.connect(self.reg_button_click)
+
+    def show_main_window(self, s):
+        if s == "True":
+            self.hide()
+            mainWindow = MainWindow()
+            mainWindow.show()
 
     def error_standart(self, message_log, description, windows_title="Ошибка", exit_or_no=True, not_button_cancel=False):
         error = QMessageBox()
@@ -142,7 +176,16 @@ block = 10''')
                 self.error_standart("Проблемы с интернетом", "Проверьте интернет подключенние", exit_or_no=False)
         else:
             self.error_standart("Ввели пустую строку", "Вы ввели пустую строку :)", exit_or_no=False)
-
+class CheckToken(QtCore.QThread):
+    mysignal = QtCore.pyqtSignal(str)
+    def __init__(self, parent=None):
+        QtCore.QThread.__init__(self, parent)
+    def run(self):
+        try:
+            Client(config.get('token_yandex')).init()
+            self.mysignal.emit("True")
+        except:
+            self.mysignal.emit("False")
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     check = Check()  # Создаём объект класса MainWindow

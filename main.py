@@ -71,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
         self.push_button_to_select_play1.clicked.connect(self.select_play_1_play)
-        self.push_button_to_select_play2.clicked.connect(self.select_play_2_play)
+        self.push_button_to_select_play2.cliked.connect(self.select_play_2_play)
         self.push_button_to_select_play3.clicked.connect(self.select_play_3_play)
         self.push_button_to_select_play4.clicked.connect(self.select_play_4_play)
 
@@ -752,4 +752,4 @@ def main():
     sys.exit(app.exec_())  # и запускаем приложение
 if __name__ == '__main__': # Если мы запускаем файл напрямую, а не импортируем
     print("Запуск Yamux")
-    main()  # то запускаем функцию main()
+    main()  # то запускаем функцию main()c
