@@ -21,59 +21,31 @@
    <layout class="QGridLayout" name="gridLayout_4">
     <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="3">
-       <widget class="QPushButton" name="push_button_to_pause">
-        <property name="text">
-         <string>Пауза</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="push_button_to_download">
-        <property name="text">
-         <string>Скачать</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="push_button_to_play">
+       <widget class="QPushButton" name="push_button_to_play_track_url">
         <property name="text">
-         <string>Играть</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QPushButton" name="push_button_to_stop">
-        <property name="text">
-         <string>Стоп</string>
+         <string>Играть треки по ссылке</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QPushButton" name="push_button_to_previous_track">
-        <property name="text">
-         <string>Предыдущий трек</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="5">
-       <widget class="QPushButton" name="push_button_to_next_track">
-        <property name="text">
-         <string>Следующий трек</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
        <widget class="QPushButton" name="push_button_to_like">
         <property name="text">
          <string>Лайк</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="5">
+      <item row="2" column="4">
        <widget class="QPushButton" name="push_button_to_my_wave">
         <property name="text">
          <string>Моя волна</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="push_button_to_download">
+        <property name="text">
+         <string>Скачать</string>
         </property>
        </widget>
       </item>
@@ -215,6 +187,113 @@
        <widget class="QLabel" name="total_result">
         <property name="text">
          <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QSlider" name="slider_track">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="icon_change_volume">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap>../Assets/Icons/32x32/icons8-low-volume-32.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="slider_change_volume">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="current_volume">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="push_button_to_previous_track">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Assets/Icons/32x32/icons8-rewind-32.png</normaloff>../Assets/Icons/32x32/icons8-rewind-32.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="push_button_to_pause">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Assets/Icons/32x32/icons8-pause-32.png</normaloff>../Assets/Icons/32x32/icons8-pause-32.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="push_button_to_play">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Assets/Icons/32x32/icons8-play-32.png</normaloff>../Assets/Icons/32x32/icons8-play-32.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="push_button_to_stop">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Assets/Icons/32x32/icons8-stop-32.png</normaloff>../Assets/Icons/32x32/icons8-stop-32.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="push_button_to_next_track">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Assets/Icons/32x32/icons8-fast-forward-32.png</normaloff>../Assets/Icons/32x32/icons8-fast-forward-32.png</iconset>
         </property>
        </widget>
       </item>

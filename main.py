@@ -1,5 +1,4 @@
 import sys
-import vlc
 import toml
 import time
 import threading
@@ -7,9 +6,10 @@ import os
 import logging
 import webbrowser
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import * #  Я знаю что так делать нельзя, но я не собераюсь заниматся се* ради того чтобы было как надо
 from PyQt5.QtCore import *
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 
 from yandex_music import Best, Client, Search
 import yandex_music
@@ -28,8 +28,8 @@ except:
 block = 10''')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
 
-class MainWindow(QtWidgets.QMainWindow, QObject):
-    def __init__(self):
+class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
+    def __init__(self, parent=None):
         # Проверяем на рабочий токен и то что интернет работает
         logger.debug("Проверяем на рабочий токен и на рабочий интернет")
         super(MainWindow, self).__init__()
@@ -42,22 +42,20 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.type_search = "albums"
 
         self.press_button_pause = lambda: self.media_player.pause()
-        self.press_button_stop = lambda: self.stop_media_player()
-        self.press_button_to_previous_track = lambda: self.previous_track()
-        self.press_button_to_next_track = lambda: self.next_track()
+        self.press_button_stop = lambda: self.media_player.stop()
+        self.press_button_to_previous_track = lambda: self.playlist.previous()
+        self.press_button_to_next_track = lambda: self.playlist.next()
+        self.press_button_to_play = lambda: self.media_player.play()
         self.press_button_to_like = lambda: threading.Thread(target = lambda:self.like(), daemon = True).start()
         self.async_enter_link_to_play = lambda: threading.Thread(target=lambda:self.enter_link_to_play(), daemon=True).start()
-        self.select_play_1_play = lambda: threading.Thread(target=lambda:self.select_play_1(), daemon=True).start()
-        self.select_play_2_play = lambda: threading.Thread(target=lambda:self.select_play_2(), daemon=True).start()
-        self.select_play_3_play = lambda: threading.Thread(target=lambda:self.select_play_3(), daemon=True).start()
-        self.select_play_4_play = lambda: threading.Thread(target=lambda:self.select_play_4(), daemon=True).start()
         self.press_button_to_search_artist = lambda: self.get_text_write_artist()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
 
         self.push_button_to_next_page.clicked.connect(self.next_page_search)
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
-        self.push_button_to_play.clicked.connect(self.async_enter_link_to_play)
+        self.push_button_to_play_track_url.clicked.connect(self.async_enter_link_to_play)
+        self.push_button_to_play.clicked.connect(self.press_button_to_play)
         self.push_button_to_my_wave.clicked.connect(self.play_my_wave_start)
         self.push_button_to_like.clicked.connect(self.press_button_to_like)
         self.push_button_to_download.clicked.connect(self.enter_link_to_download)
@@ -70,10 +68,40 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.push_button_to_search_artists.clicked.connect(self.press_button_to_search_artist)
         self.push_button_to_previous_track.clicked.connect(self.press_button_to_previous_track)
         self.push_button_to_next_track.clicked.connect(self.press_button_to_next_track)
-        self.push_button_to_select_play1.clicked.connect(self.select_play_1_play)
-        self.push_button_to_select_play2.cliked.connect(self.select_play_2_play)
-        self.push_button_to_select_play3.clicked.connect(self.select_play_3_play)
-        self.push_button_to_select_play4.clicked.connect(self.select_play_4_play)
+        self.push_button_to_select_play1.clicked.connect(self.select_play_1)
+        self.push_button_to_select_play2.clicked.connect(self.select_play_2)
+        self.push_button_to_select_play3.clicked.connect(self.select_play_3)
+        self.push_button_to_select_play4.clicked.connect(self.select_play_4)
+
+    def select_play_1(self):
+        self.loadSound = LoadSound(1, self.list_result, self.type_search)
+        self.loadSound.start()
+        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
+    def select_play_2(self):
+        self.loadSound = LoadSound(2, self.list_result, self.type_search)
+        self.loadSound.start()
+        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
+    def select_play_3(self):
+        self.loadSound = LoadSound(3, self.list_result, self.type_search)
+        self.loadSound.start()
+        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
+    def select_play_4(self):
+        self.loadSound = LoadSound(4, self.list_result, self.type_search)
+        self.loadSound.start()
+        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
+    def play_track_qt(self, list_track):
+        self.media_player = QMediaPlayer()
+        self.media_player.play()
+        self.playlist = QMediaPlaylist()
+        self.media_player.setPlaylist(self.playlist)
+
+        for i in list_track:
+            self.playlist.addMedia(QMediaContent(QUrl(i)))
+        self.media_player.play()
 
     def get_text_write_artist(self):
         self.type_search = "artists"
@@ -94,18 +122,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
     def get_text_write_best(self):
         self.type_search = "best"
         self.load_sound(self.write_search.text(), self.page)
-
-    def stop_media_player(self):
-        self.media_player.stop()
-        self.current_track -= 1
-        self.current_track_changed = self.current_track
-
-    def next_track(self):
-        self.current_track_changed += 1
-
-    def previous_track(self):
-        if self.current_track_changed > 0:
-            self.current_track_changed -= 1
 
     def parsing_sound(self, text):
         import music
@@ -268,279 +284,34 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             self.page -= 1
             self.load_sound(self.write_search.text(), self.page, self.type_search)
 #Я знаю что это плохой код. Но я не знаю как повесить на одну функцию 4 обработчика клавиш. Вообщем, пишите в тг если вы эксперт в PyQt и вы знаете как можно сделать лучше, или сделайте пулл реквест :)
-    def select_play_1(self):
-        import music
-        if self.list_result != []:
-            try:
-                if self.media_player.get_state != vlc.State.Ended:
-                    self.stop_media_player()
-            except AttributeError:
-                pass
-
-            list_source = []
-            if len(self.list_result) > 0:
-                if self.type_search == "albums":
-                    album = music.client.albums_with_tracks(self.list_result[0])
-                    self.json_data_track = album
-                    block = 0
-                    for i in album.volumes[0]:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                            self.play_media_list(list_source)
-                            block = 0
-                if self.type_search == "artists":
-                    block = 0
-                    artist_track = music.client.artists_tracks(self.list_result[0])
-                    self.json_data_track = artist_track
-                    for i in artist_track.tracks:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(artist_track.tracks) == block:
-                            self.play_media_list(list_source)
-                            block = 0
-                if self.type_search == "playlists":
-                    block = 0
-                    playlist_track = music.client.users_playlists(self.list_result[0], self.list_result[1])
-                    self.json_data_track = playlist_track
-                    for i in playlist_track.tracks:
-                        track = music.extract_direct_link_to_track(i.id)
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                            self.play_media_list(list_source)
-                            block = 0
-                if self.type_search == "tracks":
-                    self.play_one_track(self.list_result[0])
-
-    def select_play_2(self):
-        import music
-        if self.list_result != []:
-            try:
-                if self.media_player.get_state != vlc.State.Ended:
-                    self.stop_media_player()
-            except AttributeError:
-                pass
-
-        list_source = []
-        if len(self.list_result) > 0:
-            if self.type_search == "albums":
-                album = music.client.albums_with_tracks(self.list_result[3])
-                self.json_data_track = album
-                block = 0
-                for i in album.volumes[0]:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "artists":
-                block = 0
-                artist_track = music.client.artists_tracks(self.list_result[2])
-                self.json_data_track = artist_track
-                for i in artist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(artist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "playlists":
-                block = 0
-                playlist_track = music.client.users_playlists(self.list_result[3], self.list_result[4])
-                self.json_data_track = playlist_track
-                for i in playlist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "tracks":
-                self.play_one_track(self.list_result[3])
-
-    def select_play_3(self):
-        import music
-        if self.list_result != []:
-            try:
-                if self.media_player.get_state != vlc.State.Ended:
-                    self.stop_media_player()
-            except AttributeError:
-                pass
-
-        list_source = []
-        if len(self.list_result) > 0:
-            if self.type_search == "albums":
-                album = music.client.albums_with_tracks(self.list_result[6])
-                self.json_data_track = album
-                block = 0
-                for i in album.volumes[0]:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "artists":
-                block = 0
-                artist_track = music.client.artists_tracks(self.list_result[4])
-                self.json_data_track = artist_track
-                for i in artist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(artist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "playlists":
-                block = 0
-                playlist_track = music.client.users_playlists(self.list_result[6], self.list_result[7])
-                self.json_data_track = playlist_track
-                for i in playlist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "tracks":
-                self.play_one_track(self.list_result[6])
-
-    def select_play_4(self):
-        import music
-        if self.list_result != []:
-            try:
-                if self.media_player.get_state != vlc.State.Ended:
-                    self.stop_media_player()
-            except AttributeError:
-                pass
-
-        list_source = []
-        if len(self.list_result) > 0:
-            if self.type_search == "albums":
-                album = music.client.albums_with_tracks(self.list_result[9])
-                self.json_data_track = album
-                block = 0
-                for i in album.volumes[0]:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(album.volumes[0]) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "artists":
-                block = 0
-                artist_track = music.client.artists_tracks(self.list_result[6])
-                self.json_data_track = artist_track
-                for i in artist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(artist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "playlists":
-                block = 0
-                playlist_track = music.client.users_playlists(self.list_result[9], self.list_result[10])
-                self.json_data_track = playlist_track
-                for i in playlist_track.tracks:
-                    track = music.extract_direct_link_to_track(i.id)
-                    print(f"\n{track}")
-                    list_source.append(track)
-                    block += 1
-                    if block == int(config.get("block")) or len(playlist_track.tracks) == block:
-                        self.play_media_list(list_source)
-                        block = 0
-            if self.type_search == "tracks":
-                self.play_one_track(self.list_result[9])
 
     def play_my_wave_start(self):
         text, ok = QInputDialog.getText(self, 'Сколько песен?', 'Сколько песен вы хотите послушать из Моей волны?')
-        threading.Thread(target=lambda:self.play_my_wave(text=text, ok=ok), daemon=True).start()
-        #threading.Thread(target=lambda:self.check(), daemon=True).start()
+        self.play_my_wave(text=text, ok=ok)
     def like(self):
-        import music
-        data = self.json_data_track.volumes[0]
-        music.client.users_likes_tracks_add(data[self.current_track].id)
+        print("Кнопка временно заблокирована")
+        #import music
+        #data = self.json_data_track.volumes[0]
+        #music.client.users_likes_tracks_add(data[self.current_track].id)
     def play_my_wave(self, text, ok):
         import music
 
+        self.type_search = "my_wave"
         if ok:
             try:
-                block = 0
-                text = int(text)
-                list_source = []
-                for i in range(0, text):
-                    my_wave = music.my_wave()
-                    if my_wave.get('responce') == "ok":
-                        track = music.extract_direct_link_to_track(my_wave.get('id'))
-                        print(f"\n{track}")
-                        list_source.append(track)
-                        block += 1
-                        if block == config.get("block") or text != config.get("block") and block == text:
-                            self.play_media_list(list_source)
-                            block = 0
-                    else:
-                        self.error_standart("Ошибка", f"Ошибка: {my_wave.get('text')}", exit_or_no=False)
+                self.loadSound = LoadSound(select_track_or_count=int(text), type_search=self.type_search)
+                self.loadSound.start()
+                self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
             except ValueError:
                self.error_standart("Ошибка", f"Ошибка: ValueError. Напишите цифрами, а не буквами ;)", exit_or_no=False)
-
-    def play_media_list(self, list_source):
-        try:
-            self.media_player.stop()
-        except AttributeError:
-            pass
-        while True:
-            if self.current_track != len(list_source):
-                self.current_track += 1
-                self.current_track_changed += 1
-                try:
-                    self.media_player = vlc.MediaPlayer(list_source[self.current_track])
-                except IndexError:
-                    self.current_track = -1
-                    self.current_track_changed = self.current_track
-                    break
-                self.media_player.play()
-                while True:
-                    if self.media_player.get_state() == vlc.State.Ended:
-                        break
-                    if self.media_player.get_state() == vlc.State.Stopped:
-                        continue
-                    if self.current_track_changed > self.current_track:
-                        self.media_player.stop()
-                        self.current_track_changed = self.current_track
-                        break
-                    if self.current_track_changed < self.current_track:
-                        self.media_player.stop()
-                        self.current_track -= 2
-                        self.current_track_changed = self.current_track
-                        break
-                    else:
-                        time.sleep(0.2)
-            if self.current_track >= len(list_source):
-                self.current_track = -1
-                self.current_track_changed = self.current_track
-                break
 
     def play_one_track(self, track_id):
         import music
         track = music.extract_direct_link_to_track(track_id)
-        self.media_player = vlc.MediaPlayer(track)
-        self.media_player.play()
+        self.player = QMediaPlayer()
+        self.player.play()
+        self.player.setMedia(QMediaContent(QUrl(track)))
+        self.player.play()
         time.sleep(music.duration_track(track_id))
 
     def enter_link_to_play(self):
@@ -548,34 +319,26 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         if url and url.strip() or url.split(".") == "https://music" and url.split(".")[1] == "yandex":
             check_in_track = url.split("/")
             url_parts=url.split('/')
-            id_ = url_parts[-1]
             list_source = []
-            import music
-            if check_in_track[-2] == "track":
-                self.play_one_track(id_)
-
-            if check_in_track[-2] != "track":
-                response = requests.get(url)
-                soup = BeautifulSoup(response.text, 'lxml')
-                quotes = soup.find_all('a', class_='d-track__title deco-link deco-link_stronger')
-                if not quotes:
-                    self.write_link_to_play.setText("Похоже вы вставили неправильную ссылку")
-                else:
-                    block = 0
-                    list_source = []
-                    for title in quotes:
-                        s = title.text.strip(), title.get('href')
-                        url = "https://music.yandex.ru" + s[1]
-
-                        url_parts=url.split('/')
-                        track_id = url_parts[-1]
-                        if block == int(config.get("block")):
-                            self.play_media_list(list_source)
-                        else:
-                            track = music.extract_direct_link_to_track(track_id)
-                            list_source.append(track)
-                            print(f"\n{track}")
-                            block += 1
+            print(check_in_track)
+            if check_in_track[-3] == "artist" or check_in_track[-2] == "artist":
+                self.type_search = "artists"
+                try:
+                    id_ = check_in_track[-1]
+                except TypeError():
+                    id_ = check_in_track[-2]
+            if check_in_track[-2] == "playlists":
+                self.type_search = "playlists"
+                id_ = check_in_track[-1]
+            if check_in_track[-2] == "album":
+                self.type_search = "albums"
+                id_ = check_in_track[-1]
+            try:
+                if check_in_track[-2] == "track" and isinstance(int(check_in_track[-1]), int):
+                    self.type_search = "tracks"
+                    id_ = check_in_track[-1]
+            except TypeError():
+                pass
         else:
             self.write_link_to_play.setText(f"Похоже вы вставили неправильную ссылку")
 
@@ -632,6 +395,76 @@ block = 10''')
             if exit_or_no:
                 self.media_player.stop()
                 sys.exit()
+
+class LoadSound(QtCore.QThread):
+    mysignal = QtCore.pyqtSignal(list)
+    def __init__(self, select_track_or_count, list_result=[], type_search="track", parent=None):
+        self.select_track_or_count = select_track_or_count
+        self.list_result = list_result
+        self.type_search = type_search
+
+        self.list_id = []
+        self.list_track = []
+        self.len_list = 0
+        self.block = 0
+
+        QtCore.QThread.__init__(self, parent)
+
+    def run(self):
+        import music
+        if self.list_result != [] or self.type_search == "my_wave":
+            try:
+                self.media_player.stop()
+            except AttributeError:
+                pass
+            if len(self.list_result) > 0 or self.type_search == "my_wave":
+                if self.type_search == "albums":
+                    album = music.client.albums_with_tracks(self.list_result[self.select_track_or_count - 1])
+                    for i in album.volumes[0]:
+                        self.list_id.append(i.id)
+                    self.len_list = len(album.volumes[0])
+
+                if self.type_search == "playlists":
+                    playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count - 1], self.list_result[self.select_track_or_count])
+                    for i in playlist_track.tracks:
+                        self.list_id.append(i.id)
+                    self.len_list = len(playlist_track.tracks)
+
+                if self.type_search == "artists":
+                    artist_track = music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
+                    for i in artist_track.tracks:
+                        self.list_id.append(i.id)
+                    self.len_list = len(artist_track.tracks)
+
+                if self.type_search == "my_wave":
+                    for i in range(0, int(self.select_track_or_count)):
+                        my_wave = music.my_wave()
+                        if my_wave.get('responce') == "ok":
+                            self.list_id.append(my_wave.get('id'))
+                    self.len_list = len(self.list_id)
+
+                if self.type_search == "tracks":
+                    track = music.extract_direct_link_to_track(self.list_result[self.select_track_or_count - 1])
+                    self.list_track.append(track)
+                    self.mysignal.emit(self.list_track)
+
+                if len(self.list_id) > 0:
+                    for i in self.list_id:
+                        track = music.extract_direct_link_to_track(i)
+                        print(track)
+                        self.list_track.append(track)
+                        self.block += 1
+
+                        if self.block >= int(config.get('block')) or self.len_list == self.block:
+                            self.block = 0
+                            if self.len_list >= 10:
+                                for i in range(0, int(config.get('block'))):
+                                    self.list_id.pop(0)
+                            else:
+                                for i in range(0, self.len_list):
+                                    self.list_id.pop(0)
+                            self.mysignal.emit(self.list_track)
+                            break
 
 class Check(QtWidgets.QMainWindow, QObject):
     def __init__(self):
@@ -752,4 +585,4 @@ def main():
     sys.exit(app.exec_())  # и запускаем приложение
 if __name__ == '__main__': # Если мы запускаем файл напрямую, а не импортируем
     print("Запуск Yamux")
-    main()  # то запускаем функцию main()c
+    main()  # то запускаем функцию main()
