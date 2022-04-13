@@ -13,8 +13,6 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 
 from yandex_music import Best, Client, Search
 import yandex_music
-
-from bs4 import BeautifulSoup
 import requests
 
 logger = logging.getLogger('Yamux logger')

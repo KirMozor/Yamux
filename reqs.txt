@@ -1,6 +1,4 @@
 PyQt5
 toml
 yandex_music
-beautifulsoup4
-lxml
 requests
