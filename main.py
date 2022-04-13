@@ -41,6 +41,10 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.list_result = []
         self.type_search = "albums"
 
+        self.media_player = QMediaPlayer()
+        self.media_player.play()
+        self.playlist = QMediaPlaylist()
+
         self.press_button_pause = lambda: self.media_player.pause()
         self.press_button_stop = lambda: self.media_player.stop()
         self.press_button_to_previous_track = lambda: self.playlist.previous()
@@ -51,6 +55,11 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.press_button_to_search_artist = lambda: self.get_text_write_artist()
         self.msg_btn = lambda i: i.text()
         self.close_event = lambda event: sys.exit()
+
+        self.slider_change_volume.valueChanged.connect(self.media_player.setVolume)
+        self.slider_track.valueChanged.connect(self.media_player.setPosition)
+        self.media_player.durationChanged.connect(self.update_duration)
+        self.media_player.positionChanged.connect(self.update_position)
 
         self.push_button_to_next_page.clicked.connect(self.next_page_search)
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
@@ -73,6 +82,23 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.push_button_to_select_play3.clicked.connect(self.select_play_3)
         self.push_button_to_select_play4.clicked.connect(self.select_play_4)
 
+    def hhmmss(self, ms):
+        h, r = divmod(ms, 36000)
+        s, _ = divmod(r, 1000)
+        return ("%d:%02d" % (h,s)) if h else ("%d:%02d" % (h,s))
+
+    def update_duration(self, duration):
+        self.slider_track.setMaximum(duration)
+        if duration >= 0:
+            self.total_slider_track.setText(self.hhmmss(duration))
+
+    def update_position(self, position):
+        if position >= 0:
+            self.current_slider_track.setText(self.hhmmss(position))
+        self.slider_track.blockSignals(True)
+        self.slider_track.setValue(position)
+        self.slider_track.blockSignals(False)
+
     def select_play_1(self):
         self.loadSound = LoadSound(1, self.list_result, self.type_search)
         self.loadSound.start()
@@ -94,9 +120,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
     def play_track_qt(self, list_track):
-        self.media_player = QMediaPlayer()
-        self.media_player.play()
-        self.playlist = QMediaPlaylist()
         self.media_player.setPlaylist(self.playlist)
 
         for i in list_track:
@@ -316,27 +339,57 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
 
     def enter_link_to_play(self):
         url = self.write_link_to_play.text()
-        if url and url.strip() or url.split(".") == "https://music" and url.split(".")[1] == "yandex":
+        if url.split(".")[0] == "https://music" and url.split(".")[1] == "yandex":
             check_in_track = url.split("/")
             url_parts=url.split('/')
             list_source = []
-            print(check_in_track)
             if check_in_track[-3] == "artist" or check_in_track[-2] == "artist":
                 self.type_search = "artists"
                 try:
                     id_ = check_in_track[-1]
+                    print(id_)
+                    self.list_result = []
+                    self.list_result.append(id_)
+                    self.loadSound = LoadSound(1, self.list_result, self.type_search)
+                    self.loadSound.start()
+                    self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
                 except TypeError():
                     id_ = check_in_track[-2]
+                    print(id_)
+                    self.list_result = []
+                    self.list_result.append(id_)
+                    self.loadSound = LoadSound(1, self.list_result, self.type_search)
+                    self.loadSound.start()
+                    self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
             if check_in_track[-2] == "playlists":
                 self.type_search = "playlists"
                 id_ = check_in_track[-1]
+                print(id_)
+                self.list_result = []
+                self.list_result.append(id_)
+                self.loadSound = LoadSound(1, self.list_result, self.type_search)
+                self.loadSound.start()
+                self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
             if check_in_track[-2] == "album":
                 self.type_search = "albums"
                 id_ = check_in_track[-1]
+                print(id_)
+                self.list_result = []
+                self.list_result.append(id_)
+                self.loadSound = LoadSound(1, self.list_result, self.type_search)
+                self.loadSound.start()
+                self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
             try:
                 if check_in_track[-2] == "track" and isinstance(int(check_in_track[-1]), int):
                     self.type_search = "tracks"
                     id_ = check_in_track[-1]
+                    print(id_)
+                    self.list_result = []
+                    self.list_result.append(id_)
+                    self.loadSound = LoadSound(1, self.list_result, self.type_search)
+                    self.loadSound.start()
+                    self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
             except TypeError():
                 pass
         else:

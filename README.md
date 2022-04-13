@@ -8,10 +8,6 @@
 
 `pip install -U -r reqs.txt`
 
-Надо установить VLC, как установить, ищите конкретно для своего дистрибутива. В ArchLinux устанавливается так:
-
-`sudo pacman -S vlc`
-
 Иногда для работы программы надо установить пакеты `python-pyqt5` или `python3-pyqt5`. В ArchLinux это делается так
 
 `sudo pacman -S python-pyqt5`
