@@ -22,8 +22,7 @@ try:
     logger.debug("Загрузка config")
 except:
     with open("config.toml", "w") as file:
-        file.write('''token_yandex = ""
-block = 10''')
+        file.write('''token_yandex = ""''')
     logger.error("Перезайди в программу. Был кривой конфиг, я его пересоздал")
 
 class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
@@ -37,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.current_track = -1
         self.current_track_changed = self.current_track
         self.list_result = []
+        self.list_id = []
         self.type_search = "albums"
 
         self.media_player = QMediaPlayer()
@@ -58,6 +58,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.slider_track.valueChanged.connect(self.media_player.setPosition)
         self.media_player.durationChanged.connect(self.update_duration)
         self.media_player.positionChanged.connect(self.update_position)
+        self.media_player.mediaStatusChanged.connect(self.next_track)
 
         self.push_button_to_next_page.clicked.connect(self.next_page_search)
         self.push_button_to_previous_page.clicked.connect(self.previous_page_search)
@@ -80,6 +81,14 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.push_button_to_select_play3.clicked.connect(self.select_play_3)
         self.push_button_to_select_play4.clicked.connect(self.select_play_4)
 
+    def next_track(self):
+        media_status = self.media_player.mediaStatus()
+        if media_status == 7:
+            if self.type_search != "tracks":
+                self.loadSound.current_track += 1
+                self.loadSound.start()
+                self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+
     def hhmmss(self, ms):
         h, r = divmod(ms, 36000)
         s, _ = divmod(r, 1000)
@@ -98,30 +107,28 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.slider_track.blockSignals(False)
 
     def select_play_1(self):
-        self.loadSound = LoadSound(1, self.list_result, self.type_search)
+        self.loadSound = LoadSound(0, self.list_id, self.type_search)
         self.loadSound.start()
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
     def select_play_2(self):
-        self.loadSound = LoadSound(2, self.list_result, self.type_search)
+        self.loadSound = LoadSound(1, self.list_id, self.type_search)
         self.loadSound.start()
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
     def select_play_3(self):
-        self.loadSound = LoadSound(3, self.list_result, self.type_search)
+        self.loadSound = LoadSound(2, self.list_id, self.type_search)
         self.loadSound.start()
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
     def select_play_4(self):
-        self.loadSound = LoadSound(4, self.list_result, self.type_search)
+        self.loadSound = LoadSound(3, self.list_id, self.type_search)
         self.loadSound.start()
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
-    def play_track_qt(self, list_track):
-        self.media_player.setPlaylist(self.playlist)
-
-        for i in list_track:
-            self.playlist.addMedia(QMediaContent(QUrl(i)))
+    def play_track_qt(self, track):
+        track = QMediaContent(QUrl(track))
+        self.media_player.setMedia(track)
         self.media_player.play()
 
     def get_text_write_artist(self):
@@ -177,6 +184,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
             output = self.parsing_sound(text)
             if output is not None:
                 self.list_result = []
+                self.list_id = []
                 if self.type_search == "best":
                     best = "best"
                 else:
@@ -185,52 +193,52 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
                 if best is None:
                     for i in output:
                         if self.type_search == "artists":
-                            self.list_result.append(i.id)
+                            self.list_id.append(i.id)
                             self.list_result.append(i.name)
                         if self.type_search == "playlists":
-                            self.list_result.append(i.kind)
-                            self.list_result.append(i.uid)
+                            self.list_id.append(i.kind)
+                            self.list_id.append(i.uid)
                             self.list_result.append(i.title)
                         if self.type_search == "albums" or self.type_search == "tracks":
-                            self.list_result.append(i.id)
+                            self.list_id.append(i.id)
                             self.list_result.append(i.title)
                             try:
                                 self.list_result.append(i.artists[0].name)
                             except IndexError:
                                 self.list_result.append("")
-                        element = self.page * 4
-                        if element > 4:
-                            for i in range(0, 12):
-                                self.list_result.pop(0)
+                    element = self.page * 4
+                    if element > 4:
+                        for i in range(0, 8):
+                            self.list_result.pop(0)
                     if self.type_search == "albums" or self.type_search == "tracks":
                         if element > 4:
-                            self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
-                            self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
-                            self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
-                            self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                            self.result_search0.setText(f"{self.list_result[0]} - {self.list_result[1]}")
+                            self.result_search1.setText(f"{self.list_result[2]} - {self.list_result[3]}")
+                            self.result_search2.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                            self.result_search3.setText(f"{self.list_result[6]} - {self.list_result[7]}")
                         else:
                             try:
-                                self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                                self.result_search0.setText(f"{self.list_result[0]} - {self.list_result[1]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search1.setText(f"{self.list_result[4]} - {self.list_result[5]}")
+                                self.result_search1.setText(f"{self.list_result[2]} - {self.list_result[3]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search2.setText(f"{self.list_result[7]} - {self.list_result[8]}")
+                                self.result_search2.setText(f"{self.list_result[4]} - {self.list_result[5]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search3.setText(f"{self.list_result[10]} - {self.list_result[11]}")
+                                self.result_search3.setText(f"{self.list_result[6]} - {self.list_result[7]}")
                             except IndexError:
                                 pass
                     if self.type_search == "artists":
                         if element > 4:
                             self.result_search0.setText(f"{self.list_result[1]}")
-                            self.result_search1.setText(f"{self.list_result[3]}")
-                            self.result_search2.setText(f"{self.list_result[5]}")
-                            self.result_search3.setText(f"{self.list_result[7]}")
+                            self.result_search1.setText(f"{self.list_result[2]}")
+                            self.result_search2.setText(f"{self.list_result[3]}")
+                            self.result_search3.setText(f"{self.list_result[4]}")
                         else:
                             try:
                                 self.result_search0.setText(f"{self.list_result[1]}")
@@ -250,46 +258,45 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
                                 pass
                     if self.type_search == "playlists":
                         if element > 4:
-                            self.result_search0.setText(f"{self.list_result[2]}")
-                            self.result_search1.setText(f"{self.list_result[5]}")
-                            self.result_search2.setText(f"{self.list_result[8]}")
-                            self.result_search3.setText(f"{self.list_result[11]}")
+                            self.result_search0.setText(f"{self.list_result[0]}")
+                            self.result_search1.setText(f"{self.list_result[1]}")
+                            self.result_search2.setText(f"{self.list_result[2]}")
+                            self.result_search3.setText(f"{self.list_result[3]}")
                         else:
                             try:
-                                self.result_search0.setText(f"{self.list_result[2]}")
+                                self.result_search0.setText(f"{self.list_result[0]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search1.setText(f"{self.list_result[5]}")
+                                self.result_search1.setText(f"{self.list_result[1]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search2.setText(f"{self.list_result[8]}")
+                                self.result_search2.setText(f"{self.list_result[2]}")
                             except IndexError:
                                 pass
                             try:
-                                self.result_search3.setText(f"{self.list_result[11]}")
+                                self.result_search3.setText(f"{self.list_result[3]}")
                             except IndexError:
                                 pass
                 else:
                     self.type_search = output.type
                     output = output.result
                     if self.type_search == "artist":
-                        self.list_result.append(output.id)
+                        self.list_id.append(output.id)
                         self.list_result.append(output.name)
                     if self.type_search == "album" or self.type_search == "track":
-                        self.list_result.append(output.id)
+                        self.list_id.append(output.id)
                         self.list_result.append(output.title)
                         try:
                             self.list_result.append(output.artists[0].name)
                         except IndexError:
                             self.list_result.append("")
                     self.type_search += "s"
-                    print(self.list_result)
                     try:
-                        self.result_search0.setText(f"{self.list_result[1]} - {self.list_result[2]}")
+                        self.result_search0.setText(f"{self.list_result[0]} - {self.list_result[1]}")
                     except IndexError:
-                        self.result_search0.setText(f"{self.list_result[1]}")
+                        self.result_search0.setText(f"{self.list_result[0]}")
             else:
                 self.result_search0.setText("Ничего не найдено")
         else:
@@ -345,7 +352,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
                 self.type_search = "artists"
                 try:
                     id_ = check_in_track[-1]
-                    print(id_)
                     self.list_result = []
                     self.list_result.append(id_)
                     self.loadSound = LoadSound(1, self.list_result, self.type_search)
@@ -353,7 +359,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
                     self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
                 except TypeError():
                     id_ = check_in_track[-2]
-                    print(id_)
                     self.list_result = []
                     self.list_result.append(id_)
                     self.loadSound = LoadSound(1, self.list_result, self.type_search)
@@ -362,7 +367,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
             if check_in_track[-2] == "playlists":
                 self.type_search = "playlists"
                 id_ = check_in_track[-1]
-                print(id_)
                 self.list_result = []
                 self.list_result.append(id_)
                 self.loadSound = LoadSound(1, self.list_result, self.type_search)
@@ -372,7 +376,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
             if check_in_track[-2] == "album":
                 self.type_search = "albums"
                 id_ = check_in_track[-1]
-                print(id_)
                 self.list_result = []
                 self.list_result.append(id_)
                 self.loadSound = LoadSound(1, self.list_result, self.type_search)
@@ -382,7 +385,6 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
                 if check_in_track[-2] == "track" and isinstance(int(check_in_track[-1]), int):
                     self.type_search = "tracks"
                     id_ = check_in_track[-1]
-                    print(id_)
                     self.list_result = []
                     self.list_result.append(id_)
                     self.loadSound = LoadSound(1, self.list_result, self.type_search)
@@ -440,15 +442,15 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
             with open("config.toml", "w") as file:
-                file.write(f'''token_yandex = "{text}"
-block = 10''')
+                file.write(f'''token_yandex = "{text}"''')
         else:
             if exit_or_no:
                 self.media_player.stop()
                 sys.exit()
 
 class LoadSound(QtCore.QThread):
-    mysignal = QtCore.pyqtSignal(list)
+    mysignal = QtCore.pyqtSignal(str)
+    current_track = -1
     def __init__(self, select_track_or_count, list_result=[], type_search="track", parent=None):
         self.select_track_or_count = select_track_or_count
         self.list_result = list_result
@@ -468,54 +470,57 @@ class LoadSound(QtCore.QThread):
                 self.media_player.stop()
             except AttributeError:
                 pass
-            if len(self.list_result) > 0 or self.type_search == "my_wave":
-                if self.type_search == "albums":
-                    album = music.client.albums_with_tracks(self.list_result[self.select_track_or_count - 1])
-                    for i in album.volumes[0]:
-                        self.list_id.append(i.id)
-                    self.len_list = len(album.volumes[0])
+            if self.current_track == -1:
+                if len(self.list_result) > 0 or self.type_search == "my_wave":
+                    self.current_track += 1
+                    select_track_or_count = self.select_track_or_count
 
-                if self.type_search == "playlists":
-                    playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count - 1], self.list_result[self.select_track_or_count])
-                    for i in playlist_track.tracks:
-                        self.list_id.append(i.id)
-                    self.len_list = len(playlist_track.tracks)
+                    for i in self.list_result:
+                        try:
+                            int(i)
+                        except:
+                            self.list_result.pop(0)
 
-                if self.type_search == "artists":
-                    artist_track = music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
-                    for i in artist_track.tracks:
-                        self.list_id.append(i.id)
-                    self.len_list = len(artist_track.tracks)
+                    if self.type_search == "albums":
+                        album = music.client.albums_with_tracks(self.list_result[select_track_or_count])
+                        for i in album.volumes[0]:
+                            self.list_id.append(i.id)
+                        self.len_list = len(album.volumes[0])
 
-                if self.type_search == "my_wave":
-                    for i in range(0, int(self.select_track_or_count)):
-                        my_wave = music.my_wave()
-                        if my_wave.get('responce') == "ok":
-                            self.list_id.append(my_wave.get('id'))
-                    self.len_list = len(self.list_id)
+                    if self.type_search == "playlists":
+                        playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count - 1], self.list_result[self.select_track_or_count])
+                        for i in playlist_track.tracks:
+                            self.list_id.append(i.id)
+                        self.len_list = len(playlist_track.tracks)
 
-                if self.type_search == "tracks":
-                    track = music.extract_direct_link_to_track(self.list_result[self.select_track_or_count - 1])
-                    self.list_track.append(track)
-                    self.mysignal.emit(self.list_track)
+                    if self.type_search == "artists":
+                        artist_track = music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
+                        for i in artist_track.tracks:
+                            self.list_id.append(i.id)
+                        self.len_list = len(artist_track.tracks)
 
-                if len(self.list_id) > 0:
-                    for i in self.list_id:
-                        track = music.extract_direct_link_to_track(i)
-                        print(track)
-                        self.list_track.append(track)
-                        self.block += 1
+                    if self.type_search == "my_wave":
+                        for i in range(0, int(self.select_track_or_count)):
+                            my_wave = music.my_wave()
+                            if my_wave.get('responce') == "ok":
+                                self.list_id.append(my_wave.get('id'))
+                        self.len_list = len(self.list_id)
 
-                        if self.block >= int(config.get('block')) or self.len_list == self.block:
-                            self.block = 0
-                            if self.len_list >= 10:
-                                for i in range(0, int(config.get('block'))):
-                                    self.list_id.pop(0)
-                            else:
-                                for i in range(0, self.len_list):
-                                    self.list_id.pop(0)
-                            self.mysignal.emit(self.list_track)
-                            break
+                    if self.type_search == "tracks":
+                        track = music.extract_direct_link_to_track(self.list_result[self.select_track_or_count - 1])
+                        self.mysignal.emit(track)
+
+                    if len(self.list_id) > 0:
+                        track = music.extract_direct_link_to_track(self.list_id[0])
+                        self.mysignal.emit(track)
+
+            if self.current_track > 0:
+                print(self.list_id)
+                id_track = self.list_id[self.current_track]
+                print(id_track)
+                track = music.extract_direct_link_to_track(id_track)
+                print(track)
+                self.mysignal.emit(track)
 
 class Check(QtWidgets.QMainWindow, QObject):
     def __init__(self):
@@ -591,8 +596,7 @@ class Check(QtWidgets.QMainWindow, QObject):
         text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
             with open("config.toml", "w") as file:
-                file.write(f'''token_yandex = "{text}"
-block = 10''')
+                file.write(f'''token_yandex = "{text}"''')
         else:
             if exit_or_no:
                 sys.exit()
@@ -620,8 +624,7 @@ block = 10''')
                     json_data = request_auth.json()
                     text = json_data.get('access_token')
                     with open("config.toml", "w") as file:
-                        file.write(f'''token_yandex = "{text}"
-block = 10''')
+                        file.write(f'''token_yandex = "{text}"''')
                     self.hide()
                     mainWindow = MainWindow()
                     mainWindow.show()
