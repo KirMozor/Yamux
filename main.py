@@ -127,10 +127,12 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
 
     def play_track_qt(self, track):
-        track = QMediaContent(QUrl(track))
-        self.media_player.setMedia(track)
-        self.media_player.play()
-
+        if track != "End":
+            track = QMediaContent(QUrl(track))
+            self.media_player.setMedia(track)
+            self.media_player.play()
+        else:
+            self.write_search.setText("Плейлист закончен")
     def get_text_write_artist(self):
         self.type_search = "artists"
         self.load_sound(self.write_search.text(), self.page)
@@ -515,12 +517,15 @@ class LoadSound(QtCore.QThread):
                         self.mysignal.emit(track)
 
             if self.current_track > 0:
-                print(self.list_id)
-                id_track = self.list_id[self.current_track]
-                print(id_track)
-                track = music.extract_direct_link_to_track(id_track)
-                print(track)
-                self.mysignal.emit(track)
+                try:
+                    print(self.list_id)
+                    id_track = self.list_id[self.current_track]
+                    print(id_track)
+                    track = music.extract_direct_link_to_track(id_track)
+                    print(track)
+                    self.mysignal.emit(track)
+                except IndexError():
+                    self.mysignal.emit("End")
 
 class Check(QtWidgets.QMainWindow, QObject):
     def __init__(self):
