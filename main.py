@@ -490,10 +490,7 @@ class LoadSound(QtCore.QThread):
                         self.len_list = len(album.volumes[0])
 
                     if self.type_search == "playlists":
-                        playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count - 1], self.list_result[self.select_track_or_count])
-                        for i in playlist_track.tracks:
-                            self.list_id.append(i.id)
-                        self.len_list = len(playlist_track.tracks)
+                        self.list_id.append(1)
 
                     if self.type_search == "artists":
                         artist_track = music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
@@ -513,6 +510,13 @@ class LoadSound(QtCore.QThread):
                         self.mysignal.emit(track)
 
                     if len(self.list_id) > 0:
+                        if self.type_search == "playlists":
+                            self.list_id.pop(0)
+                            playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count], self.list_result[self.select_track_or_count + 1])
+                            for i in playlist_track.tracks:
+                                self.list_id.append(i.id)
+                            self.len_list = len(playlist_track.tracks)
+
                         track = music.extract_direct_link_to_track(self.list_id[0])
                         self.mysignal.emit(track)
 
