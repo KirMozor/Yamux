@@ -128,7 +128,9 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
 
     def play_track_qt(self, track):
         if track != "End":
+            print(f"\n{track}")
             track = QMediaContent(QUrl(track))
+            print(f"\n{track}")
             self.media_player.setMedia(track)
             self.media_player.play()
         else:

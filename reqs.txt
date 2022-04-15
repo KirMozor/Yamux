@@ -1,3 +1,4 @@
+PyQt6
 PyQt5
 toml
 yandex_music

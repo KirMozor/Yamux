@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>734</width>
+    <width>774</width>
     <height>516</height>
    </rect>
   </property>
@@ -211,7 +211,6 @@ text-align:left;</string>
                <font>
                 <family>DejaVu Sans</family>
                 <pointsize>12</pointsize>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -234,7 +233,7 @@ text-align:left;</string>
               </property>
               <property name="icon">
                <iconset>
-                <normaloff>../../../../Downloads/icons8-musical-34.png</normaloff>../../../../Downloads/icons8-musical-34.png</iconset>
+                <normaloff>../Assets/Icons/32x32/icons8-music-32.png</normaloff>../Assets/Icons/32x32/icons8-music-32.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -426,7 +425,7 @@ padding-top:9px;
               </property>
               <property name="icon">
                <iconset>
-                <normaloff>../../../../Downloads/icons8-musical-34.png</normaloff>../../../../Downloads/icons8-musical-34.png</iconset>
+                <normaloff>../Assets/Icons/32x32/icons8-music-32.png</normaloff>../Assets/Icons/32x32/icons8-music-32.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -531,7 +530,6 @@ outline: none;</string>
               <property name="font">
                <font>
                 <pointsize>20</pointsize>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>

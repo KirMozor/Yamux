@@ -16,6 +16,10 @@
 
 `sudo apt install python3-pyqt5`
 
+Также вам необходим GStreamer и плагин для Qt, в ArchLinux устанавливается так:
+
+`sudo pacman -S gstreamer qt-gstreamer phonon-qt5-gstreamer`
+
 ### Запуск
 
 Для запуска надо запустить main.py в корне программы, для этого введите эту команду

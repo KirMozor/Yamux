@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5 import QtCore, QtWidgets, uic
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QCursor, QMovie
-from PyQt5.QtCore import QObject
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6 import QtCore, QtWidgets, uic
+from PyQt6.QtGui import QIcon, QPixmap, QFont, QImage, QCursor, QMovie
+from PyQt6.QtCore import QObject
 from yandex_music import Best, Client, Search
-from concurrent.futures import ThreadPoolExecutor
 import yandex_music
 import webbrowser
 import requests
@@ -76,7 +75,7 @@ class Check(QtWidgets.QMainWindow, QObject):
                 self.msg_btn = lambda i: i.text()
             else:
                 uic.loadUi("Ui/Loading.ui", self)
-                self.movie = QMovie("/home/kirill/MyProject/Git/Yamux/Assets/Gif/icons8-loading-circle.gif")
+                self.movie = QMovie("Assets/Gif/icons8-loading-circle.gif")
                 self.label.setMovie(self.movie)
                 self.movie.start()
                 self.show()
@@ -84,7 +83,7 @@ class Check(QtWidgets.QMainWindow, QObject):
                 self.my_thread = CheckToken()
                 self.my_thread.start()
 
-                self.my_thread.mysignal.connect(self.show_main_window, QtCore.Qt.QueuedConnection)
+                self.my_thread.mysignal.connect(self.show_main_window)
         except yandex_music.exceptions.NetworkError:
             self.error_standart("Проблемы с интернетом",
                 "Yandex Music Api не видит вашего интернета, проверь, всё ли с ним в порядке",
@@ -189,7 +188,7 @@ class CheckToken(QtCore.QThread):
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     check = Check()  # Создаём объект класса MainWindow
-    sys.exit(app.exec_())  # и запускаем приложение
+    sys.exit(app.exec())  # и запускаем приложение
 if __name__ == '__main__': # Если мы запускаем файл напрямую, а не импортируем
     print("Запуск Yamux")
     main()  # то запускаем функцию main()
