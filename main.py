@@ -37,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.current_track_changed = self.current_track
         self.list_result = []
         self.list_id = []
+        self.current_track_playlist = 0
         self.type_search = "albums"
 
         self.media_player = QMediaPlayer()
@@ -81,13 +82,36 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.push_button_to_select_play3.clicked.connect(self.select_play_3)
         self.push_button_to_select_play4.clicked.connect(self.select_play_4)
 
+    def get_id_tracks_playlist(self, list_result):
+        import Src.Music
+        if self.type_search == "playlists":
+            kind_list = list_result[self.current_track_playlist]
+            uid_list = list_result[self.current_track_playlist + 1]
+            print(list_result)
+            print(self.current_track_playlist)
+            playlist_track = Src.Music.get_tracks_playlist(kind=kind_list, uid=uid_list)
+            list_id = []
+            for i in playlist_track.tracks:
+                list_id.append(i.id)
+            return list_id
+
+    def pars_direct_link_to_track(self, id_tracks):
+        from Src.Music import extract_direct_link_to_track
+        track = extract_direct_link_to_track(id_tracks[self.current_track_playlist])
+        return track
+
     def next_track(self):
         media_status = self.media_player.mediaStatus()
         if media_status == 7:
-            if self.type_search != "tracks":
+            if self.type_search != "tracks" and self.type_search != "playlists":
                 self.loadSound.current_track += 1
                 self.loadSound.start()
                 self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+            if self.type_search == "playlists":
+                self.current_track_playlist += 2
+                id_ = self.get_id_tracks_playlist(self.list_id)
+                track = self.pars_direct_link_to_track(id_)
+                self.play_track_qt(track)
 
     def hhmmss(self, ms):
         h, r = divmod(ms, 36000)
@@ -107,9 +131,14 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.slider_track.blockSignals(False)
 
     def select_play_1(self):
-        self.loadSound = LoadSound(0, self.list_id, self.type_search)
-        self.loadSound.start()
-        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        if self.type_search != "playlists":
+            self.loadSound = LoadSound(0, self.list_id, self.type_search)
+            self.loadSound.start()
+            self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        else:
+            id_ = self.get_id_tracks_playlist(self.list_id)
+            track = self.pars_direct_link_to_track(id_)
+            self.play_track_qt(track)
 
     def select_play_2(self):
         self.loadSound = LoadSound(1, self.list_id, self.type_search)
@@ -156,29 +185,29 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
         self.load_sound(self.write_search.text(), self.page)
 
     def parsing_sound(self, text):
-        import music
+        import Src.Music
         if self.type_search == "albums":
-            result = music.send_search_request_and_print_result(text, "albums")
+            result = Src.Music.search(text, "albums")
             if result != None:
                 self.total_result.setText(f"Я нащёл {result.total} альбомов")
             return result
         if self.type_search == "artists":
-            result = music.send_search_request_and_print_result(text, "artists")
+            result = Src.Music.search(text, "artists")
             if result != None:
                 self.total_result.setText(f"Я нащёл {result.total} артистов")
             return result
         if self.type_search == "tracks":
-            result = music.send_search_request_and_print_result(text, "tracks")
+            result = Src.Music.search(text, "tracks")
             if result != None:
                 self.total_result.setText(f"Я нащёл {result.total} треков")
             return result
         if self.type_search == "playlists":
-            result = music.send_search_request_and_print_result(text, "playlists")
+            result = Src.Music.search(text, "playlists")
             if result != None:
                 self.total_result.setText(f"Я нащел {result.total} плейлистов")
             return result
         if self.type_search == "best":
-            result = music.send_search_request_and_print_result(text, "best")
+            result = Src.Music.search(text, "best")
             if result != None:
                 self.total_result.setText(f"Лучший результат это {result.type}")
             return result
@@ -468,7 +497,7 @@ class LoadSound(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        import music
+        import Src.Music
         if self.list_result != [] or self.type_search == "my_wave":
             try:
                 self.media_player.stop()
@@ -484,18 +513,20 @@ class LoadSound(QtCore.QThread):
                             int(i)
                         except:
                             self.list_result.pop(0)
+                    if self.type_search == "playlists":
+                        print(self.list_result)
+                        kind_list = self.list_result[self.select_track_or_count]
+                        uid_list = self.list_result[self.select_track_or_count + 1]
+                        playlist_track = Src.Music.get_tracks_playlist(kind=kind_list, uid=uid_list)
 
                     if self.type_search == "albums":
-                        album = music.client.albums_with_tracks(self.list_result[select_track_or_count])
+                        album = Src.Music.client.albums_with_tracks(self.list_result[select_track_or_count])
                         for i in album.volumes[0]:
                             self.list_id.append(i.id)
                         self.len_list = len(album.volumes[0])
 
-                    if self.type_search == "playlists":
-                        self.list_id.append(1)
-
                     if self.type_search == "artists":
-                        artist_track = music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
+                        artist_track = Src.Music.client.artists_tracks(self.list_result[self.select_track_or_count - 1])
                         for i in artist_track.tracks:
                             self.list_id.append(i.id)
                         self.len_list = len(artist_track.tracks)
@@ -508,18 +539,11 @@ class LoadSound(QtCore.QThread):
                         self.len_list = len(self.list_id)
 
                     if self.type_search == "tracks":
-                        track = music.extract_direct_link_to_track(self.list_result[self.select_track_or_count - 1])
+                        track = Src.Music.extract_direct_link_to_track(self.list_result[self.select_track_or_count - 1])
                         self.mysignal.emit(track)
 
                     if len(self.list_id) > 0:
-                        if self.type_search == "playlists":
-                            self.list_id.pop(0)
-                            playlist_track = music.client.users_playlists(self.list_result[self.select_track_or_count], self.list_result[self.select_track_or_count + 1])
-                            for i in playlist_track.tracks:
-                                self.list_id.append(i.id)
-                            self.len_list = len(playlist_track.tracks)
-
-                        track = music.extract_direct_link_to_track(self.list_id[0])
+                        track = Src.Music.extract_direct_link_to_track(self.list_id[0])
                         self.mysignal.emit(track)
 
             if self.current_track > 0:
@@ -527,7 +551,7 @@ class LoadSound(QtCore.QThread):
                     print(self.list_id)
                     id_track = self.list_id[self.current_track]
                     print(id_track)
-                    track = music.extract_direct_link_to_track(id_track)
+                    track = Src.Music.extract_direct_link_to_track(id_track)
                     print(track)
                     self.mysignal.emit(track)
                 except IndexError():

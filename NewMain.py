@@ -2,19 +2,19 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6 import QtCore, QtWidgets, uic
 from PyQt6.QtGui import QIcon, QPixmap, QFont, QImage, QCursor, QMovie
-from PyQt6.QtCore import QObject
-from yandex_music import Best, Client, Search
-import yandex_music
+from PyQt6.QtCore import QObject, Qt
+from yandex_music import Client
+
 import webbrowser
 import requests
 import toml
-import time
 import sys
 
 try:
-    config = toml.load("config.toml")
+    config = toml.load("Src/config.toml")
+    from Src.LoadSound import GetSearchTrack
 except:
-    with open("config.toml", "w") as file:
+    with open("Src/config.toml", "w") as file:
         file.write('''token_yandex = ""
 block = 10''')
 
@@ -23,6 +23,7 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         # Проверяем на рабочий токен и то что интернет работает
         super(MainWindow, self).__init__()
         uic.loadUi('Ui/Landing.ui', self)  # Это нужно для инициализации нашего дизайна
+
         self.hide_or_show_menu = True
         self.widget_4.hide()
         self.press_button_pause = lambda: self.media_player.pause()
@@ -38,6 +39,16 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
         self.podcasts_page_select_button_2.clicked.connect(self.select_podcasts_clicked)
         self.select_playlist_button.clicked.connect(self.select_users_playlist_clicked)
         self.select_playlist_button_2.clicked.connect(self.select_users_playlist_clicked)
+
+    def keyPressEvent(self, e):
+        text = self.lineEdit.text()
+        if e.key() == 16777220 and len(text.split()) != 0:
+            self.get_search = GetSearchTrack(text)
+            self.get_search.start()
+            self.get_search.signal.connect(self.print_result)
+
+    def print_result(self, res):
+        print(res)
 
     def select_main_page_clicked(self):
         self.description_text.setText("Главная")
@@ -60,12 +71,13 @@ class MainWindow(QtWidgets.QMainWindow, QObject):
             self.widget_4.hide()
             self.widget_3.show()
             self.hide_or_show_menu = True
+
 class Check(QtWidgets.QMainWindow, QObject):
     def __init__(self):
         # Проверяем на рабочий токен и то что интернет работает
         super(Check, self).__init__()
         uic.loadUi('Ui/Authorize.ui', self)  # Это нужно для инициализации нашего дизайна
-        config = toml.load("config.toml")
+        config = toml.load("Src/config.toml")
 
         try:
             if not config.get('token_yandex'):
@@ -136,9 +148,8 @@ class Check(QtWidgets.QMainWindow, QObject):
     def error_config(self, message_log, description, windows_title="Ошибка", exit_or_no=True):
         text, ok = QInputDialog.getText(self, windows_title, description)
         if ok:
-            with open("config.toml", "w") as file:
-                file.write(f'''token_yandex = "{text}"
-block = 10''')
+            with open("Src/config.toml", "w") as file:
+                file.write(f'''token_yandex = "{text}"''')
         else:
             if exit_or_no:
                 sys.exit()
@@ -165,9 +176,8 @@ block = 10''')
                 if request_auth.status_code == 200:
                     json_data = request_auth.json()
                     text = json_data.get('access_token')
-                    with open("config.toml", "w") as file:
-                        file.write(f'''token_yandex = "{text}"
-block = 10''')
+                    with open("Src/config.toml", "w") as file:
+                        file.write(f'''token_yandex = "{text}"''')
                     self.hide()
                     mainWindow = MainWindow()
                     mainWindow.show()
@@ -175,6 +185,7 @@ block = 10''')
                 self.error_standart("Проблемы с интернетом", "Проверьте интернет подключенние", exit_or_no=False)
         else:
             self.error_standart("Ввели пустую строку", "Вы ввели пустую строку :)", exit_or_no=False)
+
 class CheckToken(QtCore.QThread):
     mysignal = QtCore.pyqtSignal(str)
     def __init__(self, parent=None):
