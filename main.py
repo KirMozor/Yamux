@@ -103,16 +103,25 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
     def next_track(self):
         media_status = self.media_player.mediaStatus()
         if media_status == 7:
+            print(self.type_search)
             if self.type_search != "tracks" and self.type_search != "playlists":
                 self.loadSound.current_track += 1
                 self.loadSound.start()
                 self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
             if self.type_search == "playlists":
-                self.current_track_playlist += 2
-                id_ = self.get_id_tracks_playlist(self.list_id)
-                track = self.pars_direct_link_to_track(id_)
-                self.play_track_qt(track)
-
+                try:
+                    check_error = self.current_track_playlist
+                    check_error += 2
+                    check_error += 1
+                    print(check_error)
+                    print(self.list_id[check_error])
+                except:
+                    self.inference_current_track.setText("Закончился плейлист")
+                else:
+                    self.current_track_playlist += 2
+                    id_ = self.get_id_tracks_playlist(self.list_id)
+                    track = self.pars_direct_link_to_track(id_)
+                    self.play_track_qt(track)
     def hhmmss(self, ms):
         h, r = divmod(ms, 36000)
         s, _ = divmod(r, 1000)
@@ -141,19 +150,34 @@ class MainWindow(QtWidgets.QMainWindow, QObject, QUrl):
             self.play_track_qt(track)
 
     def select_play_2(self):
-        self.loadSound = LoadSound(1, self.list_id, self.type_search)
-        self.loadSound.start()
-        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        if self.type_search != "playlists":
+            self.loadSound = LoadSound(1, self.list_id, self.type_search)
+            self.loadSound.start()
+            self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        else:
+            id_ = self.get_id_tracks_playlist(self.list_id)
+            track = self.pars_direct_link_to_track(id_)
+            self.play_track_qt(track)
 
     def select_play_3(self):
-        self.loadSound = LoadSound(2, self.list_id, self.type_search)
-        self.loadSound.start()
-        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        if self.type_search != "playlists":
+            self.loadSound = LoadSound(2, self.list_id, self.type_search)
+            self.loadSound.start()
+            self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection) 
+        else:
+            id_ = self.get_id_tracks_playlist(self.list_id)
+            track = self.pars_direct_link_to_track(id_)
+            self.play_track_qt(track)
 
     def select_play_4(self):
-        self.loadSound = LoadSound(3, self.list_id, self.type_search)
-        self.loadSound.start()
-        self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        if self.type_search != "playlists":
+            self.loadSound = LoadSound(3, self.list_id, self.type_search)
+            self.loadSound.start()
+            self.loadSound.mysignal.connect(self.play_track_qt, QtCore.Qt.QueuedConnection)
+        else:
+            id_ = self.get_id_tracks_playlist(self.list_id)
+            track = self.pars_direct_link_to_track(id_)
+            self.play_track_qt(track)
 
     def play_track_qt(self, track):
         if track != "End":
