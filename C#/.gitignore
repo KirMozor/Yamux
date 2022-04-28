@@ -1,4 +1,4 @@
-bin/
+bin/Debug
 obj/
 /packages/
 riderModule.iml
