@@ -32,7 +32,7 @@ namespace Yamux
                     var json = reader.ReadToEnd();
                     return json;
                 }   
-            } catch(System.Net.WebException e)
+            } catch(WebException e)
             {
                 string text = e.Message;
                 return text;

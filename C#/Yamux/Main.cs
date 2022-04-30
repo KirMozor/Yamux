@@ -1,5 +1,4 @@
 using System;
-using Yandex.Music.Api;
 using Application = Gtk.Application;
 
 namespace Yamux
