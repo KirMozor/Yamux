@@ -1,6 +1,7 @@
 using System;
 using Gtk;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using YandexMusicApi;
 using Application = Gtk.Application;
 using UI = Gtk.Builder.ObjectAttribute;
 using Window = Gtk.Window;
@@ -35,7 +36,7 @@ namespace Yamux
                 if (Login.CheckAviabilityConfig())
                 {
                     Window.Hide();
-                    var win = new YamuxWindow();
+                    YamuxWindow win = new YamuxWindow();
                     Application.AddWindow(win);
                     win.Show();
                 }
@@ -59,22 +60,30 @@ namespace Yamux
 
             if (loginCheck == false && passwordCheck == false)
             {
-                string checkLogin = Login.LoginYamux(loginText, passwordText);
-                if (checkLogin != "The remote server returned an error: (400) Bad Request.")
+                //JObject token = Token.GetToken(loginText, passwordText);
+                try
                 {
-                    dynamic obj = JsonConvert.DeserializeObject(checkLogin);
-                    string tokenYandex = (string)obj.access_token;
-                    Login.WriteToken(tokenYandex);
-
-                    _current_login.Text = "Добро пожаловать!";
+                    JObject token = Token.GetToken(loginText, passwordText);
+                    JToken jTokentoken = token.First.First;
+                    Login.WriteToken(jTokentoken.ToString());
+                    
                     Window.Hide();
-                    var win = new YamuxWindow();
+                    YamuxWindow win = new YamuxWindow();
                     Application.AddWindow(win);
                     win.Show();
                 }
-                else
+                catch (System.Net.WebException ex)
                 {
-                    _current_login.Text = "Ты ввёл не правильные данные";
+                    Console.WriteLine(ex.Message);
+                    if (ex.Message == "The remote server returned an error: (400) Bad Request.")
+                    {
+                        _current_login.Text = "400: Данные не верные";
+                    }
+
+                    if (ex.Message == "The remote server returned an error: (403) Forbidden.")
+                    {
+                        _current_login.Text = "403: Yandex включил защиту от брутфорса";
+                    }
                 }
             }
             else

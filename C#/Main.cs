@@ -10,10 +10,10 @@ namespace Yamux
         {
             Application.Init();
 
-            var app = new Application("org.Yamux.Yamux", GLib.ApplicationFlags.None);
+            Application app = new Application("org.Yamux.Yamux", GLib.ApplicationFlags.None);
             app.Register(GLib.Cancellable.Current);
 
-            var win = new LoginWindow();
+            LoginWindow win = new LoginWindow();
             app.AddWindow(win);
 
             win.Show();
