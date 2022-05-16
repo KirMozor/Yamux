@@ -19,18 +19,19 @@ namespace Yamux
             builder.Autoconnect(this);
             DeleteEvent += Window_DeleteEvent;
             SearchMusic.SearchChanged += SearchChangedOutput;
+            SetDefaultIconFromFile("Svg/icon.svg");
         }
 
         async void SearchChangedOutput(object sender, EventArgs a)
         {
+            string text = SearchMusic.Text;
             await Task.Run(() =>
             {
-                string text = SearchMusic.Text;
-                Thread.Sleep(2000);
-                Console.WriteLine(SearchMusic.Text);
+                Thread.Sleep(3000);
                 if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
                 {
-                    Console.WriteLine("Всё классно!");
+                    Console.WriteLine(text);
+                    Console.WriteLine(YandexMusicApi.Default.Search(text));
                 }
             });
         }
