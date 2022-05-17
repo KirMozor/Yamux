@@ -1,4 +1,5 @@
 using System;
+using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using YandexMusicApi;
@@ -25,6 +26,9 @@ namespace Yamux
             builder.Autoconnect(this);
             WindowStateEvent += CheckConfig;
             DeleteEvent += Window_DeleteEvent;
+            SetDefaultIconFromFile("Svg/icon.svg");
+            
+            _set_password.Visibility = false;
             _reset_password.Clicked += ResetPasswordClick;
             _login_yamux.Clicked += LogInButton;
         }
