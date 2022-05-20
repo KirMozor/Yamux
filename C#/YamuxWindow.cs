@@ -1,11 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using Cairo;
 using Gtk;
 using YandexMusicApi;
-using System.Threading.Tasks;
+using Gdk;
+using GLib;
 using Newtonsoft.Json.Linq;
+using Pango;
+using Application = Gtk.Application;
+using Rectangle = Gdk.Rectangle;
+using Task = System.Threading.Tasks.Task;
+using Thread = System.Threading.Thread;
 using UI = Gtk.Builder.ObjectAttribute;
 using Window = Gtk.Window;
 
@@ -15,9 +21,6 @@ namespace Yamux
     {
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box ResultBox = null;
-        [UI] private Box asd = null;
-        [UI] private Box asd1 = null;
-        [UI] private Box asd2 = null;
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
         }
@@ -54,31 +57,59 @@ namespace Yamux
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
-                string typeBest = root.SelectToken("best").SelectToken("type").ToString();
-                string nameBest = root.SelectToken("best").SelectToken("result").SelectToken("name").ToString();
-                List<JToken> genresBest = root.SelectToken("best").SelectToken("result").SelectToken("genres").ToList();
-
-                switch (typeBest)
-                {
-                    case "artist":
-                        typeBest = "Артист";
-                        break;
-                    case "track":
-                        typeBest = "Трек";
-                        break;
-                    case "playlist":
-                        typeBest = "Плейлист";
-                        break;
-                }
+                Label NoResult = new Label("Нет результата😢");
+                FontDescription tpfNoResult = new FontDescription();
+                tpfNoResult.Size = 18432;
+                NoResult.ModifyFont(tpfNoResult);
+                ResultBox.Add(NoResult);
                 
-                Label TypeBest = new Label(typeBest);
-                ResultBox.Add(TypeBest);
+                if (root.Count() > 6)
+                {
+                    string typeBest = root.SelectToken("best").SelectToken("type").ToString();
+                    string nameBest = root.SelectToken("best").SelectToken("result").SelectToken("name").ToString();
+                    List<JToken> genresBest = root.SelectToken("best").SelectToken("result").SelectToken("genres").ToList();
 
-                Label NameBest = new Label(nameBest);
-                asd.Add(NameBest);
+                    switch (typeBest)
+                    {
+                        case "artist":
+                            typeBest = "Артист";
+                            break;
+                        case "track":
+                            typeBest = "Трек";
+                            break;
+                        case "playlist":
+                            typeBest = "Плейлист";
+                            break;
+                    }
+                
+                    Label TypeBest = new Label(typeBest);
+                    FontDescription tpfTypeBest = new FontDescription();
+                    tpfTypeBest.Size = 15360;
+                    TypeBest.ModifyFont(tpfTypeBest);
+                    ResultBox.Add(TypeBest);
 
-                ResultBox.ShowAll();
-                asd.ShowAll();
+                    Label NameBest = new Label(nameBest);
+                    FontDescription tpfNameBest = new FontDescription();
+                    tpfNameBest.Size = 11264;
+                    NameBest.ModifyFont(tpfNameBest);
+
+                    Button Asd = new Button(Stock.MediaPlay);
+                    Box BestResultName = new HBox();
+                    Box BestResultButtonPlay = new HBox();
+                
+                    ResultBox.Add(BestResultName);
+                    ResultBox.Add(BestResultButtonPlay);
+                    BestResultName.Add(NameBest);
+                    BestResultButtonPlay.Add(Asd);
+
+                    ResultBox.ShowAll();
+                    BestResultName.ShowAll();
+                    BestResultButtonPlay.ShowAll();
+                }
+                else
+                {
+                    ResultBox.ShowAll();
+                }
             }
         }
         
