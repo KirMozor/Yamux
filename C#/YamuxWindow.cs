@@ -61,10 +61,6 @@ namespace Yamux
                 {
                     IfNoResult.Text = "";
                     Dictionary<string, string> Best = GetBest(root);
-                    foreach (KeyValuePair<string, string> i in Best)
-                    {
-                        Console.WriteLine(i.Key + ";" + i.Value);
-                    }
                     string typeBest = Best["type"];
                     string nameBest = Best["name"];
                     
@@ -122,9 +118,27 @@ namespace Yamux
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
             root = root.SelectToken("best");
+            Console.WriteLine(root);
             result.Add("type", root.SelectToken("type").ToString());
-            result.Add("name", root.SelectToken("result").SelectToken("name").ToString());
-            result.Add("id", root.SelectToken("result").SelectToken("id").ToString());
+            
+            try
+            {
+                result.Add("name", root.SelectToken("result").SelectToken("name").ToString());
+            }
+            catch (NullReferenceException ex)
+            {
+                result.Add("name", root.SelectToken("result").SelectToken("title").ToString());
+            }
+            
+            try
+            {
+                result.Add("id", root.SelectToken("result").SelectToken("id").ToString());
+            }
+            catch (NullReferenceException ex)
+            {
+                result.Add("uid", root.SelectToken("result").SelectToken("uid").ToString());
+                result.Add("kind", root.SelectToken("result").SelectToken("kind").ToString());
+            }
 
             return result;
         }
