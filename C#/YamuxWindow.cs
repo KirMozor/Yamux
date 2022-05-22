@@ -60,10 +60,56 @@ namespace Yamux
                 if (root.Count() > 6)
                 {
                     IfNoResult.Text = "";
-                    foreach (KeyValuePair<string, string> i in GetBest(root))
+                    Dictionary<string, string> Best = GetBest(root);
+                    foreach (KeyValuePair<string, string> i in Best)
                     {
                         Console.WriteLine(i.Key + ";" + i.Value);
                     }
+                    string typeBest = Best["type"];
+                    string nameBest = Best["name"];
+                    
+                    switch (typeBest)
+                    {
+                        case "artist":
+                            typeBest = "Артист";
+                            break;
+                        case "track":
+                            typeBest = "Трек";
+                            break;
+                        case "playlist":
+                            typeBest = "Плейлист";
+                            break;
+                        case "podcast":
+                            typeBest = "Подкасты";
+                            break;
+                        case "album":
+                            typeBest = "Альбом";
+                            break;
+                    }
+                    VBox ResultSearchBox = new VBox();
+                    ResultSearchBox.Spacing = 4;
+                    ResultBox.Add(ResultSearchBox);
+
+                    VBox BestBox = new VBox();
+                    ResultSearchBox.Add(BestBox);
+                    BestBox.Spacing = 6;
+                    
+                    Label TypeBestLabel = new Label(typeBest);
+                    FontDescription tpfTypeBest = new FontDescription();
+                    tpfTypeBest.Size = 12288;
+                    TypeBestLabel.ModifyFont(tpfTypeBest);
+
+                    Label NameBestLabel = new Label(nameBest);
+                    FontDescription tpfNameBest = new FontDescription();
+                    tpfNameBest.Size = 11264;
+                    NameBestLabel.ModifyFont(tpfNameBest);
+                    NameBestLabel.Halign = Align.Start;
+
+                    BestBox.Add(TypeBestLabel);
+                    BestBox.Add(NameBestLabel);
+                    
+                    ResultBox.ShowAll();
+                    BestBox.ShowAll();
                 }
                 else
                 {
@@ -77,6 +123,7 @@ namespace Yamux
             Dictionary<string, string> result = new Dictionary<string, string>();
             root = root.SelectToken("best");
             result.Add("type", root.SelectToken("type").ToString());
+            result.Add("name", root.SelectToken("result").SelectToken("name").ToString());
             result.Add("id", root.SelectToken("result").SelectToken("id").ToString());
 
             return result;
