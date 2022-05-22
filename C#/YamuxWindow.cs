@@ -21,6 +21,7 @@ namespace Yamux
     {
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box ResultBox = null;
+        [UI] private Label IfNoResult = null;
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
         }
@@ -44,10 +45,9 @@ namespace Yamux
                 {
                     Console.WriteLine(text);
                     JObject resultSearch = YandexMusicApi.Default.Search(text);
-                    //Console.WriteLine(resultSearch.Last.Last);
                     root = resultSearch.Last.Last.Root;
                     root = root.SelectToken("result");
-                    Console.WriteLine(root);
+                    //Console.WriteLine(root);
                 }
             });
             ShowResultSearch(root, text);
@@ -57,58 +57,17 @@ namespace Yamux
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
-                Label NoResult = new Label("Нет результата😢");
-                FontDescription tpfNoResult = new FontDescription();
-                tpfNoResult.Size = 18432;
-                NoResult.ModifyFont(tpfNoResult);
-                ResultBox.Add(NoResult);
-                
                 if (root.Count() > 6)
                 {
-                    string typeBest = root.SelectToken("best").SelectToken("type").ToString();
-                    string nameBest = root.SelectToken("best").SelectToken("result").SelectToken("name").ToString();
-                    List<JToken> genresBest = root.SelectToken("best").SelectToken("result").SelectToken("genres").ToList();
-
-                    switch (typeBest)
+                    IfNoResult.Text = "";
+                    foreach (KeyValuePair<string, string> i in GetBest(root))
                     {
-                        case "artist":
-                            typeBest = "Артист";
-                            break;
-                        case "track":
-                            typeBest = "Трек";
-                            break;
-                        case "playlist":
-                            typeBest = "Плейлист";
-                            break;
+                        Console.WriteLine(i.Key + ";" + i.Value);
                     }
-                
-                    Label TypeBest = new Label(typeBest);
-                    FontDescription tpfTypeBest = new FontDescription();
-                    tpfTypeBest.Size = 15360;
-                    TypeBest.ModifyFont(tpfTypeBest);
-                    ResultBox.Add(TypeBest);
-
-                    Label NameBest = new Label(nameBest);
-                    FontDescription tpfNameBest = new FontDescription();
-                    tpfNameBest.Size = 11264;
-                    NameBest.ModifyFont(tpfNameBest);
-
-                    Button Asd = new Button(Stock.MediaPlay);
-                    Box BestResultName = new HBox();
-                    Box BestResultButtonPlay = new HBox();
-                
-                    ResultBox.Add(BestResultName);
-                    ResultBox.Add(BestResultButtonPlay);
-                    BestResultName.Add(NameBest);
-                    BestResultButtonPlay.Add(Asd);
-
-                    ResultBox.ShowAll();
-                    BestResultName.ShowAll();
-                    BestResultButtonPlay.ShowAll();
                 }
                 else
                 {
-                    ResultBox.ShowAll();
+                    IfNoResult.Text = "Нет результата😢";
                 }
             }
         }
@@ -122,7 +81,7 @@ namespace Yamux
 
             return result;
         }
-        
+
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {
             Application.Quit();

@@ -34,7 +34,7 @@ Author: @KirMozorF
     <property name="default-width">700</property>
     <property name="default-height">700</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="MainBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="spacing">1</property>
@@ -120,23 +120,18 @@ Author: @KirMozorF
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">4</property>
             <child>
-              <object class="GtkSearchBar">
+              <object class="GtkSearchEntry" id="SearchMusic">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="search-mode-enabled">True</property>
-                <child>
-                  <object class="GtkSearchEntry" id="SearchMusic">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="width-chars">26</property>
-                    <property name="primary-icon-name">edit-find-symbolic</property>
-                    <property name="primary-icon-activatable">False</property>
-                    <property name="primary-icon-sensitive">False</property>
-                    <property name="placeholder-text" translatable="yes">Введите поисковой запрос</property>
-                  </object>
-                </child>
+                <property name="can-focus">True</property>
+                <property name="margin-start">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-top">4</property>
+                <property name="hexpand">True</property>
+                <property name="primary-icon-name">edit-find-symbolic</property>
+                <property name="primary-icon-activatable">False</property>
+                <property name="primary-icon-sensitive">False</property>
+                <property name="placeholder-text" translatable="yes">Введите поисковой запрос</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -145,13 +140,46 @@ Author: @KirMozorF
               </packing>
             </child>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
+              <object class="GtkBox" id="ResultBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="vexpand">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="IfNoResult">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <attributes>
+                      <attribute name="size" value="18432"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
