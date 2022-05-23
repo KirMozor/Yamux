@@ -22,6 +22,7 @@ namespace Yamux
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box ResultBox = null;
         [UI] private Label IfNoResult = null;
+        private VBox BestBox = new VBox();
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
         }
@@ -58,7 +59,11 @@ namespace Yamux
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
                 if (root.Count() > 6)
-                {
+                { 
+                    BestBox.Destroy();
+                    BestBox = new VBox();
+                    ResultBox.Add(BestBox);
+                    
                     IfNoResult.Text = "";
                     Dictionary<string, string> Best = GetBest(root);
                     string typeBest = Best["type"];
@@ -85,8 +90,7 @@ namespace Yamux
                     VBox ResultSearchBox = new VBox();
                     ResultSearchBox.Spacing = 4;
                     ResultBox.Add(ResultSearchBox);
-
-                    VBox BestBox = new VBox();
+                    
                     ResultSearchBox.Add(BestBox);
                     BestBox.Spacing = 6;
                     
