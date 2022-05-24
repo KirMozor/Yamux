@@ -87,15 +87,47 @@ namespace Yamux
                             break;
                     }
 
+                    VBox SubparagBestBox = new VBox();
+                    SubparagBestBox.Spacing = 8;
+                    SubparagBestBox.Halign = Align.Start;
+                    
                     Label TypeBestLabel = new Label(typeBest);
                     FontDescription tpfTypeBest = new FontDescription();
                     tpfTypeBest.Size = 12288;
                     TypeBestLabel.ModifyFont(tpfTypeBest);
+
+                    string url = Best["uriCover"];
+                    using (WebClient client = new WebClient())
+                    {
+                        url = url.Replace("%%", "150x150");
+                        url = "https://" + url;
+                        Console.WriteLine(url);
+                        client.DownloadFile(new Uri(url), "s.jpg");
+                    }
+
+                    Pixbuf imagePixbuf;
+                    imagePixbuf = new Pixbuf("s.jpg");
+                    Image imageCover = new Image(imagePixbuf);
+                    imageCover.Halign = Align.Fill;
+                    
+                    Label NameBestLabel = new Label(nameBest);
+                    FontDescription tpfNameBest = new FontDescription();
+                    tpfNameBest.Size = 11264;
+                    NameBestLabel.ModifyFont(tpfNameBest);
+                    //NameBestLabel.Halign = Align.Fill;
+
+                    Button PlayButton0 = new Button(Stock.MediaPlay);
+                    //PlayButton0.Halign = Align.Fill;
                     
                     BestBox.Add(TypeBestLabel);
+                    BestBox.Add(SubparagBestBox);
+                    SubparagBestBox.Add(imageCover);
+                    SubparagBestBox.Add(NameBestLabel);
+                    SubparagBestBox.Add(PlayButton0);
 
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
+                    SubparagBestBox.ShowAll();
                 }
                 else
                 {
