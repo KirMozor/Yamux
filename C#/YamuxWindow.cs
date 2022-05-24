@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Cairo;
-using Gtk;
-using YandexMusicApi;
+using System.Net;
 using Gdk;
-using GLib;
+using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
 using Application = Gtk.Application;
-using Rectangle = Gdk.Rectangle;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
 using UI = Gtk.Builder.ObjectAttribute;
@@ -59,7 +57,8 @@ namespace Yamux
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
                 if (root.Count() > 6)
-                { 
+                {
+                    File.Delete("s.jpg");
                     BestBox.Destroy();
                     BestBox = new VBox();
                     ResultBox.Add(BestBox);
@@ -87,32 +86,20 @@ namespace Yamux
                             typeBest = "Альбом";
                             break;
                     }
-                    VBox ResultSearchBox = new VBox();
-                    ResultSearchBox.Spacing = 4;
-                    ResultBox.Add(ResultSearchBox);
-                    
-                    ResultSearchBox.Add(BestBox);
-                    BestBox.Spacing = 6;
-                    
+
                     Label TypeBestLabel = new Label(typeBest);
                     FontDescription tpfTypeBest = new FontDescription();
                     tpfTypeBest.Size = 12288;
                     TypeBestLabel.ModifyFont(tpfTypeBest);
-
-                    Label NameBestLabel = new Label(nameBest);
-                    FontDescription tpfNameBest = new FontDescription();
-                    tpfNameBest.Size = 11264;
-                    NameBestLabel.ModifyFont(tpfNameBest);
-                    NameBestLabel.Halign = Align.Start;
-
-                    BestBox.Add(TypeBestLabel);
-                    BestBox.Add(NameBestLabel);
                     
+                    BestBox.Add(TypeBestLabel);
+
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
                 }
                 else
                 {
+                    BestBox.Destroy();
                     IfNoResult.Text = "Нет результата😢";
                 }
             }
@@ -124,12 +111,21 @@ namespace Yamux
             root = root.SelectToken("best");
             Console.WriteLine(root);
             result.Add("type", root.SelectToken("type").ToString());
+
+            try
+            {
+                result.Add("uriCover", root.SelectToken("result").SelectToken("cover").SelectToken("uri").ToString());
+            }
+            catch (NullReferenceException)
+            {
+                result.Add("uriCover", root.SelectToken("result").SelectToken("coverUri").ToString());
+            }
             
             try
             {
                 result.Add("name", root.SelectToken("result").SelectToken("name").ToString());
             }
-            catch (NullReferenceException ex)
+            catch (NullReferenceException)
             {
                 result.Add("name", root.SelectToken("result").SelectToken("title").ToString());
             }
@@ -138,7 +134,7 @@ namespace Yamux
             {
                 result.Add("id", root.SelectToken("result").SelectToken("id").ToString());
             }
-            catch (NullReferenceException ex)
+            catch (NullReferenceException)
             {
                 result.Add("uid", root.SelectToken("result").SelectToken("uid").ToString());
                 result.Add("kind", root.SelectToken("result").SelectToken("kind").ToString());
