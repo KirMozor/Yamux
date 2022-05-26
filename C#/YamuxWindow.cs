@@ -85,28 +85,27 @@ namespace Yamux
                     }
                     
                     Dictionary<string, List<string>> Artist = GetArtist(root);
-                    List<string> ArtistId = Artist["id"];
                     List<string> ArtistName = Artist["name"];
                     List<string> ArtistCoverUri = Artist["coverUri"];
                     
 
-                    HBox d = CreateBox(ArtistName, ArtistCoverUri);
-                    ScrolledWindow b = new ScrolledWindow();
-                    b.PropagateNaturalHeight = true;
-                    b.PropagateNaturalWidth = true;
+                    HBox ArtistBox = CreateBoxArtist(ArtistName, ArtistCoverUri);
+                    ScrolledWindow ScrolledResult = new ScrolledWindow();
+                    ScrolledResult.PropagateNaturalHeight = true;
+                    ScrolledResult.PropagateNaturalWidth = true;
                     
-                    Viewport s = new Viewport();
+                    Viewport ViewportResult = new Viewport();
                     
                     Label TypeBestLabel = new Label(typeBest);
                     FontDescription tpfTypeBest = new FontDescription();
                     tpfTypeBest.Size = 12288;
                     TypeBestLabel.ModifyFont(tpfTypeBest);
                     
-                    b.Add(s);
-                    s.Add(d);
+                    ScrolledResult.Add(ViewportResult);
+                    ViewportResult.Add(ArtistBox);
 
                     BestBox.Add(TypeBestLabel);
-                    BestBox.Add(b);
+                    BestBox.Add(ScrolledResult);
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
                     Console.WriteLine("dasdasd");
@@ -184,7 +183,7 @@ namespace Yamux
             return artist;
         }
 
-        private HBox CreateBox(List<string> ArtistName, List<string> ArtistCoverUri)
+        private HBox CreateBoxArtist(List<string> ArtistName, List<string> ArtistCoverUri)
         {
             HBox NewBox = new HBox();
 
