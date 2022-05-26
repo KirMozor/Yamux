@@ -64,7 +64,6 @@ namespace Yamux
                     IfNoResult.Text = "";
                     Dictionary<string, string> Best = GetBest(root);
                     string typeBest = Best["type"];
-                    string nameBest = Best["name"];
                     
                     switch (typeBest)
                     {
@@ -91,11 +90,13 @@ namespace Yamux
                     List<string> ArtistCoverUri = Artist["coverUri"];
                     
 
-                    HBox d = CreateBox(ArtistId, ArtistName, ArtistCoverUri, Best);
+                    HBox d = CreateBox(ArtistName, ArtistCoverUri);
                     ScrolledWindow b = new ScrolledWindow();
                     b.PropagateNaturalHeight = true;
                     b.PropagateNaturalWidth = true;
+                    
                     Viewport s = new Viewport();
+                    
                     Label TypeBestLabel = new Label(typeBest);
                     FontDescription tpfTypeBest = new FontDescription();
                     tpfTypeBest.Size = 12288;
@@ -183,7 +184,7 @@ namespace Yamux
             return artist;
         }
 
-        private HBox CreateBox(List<string> ArtistId, List<string> ArtistName, List<string> ArtistCoverUri, Dictionary<string, string> Best)
+        private HBox CreateBox(List<string> ArtistName, List<string> ArtistCoverUri)
         {
             HBox NewBox = new HBox();
 
@@ -191,9 +192,10 @@ namespace Yamux
             foreach (string i in ArtistName)
             {
                 b++;
-                //Console.WriteLine(i + ";" + ArtistId[b] + ";" + ArtistCoverUri[b]);
                 VBox BestCoverImage = new VBox();
                 BestCoverImage.Spacing = 4;
+                BestCoverImage.MarginTop = 20;
+                BestCoverImage.MarginBottom = 15;
                 BestCoverImage.Valign = Align.Fill;
                 
                 NewBox.Add(BestCoverImage);
@@ -203,12 +205,12 @@ namespace Yamux
                 FontDescription tpfNameBest = new FontDescription();
                 tpfNameBest.Size = 11264;
                 NameBestLabel.ModifyFont(tpfNameBest);
-                NameBestLabel.Halign = Align.Start;
+                NameBestLabel.Halign = Align.Fill;
 
                 if (ArtistCoverUri[b] != "None")
                 {
                     File.Delete("s.jpg");
-                    string url = Best["uriCover"];
+                    string url = ArtistCoverUri[b];
                     using (WebClient client = new WebClient())
                     {
                         url = url.Replace("%%", "100x100");
@@ -220,7 +222,7 @@ namespace Yamux
                     Pixbuf imagePixbuf;
                     imagePixbuf = new Pixbuf("s.jpg");
                     Image image = new Image(imagePixbuf);
-                    image.Halign = Align.Start;
+                    image.Halign = Align.Fill;
                     BestCoverImage.Add(image);
                 }
                 else
@@ -228,12 +230,12 @@ namespace Yamux
                     Pixbuf imagePixbuf;
                     imagePixbuf = new Pixbuf("/home/kirill/Downloads/icons8_rock_music_100_negate.png");
                     Image image = new Image(imagePixbuf);
-                    image.Halign = Align.Start;
+                    image.Halign = Align.Fill;
                     BestCoverImage.Add(image);
                 }
 
                 Button PlayButton0 = new Button(Stock.MediaPlay);
-                PlayButton0.Halign = Align.Start;
+                PlayButton0.Halign = Align.Fill;
                 
                 BestCoverImage.Add(NameBestLabel);
                 BestCoverImage.Add(PlayButton0);
