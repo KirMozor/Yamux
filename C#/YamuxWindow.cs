@@ -46,7 +46,6 @@ namespace Yamux
                     JObject resultSearch = YandexMusicApi.Default.Search(text);
                     root = resultSearch.Last.Last.Root;
                     root = root.SelectToken("result");
-                    //Console.WriteLine(root);
                 }
             });
             ShowResultSearch(root, text);
@@ -58,7 +57,6 @@ namespace Yamux
             {
                 if (root.Count() > 6)
                 {
-                    File.Delete("s.jpg");
                     BestBox.Destroy();
                     BestBox = new VBox();
                     ResultBox.Add(BestBox);
@@ -86,48 +84,31 @@ namespace Yamux
                             typeBest = "Альбом";
                             break;
                     }
-
-                    VBox SubparagBestBox = new VBox();
-                    SubparagBestBox.Spacing = 8;
-                    SubparagBestBox.Halign = Align.Start;
                     
+                    Dictionary<string, List<string>> Artist = GetArtist(root);
+                    List<string> ArtistId = Artist["id"];
+                    List<string> ArtistName = Artist["name"];
+                    List<string> ArtistCoverUri = Artist["coverUri"];
+                    
+
+                    HBox d = CreateBox(ArtistId, ArtistName, ArtistCoverUri, Best);
+                    ScrolledWindow b = new ScrolledWindow();
+                    b.PropagateNaturalHeight = true;
+                    b.PropagateNaturalWidth = true;
+                    Viewport s = new Viewport();
                     Label TypeBestLabel = new Label(typeBest);
                     FontDescription tpfTypeBest = new FontDescription();
                     tpfTypeBest.Size = 12288;
                     TypeBestLabel.ModifyFont(tpfTypeBest);
-
-                    string url = Best["uriCover"];
-                    using (WebClient client = new WebClient())
-                    {
-                        url = url.Replace("%%", "150x150");
-                        url = "https://" + url;
-                        Console.WriteLine(url);
-                        client.DownloadFile(new Uri(url), "s.jpg");
-                    }
-
-                    Pixbuf imagePixbuf;
-                    imagePixbuf = new Pixbuf("s.jpg");
-                    Image imageCover = new Image(imagePixbuf);
-                    imageCover.Halign = Align.Fill;
                     
-                    Label NameBestLabel = new Label(nameBest);
-                    FontDescription tpfNameBest = new FontDescription();
-                    tpfNameBest.Size = 11264;
-                    NameBestLabel.ModifyFont(tpfNameBest);
-                    //NameBestLabel.Halign = Align.Fill;
+                    b.Add(s);
+                    s.Add(d);
 
-                    Button PlayButton0 = new Button(Stock.MediaPlay);
-                    //PlayButton0.Halign = Align.Fill;
-                    
                     BestBox.Add(TypeBestLabel);
-                    BestBox.Add(SubparagBestBox);
-                    SubparagBestBox.Add(imageCover);
-                    SubparagBestBox.Add(NameBestLabel);
-                    SubparagBestBox.Add(PlayButton0);
-
+                    BestBox.Add(b);
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
-                    SubparagBestBox.ShowAll();
+                    Console.WriteLine("dasdasd");
                 }
                 else
                 {
@@ -140,39 +121,126 @@ namespace Yamux
         private Dictionary<string, string> GetBest(JToken root)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
-            root = root.SelectToken("best");
-            Console.WriteLine(root);
-            result.Add("type", root.SelectToken("type").ToString());
+            root = root["best"];
+            result.Add("type", root["type"].ToString());
 
             try
             {
-                result.Add("uriCover", root.SelectToken("result").SelectToken("cover").SelectToken("uri").ToString());
+                result.Add("uriCover", root["result"]["cover"]["uri"].ToString());
             }
             catch (NullReferenceException)
             {
-                result.Add("uriCover", root.SelectToken("result").SelectToken("coverUri").ToString());
+                result.Add("uriCover", root["result"]["coverUri"].ToString());
             }
             
             try
             {
-                result.Add("name", root.SelectToken("result").SelectToken("name").ToString());
+                result.Add("name", root["result"]["name"].ToString());
             }
             catch (NullReferenceException)
             {
-                result.Add("name", root.SelectToken("result").SelectToken("title").ToString());
+                result.Add("name", root["result"]["title"].ToString());
             }
             
             try
             {
-                result.Add("id", root.SelectToken("result").SelectToken("id").ToString());
+                result.Add("id", root["result"]["id"].ToString());
             }
             catch (NullReferenceException)
             {
-                result.Add("uid", root.SelectToken("result").SelectToken("uid").ToString());
-                result.Add("kind", root.SelectToken("result").SelectToken("kind").ToString());
+                result.Add("uid", root["result"]["uid"].ToString());
+                result.Add("kind", root["result"]["kind"].ToString());
             }
 
             return result;
+        }
+
+        private Dictionary<string, List<string>> GetArtist(JToken root)
+        {
+            Dictionary<string, List<string>> artist = new Dictionary<string, List<string>>();
+            List<string> artistId = new List<string>();
+            List<string> artistName = new List<string>();
+            List<string> artistCoverUri = new List<string>();
+
+            foreach (JToken i in root["artists"]["results"])
+            {
+                artistId.Add(i["id"].ToString());
+                artistName.Add(i["name"].ToString());
+
+                try
+                {
+                    artistCoverUri.Add(i["cover"]["uri"].ToString());
+                }
+                catch (NullReferenceException)
+                {
+                    artistCoverUri.Add("None");
+                }
+            }
+            artist.Add("id", artistId);
+            artist.Add("name", artistName);
+            artist.Add("coverUri", artistCoverUri);
+            
+            return artist;
+        }
+
+        private HBox CreateBox(List<string> ArtistId, List<string> ArtistName, List<string> ArtistCoverUri, Dictionary<string, string> Best)
+        {
+            HBox NewBox = new HBox();
+
+            int b = -1;
+            foreach (string i in ArtistName)
+            {
+                b++;
+                //Console.WriteLine(i + ";" + ArtistId[b] + ";" + ArtistCoverUri[b]);
+                VBox BestCoverImage = new VBox();
+                BestCoverImage.Spacing = 4;
+                BestCoverImage.Valign = Align.Fill;
+                
+                NewBox.Add(BestCoverImage);
+                NewBox.Spacing = 8;
+                
+                Label NameBestLabel = new Label(i);
+                FontDescription tpfNameBest = new FontDescription();
+                tpfNameBest.Size = 11264;
+                NameBestLabel.ModifyFont(tpfNameBest);
+                NameBestLabel.Halign = Align.Start;
+
+                if (ArtistCoverUri[b] != "None")
+                {
+                    File.Delete("s.jpg");
+                    string url = Best["uriCover"];
+                    using (WebClient client = new WebClient())
+                    {
+                        url = url.Replace("%%", "100x100");
+                        url = "https://" + url;
+                        Console.WriteLine(url);
+                        client.DownloadFile(new Uri(url), "s.jpg");
+                    }
+
+                    Pixbuf imagePixbuf;
+                    imagePixbuf = new Pixbuf("s.jpg");
+                    Image image = new Image(imagePixbuf);
+                    image.Halign = Align.Start;
+                    BestCoverImage.Add(image);
+                }
+                else
+                {
+                    Pixbuf imagePixbuf;
+                    imagePixbuf = new Pixbuf("/home/kirill/Downloads/icons8_rock_music_100_negate.png");
+                    Image image = new Image(imagePixbuf);
+                    image.Halign = Align.Start;
+                    BestCoverImage.Add(image);
+                }
+
+                Button PlayButton0 = new Button(Stock.MediaPlay);
+                PlayButton0.Halign = Align.Start;
+                
+                BestCoverImage.Add(NameBestLabel);
+                BestCoverImage.Add(PlayButton0);
+                NewBox.Add(BestCoverImage);
+            }
+            
+            return NewBox;
         }
 
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
