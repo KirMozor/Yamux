@@ -86,42 +86,61 @@ namespace Yamux
                     
                     Dictionary<string, List<string>> Artist = GetArtist(root);
                     Dictionary<string, List<string>> Track = GetTrack(root);
+                    Dictionary<string, List<string>> Podcast = GetPodcast(root);
                     List<string> ArtistName = Artist["name"];
                     List<string> ArtistCoverUri = Artist["coverUri"];
                     List<string> TrackName = Track["name"];
                     List<string> TrackCoverUri = Track["coverUri"];
+                    List<string> PodcastName = Podcast["name"];
+                    List<string> PodcastCoverUri = Podcast["coverUri"];
 
                     HBox ArtistBox = CreateBoxResultSearch(ArtistName, ArtistCoverUri);
                     HBox TrackBox = CreateBoxResultSearch(TrackName, TrackCoverUri);
-
+                    HBox PodcastBox = CreateBoxResultSearch(PodcastName, PodcastCoverUri);
+                    
                     ScrolledWindow ScrolledArtist = new ScrolledWindow();
                     ScrolledWindow ScrolledTrack = new ScrolledWindow();
+                    ScrolledWindow ScrolledPodcast = new ScrolledWindow();
                     ScrolledArtist.PropagateNaturalHeight = true;
                     ScrolledArtist.PropagateNaturalWidth = true;
                     ScrolledTrack.PropagateNaturalHeight = true;
                     ScrolledTrack.PropagateNaturalWidth = true;
+                    ScrolledPodcast.PropagateNaturalHeight = true;
+                    ScrolledPodcast.PropagateNaturalWidth = true;
                     
                     Viewport ViewportArtist = new Viewport();
                     Viewport ViewportTrack = new Viewport();
+                    Viewport ViewportPodcast = new Viewport();
                     
                     Label ArtistLabel = new Label(typeBest);
                     FontDescription tpfArtist = new FontDescription();
                     tpfArtist.Size = 12288;
                     ArtistLabel.ModifyFont(tpfArtist);
+                    
                     Label TrackLabel = new Label("Треки");
                     FontDescription tpfTrack = new FontDescription();
                     tpfTrack.Size = 12288;
-                    ArtistLabel.ModifyFont(tpfTrack);
+                    TrackLabel.ModifyFont(tpfTrack);
+                    
+                    Label PodcastLabel = new Label("Подкасты");
+                    FontDescription tpfPodcast = new FontDescription();
+                    tpfPodcast.Size = 12288;
+                    PodcastLabel.ModifyFont(tpfPodcast);
                     
                     ScrolledArtist.Add(ViewportArtist);
                     ViewportArtist.Add(ArtistBox);
                     ScrolledTrack.Add(ViewportTrack);
                     ViewportTrack.Add(TrackBox);
+                    ScrolledPodcast.Add(ViewportPodcast);
+                    ViewportPodcast.Add(PodcastBox);
 
                     BestBox.Add(ArtistLabel);
                     BestBox.Add(ScrolledArtist);
                     BestBox.Add(TrackLabel);
                     BestBox.Add(ScrolledTrack);
+                    BestBox.Add(PodcastLabel);
+                    BestBox.Add(ScrolledPodcast);
+                    
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
                     Console.WriteLine("dasdasd");
@@ -134,6 +153,32 @@ namespace Yamux
             }
         }
 
+        private Dictionary<string, List<string>> GetPodcast(JToken root)
+        {
+            Dictionary<string, List<string>> podcast = new Dictionary<string, List<string>>();
+            List<string> podcastId = new List<string>();
+            List<string> podcastName = new List<string>();
+            List<string> podcastCoverUri = new List<string>();
+
+            foreach (JToken i in root["podcast_episodes"]["results"])
+            {
+                podcastId.Add(i["id"].ToString());
+                podcastName.Add(i["title"].ToString());
+                try
+                {
+                    podcastCoverUri.Add(i["coverUri"].ToString());
+                }
+                catch (NullReferenceException)
+                {
+                    podcastCoverUri.Add("None");
+                }
+            }
+            podcast.Add("id", podcastId);
+            podcast.Add("name", podcastName);
+            podcast.Add("coverUri", podcastCoverUri);
+
+            return podcast;
+        }
         private Dictionary<string, List<string>> GetTrack(JToken root)
         {
             Dictionary<string, List<string>> tracks = new Dictionary<string, List<string>>();
