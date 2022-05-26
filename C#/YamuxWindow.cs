@@ -55,6 +55,7 @@ namespace Yamux
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
+                Dictionary<string, List<string>> result = GetTrack(root);
                 if (root.Count() > 6)
                 {
                     BestBox.Destroy();
@@ -62,8 +63,7 @@ namespace Yamux
                     ResultBox.Add(BestBox);
                     
                     IfNoResult.Text = "";
-                    Dictionary<string, string> Best = GetBest(root);
-                    string typeBest = Best["type"];
+                    string typeBest = root["best"]["type"].ToString();
                     
                     switch (typeBest)
                     {
@@ -85,27 +85,43 @@ namespace Yamux
                     }
                     
                     Dictionary<string, List<string>> Artist = GetArtist(root);
+                    Dictionary<string, List<string>> Track = GetTrack(root);
                     List<string> ArtistName = Artist["name"];
                     List<string> ArtistCoverUri = Artist["coverUri"];
-                    
+                    List<string> TrackName = Track["name"];
+                    List<string> TrackCoverUri = Track["coverUri"];
 
-                    HBox ArtistBox = CreateBoxArtist(ArtistName, ArtistCoverUri);
-                    ScrolledWindow ScrolledResult = new ScrolledWindow();
-                    ScrolledResult.PropagateNaturalHeight = true;
-                    ScrolledResult.PropagateNaturalWidth = true;
-                    
-                    Viewport ViewportResult = new Viewport();
-                    
-                    Label TypeBestLabel = new Label(typeBest);
-                    FontDescription tpfTypeBest = new FontDescription();
-                    tpfTypeBest.Size = 12288;
-                    TypeBestLabel.ModifyFont(tpfTypeBest);
-                    
-                    ScrolledResult.Add(ViewportResult);
-                    ViewportResult.Add(ArtistBox);
+                    HBox ArtistBox = CreateBoxResultSearch(ArtistName, ArtistCoverUri);
+                    HBox TrackBox = CreateBoxResultSearch(TrackName, TrackCoverUri);
 
-                    BestBox.Add(TypeBestLabel);
-                    BestBox.Add(ScrolledResult);
+                    ScrolledWindow ScrolledArtist = new ScrolledWindow();
+                    ScrolledWindow ScrolledTrack = new ScrolledWindow();
+                    ScrolledArtist.PropagateNaturalHeight = true;
+                    ScrolledArtist.PropagateNaturalWidth = true;
+                    ScrolledTrack.PropagateNaturalHeight = true;
+                    ScrolledTrack.PropagateNaturalWidth = true;
+                    
+                    Viewport ViewportArtist = new Viewport();
+                    Viewport ViewportTrack = new Viewport();
+                    
+                    Label ArtistLabel = new Label(typeBest);
+                    FontDescription tpfArtist = new FontDescription();
+                    tpfArtist.Size = 12288;
+                    ArtistLabel.ModifyFont(tpfArtist);
+                    Label TrackLabel = new Label("Треки");
+                    FontDescription tpfTrack = new FontDescription();
+                    tpfTrack.Size = 12288;
+                    ArtistLabel.ModifyFont(tpfTrack);
+                    
+                    ScrolledArtist.Add(ViewportArtist);
+                    ViewportArtist.Add(ArtistBox);
+                    ScrolledTrack.Add(ViewportTrack);
+                    ViewportTrack.Add(TrackBox);
+
+                    BestBox.Add(ArtistLabel);
+                    BestBox.Add(ScrolledArtist);
+                    BestBox.Add(TrackLabel);
+                    BestBox.Add(ScrolledTrack);
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
                     Console.WriteLine("dasdasd");
@@ -117,42 +133,33 @@ namespace Yamux
                 }
             }
         }
-        
-        private Dictionary<string, string> GetBest(JToken root)
+
+        private Dictionary<string, List<string>> GetTrack(JToken root)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            root = root["best"];
-            result.Add("type", root["type"].ToString());
+            Dictionary<string, List<string>> tracks = new Dictionary<string, List<string>>();
+            List<string> trackId = new List<string>();
+            List<string> trackName = new List<string>();
+            List<string> trackCoverUri = new List<string>();
 
-            try
+            foreach (JToken i in root["tracks"]["results"])
             {
-                result.Add("uriCover", root["result"]["cover"]["uri"].ToString());
-            }
-            catch (NullReferenceException)
-            {
-                result.Add("uriCover", root["result"]["coverUri"].ToString());
-            }
-            
-            try
-            {
-                result.Add("name", root["result"]["name"].ToString());
-            }
-            catch (NullReferenceException)
-            {
-                result.Add("name", root["result"]["title"].ToString());
-            }
-            
-            try
-            {
-                result.Add("id", root["result"]["id"].ToString());
-            }
-            catch (NullReferenceException)
-            {
-                result.Add("uid", root["result"]["uid"].ToString());
-                result.Add("kind", root["result"]["kind"].ToString());
-            }
+                trackId.Add(i["id"].ToString());
+                trackName.Add(i["title"].ToString());
 
-            return result;
+                try
+                {
+                    trackCoverUri.Add(i["coverUri"].ToString());
+                }
+                catch (NullReferenceException)
+                {
+                    trackCoverUri.Add("None");
+                }
+            }
+            tracks.Add("id", trackId);
+            tracks.Add("name", trackName);
+            tracks.Add("coverUri", trackCoverUri);
+
+            return tracks;
         }
 
         private Dictionary<string, List<string>> GetArtist(JToken root)
@@ -182,22 +189,22 @@ namespace Yamux
             
             return artist;
         }
-
-        private HBox CreateBoxArtist(List<string> ArtistName, List<string> ArtistCoverUri)
+        
+        private HBox CreateBoxResultSearch(List<string> Name, List<string> CoverUri)
         {
             HBox NewBox = new HBox();
 
             int b = -1;
-            foreach (string i in ArtistName)
+            foreach (string i in Name)
             {
                 b++;
-                VBox BestCoverImage = new VBox();
-                BestCoverImage.Spacing = 4;
-                BestCoverImage.MarginTop = 20;
-                BestCoverImage.MarginBottom = 15;
-                BestCoverImage.Valign = Align.Fill;
+                VBox CoverImage = new VBox();
+                CoverImage.Spacing = 4;
+                CoverImage.MarginTop = 20;
+                CoverImage.MarginBottom = 15;
+                CoverImage.Valign = Align.Fill;
                 
-                NewBox.Add(BestCoverImage);
+                NewBox.Add(CoverImage);
                 NewBox.Spacing = 8;
                 
                 Label NameBestLabel = new Label(i);
@@ -206,10 +213,10 @@ namespace Yamux
                 NameBestLabel.ModifyFont(tpfNameBest);
                 NameBestLabel.Halign = Align.Fill;
 
-                if (ArtistCoverUri[b] != "None")
+                if (CoverUri[b] != "None")
                 {
                     File.Delete("s.jpg");
-                    string url = ArtistCoverUri[b];
+                    string url = CoverUri[b];
                     using (WebClient client = new WebClient())
                     {
                         url = url.Replace("%%", "100x100");
@@ -222,23 +229,23 @@ namespace Yamux
                     imagePixbuf = new Pixbuf("s.jpg");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
-                    BestCoverImage.Add(image);
+                    CoverImage.Add(image);
                 }
                 else
                 {
                     Pixbuf imagePixbuf;
-                    imagePixbuf = new Pixbuf("/home/kirill/Downloads/icons8_rock_music_100_negate.png");
+                    imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
-                    BestCoverImage.Add(image);
+                    CoverImage.Add(image);
                 }
 
                 Button PlayButton0 = new Button(Stock.MediaPlay);
                 PlayButton0.Halign = Align.Fill;
                 
-                BestCoverImage.Add(NameBestLabel);
-                BestCoverImage.Add(PlayButton0);
-                NewBox.Add(BestCoverImage);
+                CoverImage.Add(NameBestLabel);
+                CoverImage.Add(PlayButton0);
+                NewBox.Add(CoverImage);
             }
             
             return NewBox;
