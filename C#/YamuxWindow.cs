@@ -87,30 +87,38 @@ namespace Yamux
                     Dictionary<string, List<string>> Artist = GetArtist(root);
                     Dictionary<string, List<string>> Track = GetTrack(root);
                     Dictionary<string, List<string>> Podcast = GetPodcast(root);
+                    Dictionary<string, List<string>> Playlist = GetPlaylist(root);
                     List<string> ArtistName = Artist["name"];
                     List<string> ArtistCoverUri = Artist["coverUri"];
                     List<string> TrackName = Track["name"];
                     List<string> TrackCoverUri = Track["coverUri"];
                     List<string> PodcastName = Podcast["name"];
                     List<string> PodcastCoverUri = Podcast["coverUri"];
+                    List<string> PlaylistName = Playlist["name"];
+                    List<string> PlaylistCoverUri = Playlist["coverUri"];
 
                     HBox ArtistBox = CreateBoxResultSearch(ArtistName, ArtistCoverUri);
                     HBox TrackBox = CreateBoxResultSearch(TrackName, TrackCoverUri);
                     HBox PodcastBox = CreateBoxResultSearch(PodcastName, PodcastCoverUri);
+                    HBox PlaylistBox = CreateBoxResultSearch(PlaylistName, PlaylistCoverUri);
                     
                     ScrolledWindow ScrolledArtist = new ScrolledWindow();
                     ScrolledWindow ScrolledTrack = new ScrolledWindow();
                     ScrolledWindow ScrolledPodcast = new ScrolledWindow();
+                    ScrolledWindow ScrolledPlaylist = new ScrolledWindow();
                     ScrolledArtist.PropagateNaturalHeight = true;
                     ScrolledArtist.PropagateNaturalWidth = true;
                     ScrolledTrack.PropagateNaturalHeight = true;
                     ScrolledTrack.PropagateNaturalWidth = true;
                     ScrolledPodcast.PropagateNaturalHeight = true;
                     ScrolledPodcast.PropagateNaturalWidth = true;
+                    ScrolledPlaylist.PropagateNaturalHeight = true;
+                    ScrolledPlaylist.PropagateNaturalWidth = true;
                     
                     Viewport ViewportArtist = new Viewport();
                     Viewport ViewportTrack = new Viewport();
                     Viewport ViewportPodcast = new Viewport();
+                    Viewport ViewportPlaylist = new Viewport();
                     
                     Label ArtistLabel = new Label(typeBest);
                     FontDescription tpfArtist = new FontDescription();
@@ -127,12 +135,19 @@ namespace Yamux
                     tpfPodcast.Size = 12288;
                     PodcastLabel.ModifyFont(tpfPodcast);
                     
+                    Label PlaylistLabel = new Label("Плейлисты");
+                    FontDescription tpfPlaylist = new FontDescription();
+                    tpfPlaylist.Size = 12288;
+                    PlaylistLabel.ModifyFont(tpfPlaylist);
+                    
                     ScrolledArtist.Add(ViewportArtist);
                     ViewportArtist.Add(ArtistBox);
                     ScrolledTrack.Add(ViewportTrack);
                     ViewportTrack.Add(TrackBox);
                     ScrolledPodcast.Add(ViewportPodcast);
                     ViewportPodcast.Add(PodcastBox);
+                    ScrolledPlaylist.Add(ViewportPlaylist);
+                    ViewportPlaylist.Add(PlaylistBox);
 
                     BestBox.Add(ArtistLabel);
                     BestBox.Add(ScrolledArtist);
@@ -140,6 +155,8 @@ namespace Yamux
                     BestBox.Add(ScrolledTrack);
                     BestBox.Add(PodcastLabel);
                     BestBox.Add(ScrolledPodcast);
+                    BestBox.Add(PlaylistLabel);
+                    BestBox.Add(ScrolledPlaylist);
                     
                     ResultBox.ShowAll();
                     BestBox.ShowAll();
@@ -153,6 +170,36 @@ namespace Yamux
             }
         }
 
+        private Dictionary<string, List<string>> GetPlaylist(JToken root)
+        {
+            Dictionary<string, List<string>> playlist = new Dictionary<string, List<string>>();
+            List<string> playlistUid = new List<string>();
+            List<string> playlistKind = new List<string>();
+            List<string> playlistName = new List<string>();
+            List<string> playlistCoverUri = new List<string>();
+
+            foreach (JToken i in root["playlists"]["results"])
+            {
+                playlistUid.Add(i["uid"].ToString());
+                playlistKind.Add(i["kind"].ToString());
+                playlistName.Add(i["title"].ToString());
+                try
+                {
+                    playlistCoverUri.Add(i["cover"]["uri"].ToString());
+                }
+                catch (NullReferenceException)
+                {
+                    playlistCoverUri.Add("None");
+                }
+            }
+            playlist.Add("uid", playlistUid);
+            playlist.Add("kind", playlistKind);
+            playlist.Add("name", playlistName);
+            playlist.Add("coverUri", playlistCoverUri);
+
+            return playlist;
+        }
+        
         private Dictionary<string, List<string>> GetPodcast(JToken root)
         {
             Dictionary<string, List<string>> podcast = new Dictionary<string, List<string>>();
