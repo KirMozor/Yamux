@@ -122,33 +122,33 @@ namespace Yamux
             return artist;
         }
                 
-        public static HBox CreateBoxResultSearch(List<string> Name, List<string> CoverUri)
+        public static HBox CreateBoxResultSearch(List<string> name, List<string> coverUri)
         {
-            HBox NewBox = new HBox();
+            HBox newBox = new HBox();
         
             int b = -1;
-            foreach (string i in Name)
+            foreach (string i in name)
             {
                 b++;
-                VBox CoverImage = new VBox();
-                CoverImage.Spacing = 4;
-                CoverImage.MarginTop = 20;
-                CoverImage.MarginBottom = 15;
-                CoverImage.Valign = Align.Fill;
+                VBox coverImage = new VBox();
+                coverImage.Spacing = 4;
+                coverImage.MarginTop = 20;
+                coverImage.MarginBottom = 15;
+                coverImage.Valign = Align.Fill;
                         
-                NewBox.Add(CoverImage);
-                NewBox.Spacing = 8;
+                newBox.Add(coverImage);
+                newBox.Spacing = 8;
                         
-                Label NameBestLabel = new Label(i);
+                Label nameBestLabel = new Label(i);
                 FontDescription tpfNameBest = new FontDescription();
                 tpfNameBest.Size = 11264;
-                NameBestLabel.ModifyFont(tpfNameBest);
-                NameBestLabel.Halign = Align.Fill;
+                nameBestLabel.ModifyFont(tpfNameBest);
+                nameBestLabel.Halign = Align.Fill;
         
-                if (CoverUri[b] != "None")
+                if (coverUri[b] != "None")
                 {
                     File.Delete("s.jpg");
-                    string url = CoverUri[b];
+                    string url = coverUri[b];
                     using (WebClient client = new WebClient())
                     {
                         url = url.Replace("%%", "100x100");
@@ -161,7 +161,7 @@ namespace Yamux
                     imagePixbuf = new Pixbuf("s.jpg");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
-                    CoverImage.Add(image);
+                    coverImage.Add(image);
                 }
                 else
                 {
@@ -169,18 +169,18 @@ namespace Yamux
                     imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
-                    CoverImage.Add(image);
+                    coverImage.Add(image);
                 }
         
-                Button PlayButton0 = new Button(Stock.MediaPlay);
-                PlayButton0.Halign = Align.Fill;
+                Button playButton0 = new Button(Stock.MediaPlay);
+                playButton0.Halign = Align.Fill;
                         
-                CoverImage.Add(NameBestLabel);
-                CoverImage.Add(PlayButton0);
-                NewBox.Add(CoverImage);
+                coverImage.Add(nameBestLabel);
+                coverImage.Add(playButton0);
+                newBox.Add(coverImage);
             }
                     
-            return NewBox;
+            return newBox;
         }
     }
 }
