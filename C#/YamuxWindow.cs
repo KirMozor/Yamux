@@ -45,10 +45,12 @@ namespace Yamux
                     root = root.SelectToken("result");
                 }
             });
-            ShowResultSearch(root, text);
+            await Task.Run(() =>
+            {
+                ShowResultSearch(root, text);
+            });
         }
-
-        private void ShowResultSearch(JToken root, string text)
+        async private void ShowResultSearch(JToken root, string text)
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
@@ -151,12 +153,12 @@ namespace Yamux
                     _bestBox.Add(trackLabel);
                     _bestBox.Add(scrolledTrack);
                     _bestBox.Add(podcastLabel);
-                    _bestBox.Add(scrolledPodcast);
-                    _bestBox.Add(playlistLabel);
-                    _bestBox.Add(scrolledPlaylist);
+                        _bestBox.Add(scrolledPodcast);
+                        _bestBox.Add(playlistLabel);
+                        _bestBox.Add(scrolledPlaylist);
 
-                    ResultBox.ShowAll();
-                    _bestBox.ShowAll();
+                        ResultBox.ShowAll();
+                        _bestBox.ShowAll();
                 }
                 else
                 {
