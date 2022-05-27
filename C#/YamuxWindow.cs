@@ -45,10 +45,7 @@ namespace Yamux
                     root = root.SelectToken("result");
                 }
             });
-            await Task.Run(() =>
-            {
-                ShowResultSearch(root, text);
-            });
+            ShowResultSearch(root, text);
         }
         async private void ShowResultSearch(JToken root, string text)
         {
@@ -60,105 +57,106 @@ namespace Yamux
                     _bestBox.Destroy();
                     _bestBox = new VBox();
                     ResultBox.Add(_bestBox);
-
-                    IfNoResult.Text = "";
-                    string typeBest = root["best"]["type"].ToString();
-
-                    switch (typeBest)
+                    await Task.Run(() =>
                     {
-                        case "artist":
-                            typeBest = "Артист";
-                            break;
-                        case "track":
-                            typeBest = "Трек";
-                            break;
-                        case "playlist":
-                            typeBest = "Плейлист";
-                            break;
-                        case "podcast":
-                            typeBest = "Подкасты";
-                            break;
-                        case "album":
-                            typeBest = "Альбом";
-                            break;
-                    }
+                        IfNoResult.Text = "";
+                        string typeBest = root["best"]["type"].ToString();
 
-                    Dictionary<string, List<string>> artist = Yamux.GetArtist(root);
-                    Dictionary<string, List<string>> track = Yamux.GetTrack(root);
-                    Dictionary<string, List<string>> podcast = Yamux.GetPodcast(root);
-                    Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
-                    List<string> artistName = artist["name"];
-                    List<string> artistCoverUri = artist["coverUri"];
-                    List<string> trackName = track["name"];
-                    List<string> trackCoverUri = track["coverUri"];
-                    List<string> podcastName = podcast["name"];
-                    List<string> podcastCoverUri = podcast["coverUri"];
-                    List<string> playlistName = playlist["name"];
-                    List<string> playlistCoverUri = playlist["coverUri"];
+                        switch (typeBest)
+                        {
+                            case "artist":
+                                typeBest = "Артист";
+                                break;
+                            case "track":
+                                typeBest = "Трек";
+                                break;
+                            case "playlist":
+                                typeBest = "Плейлист";
+                                break;
+                            case "podcast":
+                                typeBest = "Выпуски подкастов";
+                                break;
+                            case "album":
+                                typeBest = "Альбом";
+                                break;
+                        }
 
-                    HBox artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri);
-                    HBox trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri);
-                    HBox podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri);
-                    HBox playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri);
+                        Dictionary<string, List<string>> artist = Yamux.GetArtist(root);
+                        Dictionary<string, List<string>> track = Yamux.GetTrack(root);
+                        Dictionary<string, List<string>> podcast = Yamux.GetPodcast(root);
+                        Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
+                        List<string> artistName = artist["name"];
+                        List<string> artistCoverUri = artist["coverUri"];
+                        List<string> trackName = track["name"];
+                        List<string> trackCoverUri = track["coverUri"];
+                        List<string> podcastName = podcast["name"];
+                        List<string> podcastCoverUri = podcast["coverUri"];
+                        List<string> playlistName = playlist["name"];
+                        List<string> playlistCoverUri = playlist["coverUri"];
 
-                    ScrolledWindow scrolledArtist = new ScrolledWindow();
-                    ScrolledWindow scrolledTrack = new ScrolledWindow();
-                    ScrolledWindow scrolledPodcast = new ScrolledWindow();
-                    ScrolledWindow scrolledPlaylist = new ScrolledWindow();
-                    scrolledArtist.PropagateNaturalHeight = true;
-                    scrolledArtist.PropagateNaturalWidth = true;
-                    scrolledTrack.PropagateNaturalHeight = true;
-                    scrolledTrack.PropagateNaturalWidth = true;
-                    scrolledPodcast.PropagateNaturalHeight = true;
-                    scrolledPodcast.PropagateNaturalWidth = true;
-                    scrolledPlaylist.PropagateNaturalHeight = true;
-                    scrolledPlaylist.PropagateNaturalWidth = true;
+                        HBox artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri);
+                        HBox trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri);
+                        HBox podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri);
+                        HBox playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri);
 
-                    Viewport viewportArtist = new Viewport();
-                    Viewport viewportTrack = new Viewport();
-                    Viewport viewportPodcast = new Viewport();
-                    Viewport viewportPlaylist = new Viewport();
+                        ScrolledWindow scrolledArtist = new ScrolledWindow();
+                        ScrolledWindow scrolledTrack = new ScrolledWindow();
+                        ScrolledWindow scrolledPodcast = new ScrolledWindow();
+                        ScrolledWindow scrolledPlaylist = new ScrolledWindow();
+                        scrolledArtist.PropagateNaturalHeight = true;
+                        scrolledArtist.PropagateNaturalWidth = true;
+                        scrolledTrack.PropagateNaturalHeight = true;
+                        scrolledTrack.PropagateNaturalWidth = true;
+                        scrolledPodcast.PropagateNaturalHeight = true;
+                        scrolledPodcast.PropagateNaturalWidth = true;
+                        scrolledPlaylist.PropagateNaturalHeight = true;
+                        scrolledPlaylist.PropagateNaturalWidth = true;
 
-                    Label artistLabel = new Label(typeBest);
-                    FontDescription tpfartist = new FontDescription();
-                    tpfartist.Size = 12288;
-                    artistLabel.ModifyFont(tpfartist);
+                        Viewport viewportArtist = new Viewport();
+                        Viewport viewportTrack = new Viewport();
+                        Viewport viewportPodcast = new Viewport();
+                        Viewport viewportPlaylist = new Viewport();
 
-                    Label trackLabel = new Label("Треки");
-                    FontDescription tpftrack = new FontDescription();
-                    tpftrack.Size = 12288;
-                    trackLabel.ModifyFont(tpftrack);
+                        Label artistLabel = new Label(typeBest);
+                        FontDescription tpfartist = new FontDescription();
+                        tpfartist.Size = 12288;
+                        artistLabel.ModifyFont(tpfartist);
 
-                    Label podcastLabel = new Label("Подкасты");
-                    FontDescription tpfpodcast = new FontDescription();
-                    tpfpodcast.Size = 12288;
-                    podcastLabel.ModifyFont(tpfpodcast);
+                        Label trackLabel = new Label("Треки");
+                        FontDescription tpftrack = new FontDescription();
+                        tpftrack.Size = 12288;
+                        trackLabel.ModifyFont(tpftrack);
 
-                    Label playlistLabel = new Label("Плейлисты");
-                    FontDescription tpfplaylist = new FontDescription();
-                    tpfplaylist.Size = 12288;
-                    playlistLabel.ModifyFont(tpfplaylist);
+                        Label podcastLabel = new Label("Подкасты");
+                        FontDescription tpfpodcast = new FontDescription();
+                        tpfpodcast.Size = 12288;
+                        podcastLabel.ModifyFont(tpfpodcast);
 
-                    scrolledArtist.Add(viewportArtist);
-                    viewportArtist.Add(artistBox);
-                    scrolledTrack.Add(viewportTrack);
-                    viewportTrack.Add(trackBox);
-                    scrolledPodcast.Add(viewportPodcast);
-                    viewportPodcast.Add(podcastBox);
-                    scrolledPlaylist.Add(viewportPlaylist);
-                    viewportPlaylist.Add(playlistBox);
+                        Label playlistLabel = new Label("Плейлисты");
+                        FontDescription tpfplaylist = new FontDescription();
+                        tpfplaylist.Size = 12288;
+                        playlistLabel.ModifyFont(tpfplaylist);
 
-                    _bestBox.Add(artistLabel);
-                    _bestBox.Add(scrolledArtist);
-                    _bestBox.Add(trackLabel);
-                    _bestBox.Add(scrolledTrack);
-                    _bestBox.Add(podcastLabel);
+                        scrolledArtist.Add(viewportArtist);
+                        viewportArtist.Add(artistBox);
+                        scrolledTrack.Add(viewportTrack); 
+                        viewportTrack.Add(trackBox);
+                        scrolledPodcast.Add(viewportPodcast);
+                        viewportPodcast.Add(podcastBox);
+                        scrolledPlaylist.Add(viewportPlaylist);
+                        viewportPlaylist.Add(playlistBox);
+
+                        _bestBox.Add(artistLabel);
+                        _bestBox.Add(scrolledArtist);
+                        _bestBox.Add(trackLabel);
+                        _bestBox.Add(scrolledTrack);
+                        _bestBox.Add(podcastLabel);
                         _bestBox.Add(scrolledPodcast);
                         _bestBox.Add(playlistLabel);
                         _bestBox.Add(scrolledPlaylist);
-
-                        ResultBox.ShowAll();
-                        _bestBox.ShowAll();
+                    });
+                    ResultBox.ShowAll();
+                    _bestBox.ShowAll();
                 }
                 else
                 {
