@@ -16,7 +16,7 @@ namespace Yamux
         [UI] private Button _login_yamux = null;
         [UI] private Label _current_login = null;
         [UI] private Button _reset_password = null;
-        private byte countRun;
+        private byte _countRun;
         public LoginWindow() : this(new Builder("Login.glade"))
         {
         }
@@ -34,8 +34,8 @@ namespace Yamux
         }
         void CheckConfig(object sender, WindowStateEventArgs a)
         {
-            countRun++;
-            if (countRun == 1)
+            _countRun++;
+            if (_countRun == 1)
             {
                 if (Login.CheckAviabilityConfig())
                 {
