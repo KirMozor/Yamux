@@ -14,10 +14,22 @@ namespace Yamux
 {
     class YamuxWindow : Window
     {
+        [UI] private Dialog DonateWindow = null;
+        [UI] private Window AboutWindow = null;
+
+        [UI] private Button AboutGitHubProject = null;
+        [UI] private Button AboutGitHubAuthor = null;
+        [UI] private Button AboutTelegramChannel = null;
+        [UI] private Button AboutDonateMe = null;
+        [UI] private Button CloseAboutWindow = null;
+        [UI] private Button CloseDonateWindow = null;
+
+        [UI] private Button AboutProgram = null;
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box ResultBox = null;
         [UI] private Label IfNoResult = null;
         private VBox _bestBox = new VBox();
+
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
         }
@@ -26,11 +38,27 @@ namespace Yamux
         {
             builder.Autoconnect(this);
             DeleteEvent += Window_DeleteEvent;
+            AboutProgram.Clicked += ShowAboutWindow;
+            AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
             SetDefaultIconFromFile("Svg/icon.svg");
         }
 
-        async void SearchChangedOutput(object sender, EventArgs a)
+        private void ShowAboutWindow(object sender, EventArgs a)
+        {
+            AboutWindow.ShowAll();
+            CloseAboutWindow.Clicked += HideAboutWindow;
+            AboutGitHubProject.Clicked += ClickAboutGitHubProject;
+            AboutGitHubAuthor.Clicked += ClickAboutGitHubAuthor;
+            AboutTelegramChannel.Clicked += ClickTelegramChannel;
+        }
+
+        private void ShowDonateWindow(object sender, EventArgs a)
+        {
+            DonateWindow.ShowAll();
+            CloseDonateWindow.Clicked += HideDonateWindow;
+        }
+        async private void SearchChangedOutput(object sender, EventArgs a)
         {
             string text = SearchMusic.Text;
             JToken root = "{}";
@@ -127,7 +155,7 @@ namespace Yamux
                         tpftrack.Size = 12288;
                         trackLabel.ModifyFont(tpftrack);
 
-                        Label podcastLabel = new Label("Подкасты");
+                        Label podcastLabel = new Label("Выпуски подкастов");
                         FontDescription tpfpodcast = new FontDescription();
                         tpfpodcast.Size = 12288;
                         podcastLabel.ModifyFont(tpfpodcast);
@@ -169,6 +197,26 @@ namespace Yamux
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {
             Application.Quit();
+        }
+        private void HideAboutWindow(object sender, EventArgs a)
+        { 
+            AboutWindow.Hide();
+        }
+        private void HideDonateWindow(object sender, EventArgs a)
+        {
+            DonateWindow.Hide();
+        }
+        private void ClickAboutGitHubProject(object sender, EventArgs a)
+        {
+            Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor/Yamux");
+        }
+        private void ClickAboutGitHubAuthor(object sender, EventArgs a)
+        {
+            Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor");
+        }
+        private void ClickTelegramChannel(object sender, EventArgs a)
+        {
+            Yamux.OpenLinkToWebBrowser("https://t.me/kirmozor");
         }
     }
 }

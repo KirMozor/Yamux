@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
@@ -11,6 +13,30 @@ namespace Yamux
 {
     public class Yamux
     {
+        public static void OpenLinkToWebBrowser(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                } else
+                {
+                    throw;  
+                }
+            }
+        }
         public static Dictionary<string, List<string>> GetPlaylist(JToken root)
         {
             Dictionary<string, List<string>> playlist = new Dictionary<string, List<string>>();
