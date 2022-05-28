@@ -21,6 +21,7 @@ namespace Yamux
         [UI] private Button AboutGitHubAuthor = null;
         [UI] private Button AboutTelegramChannel = null;
         [UI] private Button AboutDonateMe = null;
+        [UI] private Button KofiDonate = null;
         [UI] private Button CloseAboutWindow = null;
         [UI] private Button CloseDonateWindow = null;
 
@@ -47,6 +48,8 @@ namespace Yamux
         private void ShowAboutWindow(object sender, EventArgs a)
         {
             AboutWindow.ShowAll();
+            AboutWindow.Deletable = false;
+
             CloseAboutWindow.Clicked += HideAboutWindow;
             AboutGitHubProject.Clicked += ClickAboutGitHubProject;
             AboutGitHubAuthor.Clicked += ClickAboutGitHubAuthor;
@@ -56,7 +59,9 @@ namespace Yamux
         private void ShowDonateWindow(object sender, EventArgs a)
         {
             DonateWindow.ShowAll();
+            DonateWindow.Deletable = false;
             CloseDonateWindow.Clicked += HideDonateWindow;
+            KofiDonate.Clicked += ClickKofiDonate;
         }
         async private void SearchChangedOutput(object sender, EventArgs a)
         {
@@ -199,7 +204,7 @@ namespace Yamux
             Application.Quit();
         }
         private void HideAboutWindow(object sender, EventArgs a)
-        { 
+        {
             AboutWindow.Hide();
         }
         private void HideDonateWindow(object sender, EventArgs a)
@@ -217,6 +222,11 @@ namespace Yamux
         private void ClickTelegramChannel(object sender, EventArgs a)
         {
             Yamux.OpenLinkToWebBrowser("https://t.me/kirmozor");
+        }
+
+        private void ClickKofiDonate(object sender, EventArgs a)
+        {
+            Yamux.OpenLinkToWebBrowser("https://ko-fi.com/kirmozor");
         }
     }
 }
