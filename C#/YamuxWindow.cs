@@ -38,11 +38,20 @@ namespace Yamux
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
+            LandingLoad();
+            
             DeleteEvent += Window_DeleteEvent;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
             SetDefaultIconFromFile("Svg/icon.svg");
+        }
+
+        async private void LandingLoad()
+        {
+            await Task.Run(() =>
+            {
+            });
         }
 
         private void ShowAboutWindow(object sender, EventArgs a)

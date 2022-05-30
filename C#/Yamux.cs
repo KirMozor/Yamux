@@ -187,7 +187,10 @@ namespace Yamux
                     imagePixbuf = new Pixbuf("s.jpg");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
-                    coverImage.Add(image);
+                    Button s = new Button();
+                    s.Image = image;
+                    s.Relief = ReliefStyle.None;
+                    coverImage.Add(s);
                 }
                 else
                 {
@@ -195,14 +198,17 @@ namespace Yamux
                     imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
+                    Button s = new Button();
+                    s.Image = image;
+                    s.Relief = ReliefStyle.None;
                     coverImage.Add(image);
                 }
         
-                Button playButton0 = new Button(Stock.MediaPlay);
-                playButton0.Halign = Align.Fill;
+                //Button playButton0 = new Button(Stock.MediaPlay);
+                //playButton0.Halign = Align.Fill;
                         
                 coverImage.Add(nameBestLabel);
-                coverImage.Add(playButton0);
+                //coverImage.Add(playButton0);
                 newBox.Add(coverImage);
             }
                     
