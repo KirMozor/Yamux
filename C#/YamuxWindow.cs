@@ -229,19 +229,22 @@ namespace Yamux
             }
         }
 
-        private void PlayButtonClick(object sender, EventArgs a)
+        private async void PlayButtonClick(object sender, EventArgs a)
         {
             Button buttonPlay = (Button) sender;
             Console.WriteLine(buttonPlay.Name);
             try
             {
                 JObject details = JObject.Parse(buttonPlay.Name);
-                Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
-                if (details["type"].ToString() == "track")
+                await Task.Run(() =>
                 {
-                    string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
-                    Player.PlayUrlFile(directLink);
-                }
+                    Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
+                    if (details["type"].ToString() == "track")
+                    {
+                        string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
+                        Player.PlayUrlFile(directLink);
+                    } 
+                });
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
