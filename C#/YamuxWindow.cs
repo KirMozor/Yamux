@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
@@ -38,7 +40,7 @@ namespace Yamux
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
-            LandingLoad();
+            //LandingLoad();
             
             DeleteEvent += Window_DeleteEvent;
             AboutProgram.Clicked += ShowAboutWindow;
@@ -58,7 +60,7 @@ namespace Yamux
         {
             AboutWindow.ShowAll();
             AboutWindow.Deletable = false;
-
+            
             CloseAboutWindow.Clicked += HideAboutWindow;
             AboutGitHubProject.Clicked += ClickAboutGitHubProject;
             AboutGitHubAuthor.Clicked += ClickAboutGitHubAuthor;
@@ -93,7 +95,6 @@ namespace Yamux
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
-                Dictionary<string, List<string>> result = Yamux.GetTrack(root);
                 if (root.Count() > 6)
                 {
                     _bestBox.Destroy();
@@ -129,17 +130,21 @@ namespace Yamux
                         Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
                         List<string> artistName = artist["name"];
                         List<string> artistCoverUri = artist["coverUri"];
+                        List<string> artistId = artist["id"];
                         List<string> trackName = track["name"];
                         List<string> trackCoverUri = track["coverUri"];
+                        List<string> trackId = track["id"];
                         List<string> podcastName = podcast["name"];
                         List<string> podcastCoverUri = podcast["coverUri"];
+                        List<string> podcastId = podcast["id"];
                         List<string> playlistName = playlist["name"];
                         List<string> playlistCoverUri = playlist["coverUri"];
+                        List<string> playlistId = new List<string>();
 
-                        HBox artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri);
-                        HBox trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri);
-                        HBox podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri);
-                        HBox playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri);
+                        HBox artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri, artistId, "artist");
+                        HBox trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri, trackId, "track");
+                        HBox podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri, podcastId, "podcast");
+                        HBox playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri, playlistId, "playlist");
 
                         ScrolledWindow scrolledArtist = new ScrolledWindow();
                         ScrolledWindow scrolledTrack = new ScrolledWindow();
@@ -199,12 +204,30 @@ namespace Yamux
                     });
                     ResultBox.ShowAll();
                     _bestBox.ShowAll();
+                    foreach (Button i in Yamux.ListButtonPlay)
+                    {
+                        i.Clicked += PlayButtonClick;
+                    }
                 }
                 else
                 {
                     _bestBox.Destroy();
                     IfNoResult.Text = "Нет результата😢";
                 }
+            }
+        }
+
+        private void PlayButtonClick(object sender, EventArgs a)
+        {
+            Button buttonPlay = (Button) sender;
+            Console.WriteLine(buttonPlay.Name);
+            try
+            {
+                JObject details = JObject.Parse(buttonPlay.Name);
+                Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
             }
         }
 

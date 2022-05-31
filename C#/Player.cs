@@ -8,29 +8,21 @@ namespace Yamux
 {
     public class Player
     {
-        public static void PlayUrlFile()
+        public static void PlayUrlFile(string url)
         {
-            // Init BASS using the default output device
             if (Bass.Init())
             {
-                string fileName = "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3";
-                // Create a stream from a file
-                var stream = Bass.CreateStream(fileName, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                var stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
 
                 if (stream != 0)
-                    Bass.ChannelPlay(stream); // Play the stream
+                    Bass.ChannelPlay(stream);
 
-                // Error creating the stream
                 else Console.WriteLine("Error: {0}!", Bass.LastError);
 
-                // Wait till user presses a key
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
 
-                // Free the stream
                 Bass.StreamFree(stream);
-
-                // Free current device.
                 Bass.Free();
             }
             else Console.WriteLine("BASS could not be initialized!");
