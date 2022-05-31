@@ -1,8 +1,11 @@
 using ManagedBass;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using YandexMusicApi;
 
 namespace Yamux
 {
@@ -26,6 +29,18 @@ namespace Yamux
                 Bass.Free();
             }
             else Console.WriteLine("BASS could not be initialized!");
+        }
+
+        public static string GetDirectLinkWithTrack(string trackId)
+        {
+            JObject result = Track.GetDownloadInfoWithToken(trackId);
+            Console.WriteLine(result);
+            
+            var resultData = result.GetValue("result");
+            resultData = resultData[0];
+
+            string url = resultData.ToList()[3].ToList()[0].ToString();
+            return Track.GetDirectLink(url);
         }
         
         public static async Task DownloadUriWithThrottling(Uri uri, string path, double speedKbps)

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Gdk;
+using System.Text;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
+using Tomlyn;
+using YandexMusicApi;
 using Application = Gtk.Application;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
@@ -39,6 +41,16 @@ namespace Yamux
 
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
+            using (FileStream fstream = File.OpenRead("config.toml"))
+            {
+                byte[] buffer = new byte[fstream.Length];
+                fstream.Read(buffer, 0, buffer.Length);
+                string textFromFile = Encoding.Default.GetString(buffer);
+                    
+                var model = Toml.ToModel(textFromFile);
+                Token.token = (string)model["yandex_token"]!;
+            }
+            
             builder.Autoconnect(this);
             //LandingLoad();
             
@@ -225,6 +237,11 @@ namespace Yamux
             {
                 JObject details = JObject.Parse(buttonPlay.Name);
                 Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
+                if (details["type"].ToString() == "track")
+                {
+                    string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
+                    Player.PlayUrlFile(directLink);
+                }
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
