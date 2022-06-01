@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using YandexMusicApi;
@@ -11,24 +12,42 @@ namespace Yamux
 {
     public class Player
     {
+        private static bool PlayTrackOrNo = false;
+        private static int stream;
         public static void PlayUrlFile(string url)
         {
-            if (Bass.Init())
-            {
-                var stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                if (PlayTrackOrNo == false)
+                {
+                    Console.WriteLine(0);
+                    Bass.Init();
+                    stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                    if (stream != 0)
+                    {
+                        Bass.ChannelPlay(stream);
+                        PlayTrackOrNo = true;
+                    }
+                    else Console.WriteLine("Error: {0}!", Bass.LastError);
+                }
+                else
+                {
+                    Console.WriteLine(1);
+                    Bass.StreamFree(stream);
+                    Bass.Free();
+                    Bass.Init();
+                    
 
-                if (stream != 0)
-                    Bass.ChannelPlay(stream);
-
-                else Console.WriteLine("Error: {0}!", Bass.LastError);
-
+                    stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                    if (stream != 0)
+                    {
+                        Bass.ChannelPlay(stream);
+                        PlayTrackOrNo = true;
+                    }
+                    else Console.WriteLine("Error: {0}!", Bass.LastError);
+                }
+                /*
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
-
-                Bass.StreamFree(stream);
-                Bass.Free();
-            }
-            else Console.WriteLine("BASS could not be initialized!");
+                */
         }
 
         public static string GetDirectLinkWithTrack(string trackId)
