@@ -18,7 +18,6 @@ namespace Yamux
         {
                 if (PlayTrackOrNo == false)
                 {
-                    Console.WriteLine(0);
                     Bass.Init();
                     stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                     if (stream != 0)
@@ -30,12 +29,10 @@ namespace Yamux
                 }
                 else
                 {
-                    Console.WriteLine(1);
                     Bass.StreamFree(stream);
                     Bass.Free();
                     Bass.Init();
                     
-
                     stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                     if (stream != 0)
                     {
@@ -44,10 +41,6 @@ namespace Yamux
                     }
                     else Console.WriteLine("Error: {0}!", Bass.LastError);
                 }
-                /*
-                Console.WriteLine("Press any key to exit");
-                Console.ReadKey();
-                */
         }
 
         public static string GetDirectLinkWithTrack(string trackId)

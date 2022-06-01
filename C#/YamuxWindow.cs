@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using GLib;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
 using Tomlyn;
+using GLib;
 using YandexMusicApi;
 using Application = Gtk.Application;
 using Task = System.Threading.Tasks.Task;
@@ -33,7 +35,9 @@ namespace Yamux
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box ResultBox = null;
         [UI] private Label IfNoResult = null;
+        [UI] private Box asd = null;
         private VBox _bestBox = new VBox();
+        private Notification popup = null;
 
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
@@ -52,7 +56,11 @@ namespace Yamux
             }
             
             builder.Autoconnect(this);
-            //LandingLoad();
+            HScale newScale = new HScale(0.0, 100.0, 0.1);
+            newScale.Hexpand = true;
+            newScale.DrawValue = false;
+            asd.Add(newScale);
+            asd.ShowAll();
             
             DeleteEvent += Window_DeleteEvent;
             AboutProgram.Clicked += ShowAboutWindow;
@@ -241,6 +249,11 @@ namespace Yamux
                     Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
                     if (details["type"].ToString() == "track")
                     {
+                        popup = new Notification("Yamux");
+                        popup.Title = "Yamux";
+                        popup.Body = "Complete";
+                        
+                        Console.WriteLine(details["uri"]);
                         string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
                         Player.PlayUrlFile(directLink);
                     } 

@@ -8,6 +8,7 @@ using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
+using Scale = Gtk.Scale;
 
 namespace Yamux
 {
@@ -189,12 +190,11 @@ namespace Yamux
                     string url = coverUri[b];
                     using (WebClient client = new WebClient())
                     {
-                        url = url.Replace("%%", "100x100");
-                        url = "https://" + url;
-                        Console.WriteLine(url);
-                        client.DownloadFile(new Uri(url), "s.jpg");
+                        string uri = url.Replace("%%", "100x100");
+                        uri = "https://" + uri;
+                        Console.WriteLine(uri);
+                        client.DownloadFile(new Uri(uri), "s.jpg");
                     }
-        
                     Pixbuf imagePixbuf;
                     imagePixbuf = new Pixbuf("s.jpg");
                     Image image = new Image(imagePixbuf);
@@ -204,7 +204,9 @@ namespace Yamux
                     buttonPlay.Relief = ReliefStyle.None;
                     if (typeResult != "playlist")
                     {
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\" }";
+                        string uri = url.Replace("%%", "50x50");
+                        uri = "https://" + uri;
+                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'uri': \""+ uri + "\" }";
                     }
 
                     ListButtonPlay.Add(buttonPlay);
