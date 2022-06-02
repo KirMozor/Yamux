@@ -3,8 +3,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
+using Gdk;
+using Gtk;
 using Newtonsoft.Json.Linq;
 using YandexMusicApi;
 
@@ -12,11 +13,12 @@ namespace Yamux
 {
     public class Player
     {
-        private static bool PlayTrackOrNo = false;
+        public static bool PlayTrackOrNo = false;
+        public static bool PlayTrackOrPause = false;
         private static int stream;
         public static void PlayUrlFile(string url)
         {
-                if (PlayTrackOrNo == false)
+                if (!PlayTrackOrNo)
                 {
                     Bass.Init();
                     stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
@@ -24,6 +26,7 @@ namespace Yamux
                     {
                         Bass.ChannelPlay(stream);
                         PlayTrackOrNo = true;
+                        PlayTrackOrPause = true;
                     }
                     else Console.WriteLine("Error: {0}!", Bass.LastError);
                 }
@@ -38,9 +41,34 @@ namespace Yamux
                     {
                         Bass.ChannelPlay(stream);
                         PlayTrackOrNo = true;
+                        PlayTrackOrPause = true;
                     }
                     else Console.WriteLine("Error: {0}!", Bass.LastError);
                 }
+        }
+
+        public static void StopTrack(object sender, EventArgs a)
+        {
+            Bass.StreamFree(stream);
+            Bass.Free();
+            PlayTrackOrNo = false;
+        }
+
+        public static void PauseOrStartPlay()
+        {
+            if (PlayTrackOrPause)
+            {
+                Bass.ChannelPause(stream);
+                PlayTrackOrNo = false;
+                PlayTrackOrPause = false;
+            }
+            else
+            {
+                Bass.PauseNoPlay = 1;
+                Bass.ChannelPlay(stream);
+                PlayTrackOrNo = true;
+                PlayTrackOrPause = true;
+            }
         }
 
         public static string GetDirectLinkWithTrack(string trackId)

@@ -44,6 +44,12 @@ namespace Yamux
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
         
+        public static Button PlayerStopTrack = new Button();
+        public static Button PlayerPreviousTrack = new Button();
+        public static Button PlayerPlayTrack = new Button();
+        public static Button PlayerNextTrack = new Button();
+        public static Button PlayerDownloadTrack = new Button();
+
         private VBox _bestBox = new VBox();
 
         public YamuxWindow() : this(new Builder("Yamux.glade"))
@@ -68,6 +74,8 @@ namespace Yamux
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
+            
+            PlayerPlayTrack.Clicked += ClickPauseOrPlay;
             SetDefaultIconFromFile("Svg/icon.svg");
         }
 
@@ -291,18 +299,12 @@ namespace Yamux
                         PlayerTitleTrack.Text = TitleTrack;
                         PlayerNameArtist.Text = ArtistTrack;
 
-                        Button PlayerStopTrack = new Button();
-                        Button PlayerPreviousTrack = new Button();
-                        Button PlayerPlayTrack = new Button();
-                        Button PlayerNextTrack = new Button();
-                        Button PlayerDownloadTrack = new Button();
-
                         PlayerStopTrack.Relief = ReliefStyle.None;
                         PlayerPreviousTrack.Relief = ReliefStyle.None;
                         PlayerPlayTrack.Relief = ReliefStyle.None;
                         PlayerNextTrack.Relief = ReliefStyle.None;
                         PlayerDownloadTrack.Relief = ReliefStyle.None;
-
+                        
                         Pixbuf PlayerStopPixbuf;
                         Pixbuf PlayerPreviousPixbuf;
                         Pixbuf PlayerPlayPixbuf;
@@ -326,20 +328,37 @@ namespace Yamux
                         PlayerActionBox.Add(PlayerPlayTrack);
                         PlayerActionBox.Add(PlayerNextTrack);
                         PlayerActionBox.Add(PlayerDownloadTrack);
+
                         PlayerActionBox.ShowAll();
                     } 
                 });
+                string directLink = "";
                 await Task.Run(() =>
                 {
-                    string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
-                    Player.PlayUrlFile(directLink);
+                    directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
                 });
+                Player.PlayUrlFile(directLink);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
             }
         }
 
+        private void ClickPauseOrPlay(object sender, EventArgs a)
+        {
+            if (Player.PlayTrackOrPause)
+            {
+                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-pause.png");
+                PlayerPlayTrack.Image = new Image(PlayerPausePixbuf);
+            }
+            else
+            {
+                Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-play.png");
+                PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
+            }
+            Player.PauseOrStartPlay();
+        }
+        
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {
             Application.Quit();

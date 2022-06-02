@@ -396,7 +396,7 @@ Author: @KirMozorF
                         <property name="wrap-mode">char</property>
                         <attributes>
                           <attribute name="weight" value="semibold"/>
-                          <attribute name="size" value="13312"/>
+                          <attribute name="size" value="14336"/>
                         </attributes>
                       </object>
                       <packing>
@@ -414,7 +414,7 @@ Author: @KirMozorF
                         <property name="wrap-mode">char</property>
                         <attributes>
                           <attribute name="weight" value="medium"/>
-                          <attribute name="size" value="10240"/>
+                          <attribute name="size" value="11264"/>
                         </attributes>
                       </object>
                       <packing>
