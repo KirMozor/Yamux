@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
-using GLib;
+using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
 using Pango;
 using Tomlyn;
-using GLib;
 using YandexMusicApi;
 using Application = Gtk.Application;
 using Task = System.Threading.Tasks.Task;
@@ -33,11 +33,16 @@ namespace Yamux
 
         [UI] private Button AboutProgram = null;
         [UI] private SearchEntry SearchMusic = null;
+        [UI] private Box SearchBox = null;
         [UI] private Box ResultBox = null;
         [UI] private Label IfNoResult = null;
+        
         [UI] private Box asd = null;
+        [UI] private Label PlayerNameArtist = null;
+        [UI] private Label PlayerTitleTrack = null;
+        [UI] private Image PlayerImage = null;
+        
         private VBox _bestBox = new VBox();
-        private Notification popup = null;
 
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
@@ -56,12 +61,7 @@ namespace Yamux
             }
             
             builder.Autoconnect(this);
-            HScale newScale = new HScale(0.0, 100.0, 0.1);
-            newScale.Hexpand = true;
-            newScale.DrawValue = false;
-            asd.Add(newScale);
-            asd.ShowAll();
-            
+
             DeleteEvent += Window_DeleteEvent;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
@@ -240,7 +240,12 @@ namespace Yamux
         private async void PlayButtonClick(object sender, EventArgs a)
         {
             Button buttonPlay = (Button) sender;
-            Console.WriteLine(buttonPlay.Name);
+            asd.Destroy();
+            asd = new HBox();
+            asd.Valign = Align.Center;
+            asd.Vexpand = true;
+            
+            SearchBox.Add(asd);
             try
             {
                 JObject details = JObject.Parse(buttonPlay.Name);
@@ -249,11 +254,40 @@ namespace Yamux
                     Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
                     if (details["type"].ToString() == "track")
                     {
-                        popup = new Notification("Yamux");
-                        popup.Title = "Yamux";
-                        popup.Body = "Complete";
-                        
-                        Console.WriteLine(details["uri"]);
+                        HScale PlayerScale = new HScale(0.0, 100.0, 0.1);
+                        PlayerScale.Hexpand = true;
+                        PlayerScale.Valign = Align.Center;
+                        asd.Add(PlayerScale);
+                        asd.ShowAll();
+
+                        try
+                        {
+                            File.Delete("s.jpg");
+                            string url = details["uri"].ToString();
+                            using (WebClient client = new WebClient())
+                            {
+                                client.DownloadFile(new Uri(url), "s.jpg");
+                            }
+                            Pixbuf imagePixbuf;
+                            imagePixbuf = new Pixbuf("s.jpg");
+                            PlayerImage.Pixbuf = imagePixbuf;
+
+                        }
+                        catch(Newtonsoft.Json.JsonReaderException)
+                        {
+                            Pixbuf imagePixbuf;
+                            imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
+                            PlayerImage.Pixbuf = imagePixbuf;
+                        }
+                        List<string> track = new List<string>();
+                        track.Add(details["id"].ToString());
+                        JObject InformTrack = Track.GetInformTrack(track);
+                        string TitleTrack = InformTrack["result"][0]["title"].ToString();
+                        string ArtistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
+
+                        PlayerTitleTrack.Text = TitleTrack;
+                        PlayerNameArtist.Text = ArtistTrack;
+
                         string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
                         Player.PlayUrlFile(directLink);
                     } 

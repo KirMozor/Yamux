@@ -223,7 +223,8 @@ namespace Yamux
                     buttonPlay.Relief = ReliefStyle.None;
                     if (typeResult != "playlist")
                     {
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\" }";
+                        string imageNotFound = "Svg/icons8_rock_music_100_negate.png";
+                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
                     }
 
                     ListButtonPlay.Add(buttonPlay);
@@ -234,6 +235,19 @@ namespace Yamux
             }
                     
             return newBox;
+        }
+
+        public static HBox CreatePlayerBox(string name, string artistName, string coverUri)
+        {
+            HBox PlayerMenu = new HBox();
+            
+            HScale newScale = new HScale(0.0, 100.0, 0.1);
+            newScale.Hexpand = true;
+            newScale.DrawValue = false;
+            PlayerMenu.Add(newScale);
+            PlayerMenu.ShowAll();
+
+            return PlayerMenu;
         }
     }
 }
