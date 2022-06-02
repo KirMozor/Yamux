@@ -38,6 +38,8 @@ namespace Yamux
         [UI] private Label IfNoResult = null;
         
         [UI] private Box PlayerBoxScale = null;
+        [UI] private Box PlayerActionBox = null;
+        [UI] private Box PlayerMoreActionBox = null;
         [UI] private Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
@@ -289,9 +291,48 @@ namespace Yamux
                         PlayerTitleTrack.Text = TitleTrack;
                         PlayerNameArtist.Text = ArtistTrack;
 
-                        string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
-                        Player.PlayUrlFile(directLink);
+                        Button PlayerStopTrack = new Button();
+                        Button PlayerPreviousTrack = new Button();
+                        Button PlayerPlayTrack = new Button();
+                        Button PlayerNextTrack = new Button();
+                        Button PlayerDownloadTrack = new Button();
+
+                        PlayerStopTrack.Relief = ReliefStyle.None;
+                        PlayerPreviousTrack.Relief = ReliefStyle.None;
+                        PlayerPlayTrack.Relief = ReliefStyle.None;
+                        PlayerNextTrack.Relief = ReliefStyle.None;
+                        PlayerDownloadTrack.Relief = ReliefStyle.None;
+
+                        Pixbuf PlayerStopPixbuf;
+                        Pixbuf PlayerPreviousPixbuf;
+                        Pixbuf PlayerPlayPixbuf;
+                        Pixbuf PlayerNextPixbuf;
+                        Pixbuf PlayerDownloadPixbuf;
+
+                        PlayerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
+                        PlayerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
+                        PlayerPlayPixbuf = new Pixbuf("Svg/icons8-play.png");
+                        PlayerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
+                        PlayerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
+
+                        PlayerStopTrack.Image = new Image(PlayerStopPixbuf);
+                        PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
+                        PlayerPreviousTrack.Image = new Image(PlayerPreviousPixbuf);
+                        PlayerNextTrack.Image = new Image(PlayerNextPixbuf);
+                        PlayerDownloadTrack.Image = new Image(PlayerDownloadPixbuf);
+
+                        PlayerActionBox.Add(PlayerStopTrack);
+                        PlayerActionBox.Add(PlayerPreviousTrack);
+                        PlayerActionBox.Add(PlayerPlayTrack);
+                        PlayerActionBox.Add(PlayerNextTrack);
+                        PlayerActionBox.Add(PlayerDownloadTrack);
+                        PlayerActionBox.ShowAll();
                     } 
+                });
+                await Task.Run(() =>
+                {
+                    string directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
+                    Player.PlayUrlFile(directLink);
                 });
             }
             catch (Newtonsoft.Json.JsonReaderException)
