@@ -579,7 +579,6 @@ Author: @KirMozorF
                     <property name="halign">center</property>
                     <property name="valign">end</property>
                     <property name="margin-bottom">4</property>
-                    <property name="spacing">6</property>
                     <child>
                       <object class="GtkButton">
                         <property name="label" translatable="yes">button</property>
