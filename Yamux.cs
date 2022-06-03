@@ -143,7 +143,7 @@ namespace Yamux
             {
                 artistId.Add(i["id"].ToString());
                 artistName.Add(i["name"].ToString());
-
+                
                 try
                 {
                     artistCoverUri.Add(i["cover"]["uri"].ToString());

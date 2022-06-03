@@ -259,18 +259,12 @@ namespace Yamux
             try
             {
                 JObject details = JObject.Parse(buttonPlay.Name);
-                await Task.Run(() =>
-                {
-                    Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
-                    if (details["type"].ToString() == "track")
-                    {
-                        HScale PlayerScale = new HScale(0.0, 100.0, 0.1);
-                        PlayerScale.Hexpand = true;
-                        PlayerScale.Valign = Align.Center;
-                        PlayerScale.DrawValue = false;
-                        PlayerBoxScale.Add(PlayerScale);
-                        PlayerBoxScale.ShowAll();
 
+                Console.WriteLine("Type: " + details["type"] + "\nID: " + details["id"]);
+                if (details["type"].ToString() == "track")
+                {
+                    await Task.Run(() =>
+                    {
                         try
                         {
                             File.Delete("s.jpg");
@@ -290,54 +284,67 @@ namespace Yamux
                             imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
                             PlayerImage.Pixbuf = imagePixbuf;
                         }
-                        List<string> track = new List<string>();
-                        track.Add(details["id"].ToString());
-                        JObject InformTrack = Track.GetInformTrack(track);
-                        string TitleTrack = InformTrack["result"][0]["title"].ToString();
-                        string ArtistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
-
-                        PlayerTitleTrack.Text = TitleTrack;
-                        PlayerNameArtist.Text = ArtistTrack;
-
-                        PlayerStopTrack.Relief = ReliefStyle.None;
-                        PlayerPreviousTrack.Relief = ReliefStyle.None;
-                        PlayerPlayTrack.Relief = ReliefStyle.None;
-                        PlayerNextTrack.Relief = ReliefStyle.None;
-                        PlayerDownloadTrack.Relief = ReliefStyle.None;
+                    });
+                    List<string> track = new List<string>();
+                    track.Add(details["id"].ToString());
                         
-                        Pixbuf PlayerStopPixbuf;
-                        Pixbuf PlayerPreviousPixbuf;
-                        Pixbuf PlayerPlayPixbuf;
-                        Pixbuf PlayerNextPixbuf;
-                        Pixbuf PlayerDownloadPixbuf;
+                    string TitleTrack = "";
+                    string ArtistTrack = "";
+                    await Task.Run(() =>
+                    {
+                        JObject InformTrack = Track.GetInformTrack(track); 
+                        TitleTrack = InformTrack["result"][0]["title"].ToString();
+                        ArtistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
+                    });
 
-                        PlayerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
-                        PlayerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
-                        PlayerPlayPixbuf = new Pixbuf("Svg/icons8-play.png");
-                        PlayerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
-                        PlayerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
+                    PlayerTitleTrack.Text = TitleTrack;
+                    PlayerNameArtist.Text = ArtistTrack;
 
-                        PlayerStopTrack.Image = new Image(PlayerStopPixbuf);
-                        PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
-                        PlayerPreviousTrack.Image = new Image(PlayerPreviousPixbuf);
-                        PlayerNextTrack.Image = new Image(PlayerNextPixbuf);
-                        PlayerDownloadTrack.Image = new Image(PlayerDownloadPixbuf);
+                    PlayerStopTrack.Relief = ReliefStyle.None;
+                    PlayerPreviousTrack.Relief = ReliefStyle.None;
+                    PlayerPlayTrack.Relief = ReliefStyle.None;
+                    PlayerNextTrack.Relief = ReliefStyle.None;
+                    PlayerDownloadTrack.Relief = ReliefStyle.None;
+                        
+                    Pixbuf PlayerStopPixbuf;
+                    Pixbuf PlayerPreviousPixbuf;
+                    Pixbuf PlayerPlayPixbuf;
+                    Pixbuf PlayerNextPixbuf;
+                    Pixbuf PlayerDownloadPixbuf;
 
-                        PlayerActionBox.Add(PlayerStopTrack);
-                        PlayerActionBox.Add(PlayerPreviousTrack);
-                        PlayerActionBox.Add(PlayerPlayTrack);
-                        PlayerActionBox.Add(PlayerNextTrack);
-                        PlayerActionBox.Add(PlayerDownloadTrack);
+                    PlayerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
+                    PlayerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
+                    PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+                    PlayerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
+                    PlayerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
 
-                        PlayerActionBox.ShowAll();
-                    } 
-                });
+                    PlayerStopTrack.Image = new Image(PlayerStopPixbuf);
+                    PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
+                    PlayerPreviousTrack.Image = new Image(PlayerPreviousPixbuf);
+                    PlayerNextTrack.Image = new Image(PlayerNextPixbuf);
+                    PlayerDownloadTrack.Image = new Image(PlayerDownloadPixbuf);
+
+                    PlayerActionBox.Add(PlayerStopTrack);
+                    PlayerActionBox.Add(PlayerPreviousTrack);
+                    PlayerActionBox.Add(PlayerPlayTrack);
+                    PlayerActionBox.Add(PlayerNextTrack);
+                    PlayerActionBox.Add(PlayerDownloadTrack);
+
+                    PlayerActionBox.ShowAll();
+                } 
                 string directLink = "";
                 await Task.Run(() =>
                 {
                     directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
+                    Player.PlayUrlFile(directLink);
                 });
-                Player.PlayUrlFile(directLink);
+                
+                HScale PlayerScale = new HScale(0.0, Player.GetLength(), 1.0);
+                PlayerScale.Hexpand = true;
+                PlayerScale.Valign = Align.Center;
+                PlayerScale.DrawValue = false;
+                PlayerBoxScale.Add(PlayerScale);
+                PlayerBoxScale.ShowAll();
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
@@ -348,12 +355,12 @@ namespace Yamux
         {
             if (Player.PlayTrackOrPause)
             {
-                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-pause.png");
+                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-play.png");
                 PlayerPlayTrack.Image = new Image(PlayerPausePixbuf);
             }
             else
             {
-                Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-play.png");
+                Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
                 PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
             }
             Player.PauseOrStartPlay();

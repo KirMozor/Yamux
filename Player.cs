@@ -18,33 +18,33 @@ namespace Yamux
         private static int stream;
         public static void PlayUrlFile(string url)
         {
-                if (!PlayTrackOrNo)
+            if (!PlayTrackOrNo)
+            {
+                Bass.Init();
+                stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                if (stream != 0)
                 {
-                    Bass.Init();
-                    stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
-                    if (stream != 0)
-                    {
-                        Bass.ChannelPlay(stream);
-                        PlayTrackOrNo = true;
-                        PlayTrackOrPause = true;
-                    }
-                    else Console.WriteLine("Error: {0}!", Bass.LastError);
+                    Bass.ChannelPlay(stream);
+                    PlayTrackOrNo = true;
+                    PlayTrackOrPause = true;
                 }
-                else
-                {
-                    Bass.StreamFree(stream);
-                    Bass.Free();
-                    Bass.Init();
+                else Console.WriteLine("Error: {0}!", Bass.LastError);
+            }
+            else
+            {
+                Bass.StreamFree(stream);
+                Bass.Free();
+                Bass.Init();
                     
-                    stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
-                    if (stream != 0)
-                    {
-                        Bass.ChannelPlay(stream);
-                        PlayTrackOrNo = true;
-                        PlayTrackOrPause = true;
-                    }
-                    else Console.WriteLine("Error: {0}!", Bass.LastError);
+                stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                if (stream != 0)
+                {
+                    Bass.ChannelPlay(stream);
+                    PlayTrackOrNo = true;
+                    PlayTrackOrPause = true;
                 }
+                else Console.WriteLine("Error: {0}!", Bass.LastError);
+            }
         }
 
         public static void StopTrack(object sender, EventArgs a)
@@ -71,6 +71,29 @@ namespace Yamux
             }
         }
 
+        public static PlaybackState GetStatusPlayback()
+        {
+            return Bass.ChannelIsActive(stream);
+        }
+
+        public static double GetLength()
+        {
+            if (stream == 0)
+            {
+                return .0;
+            }
+            return Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetLength(stream));
+        }
+
+        public static double GetPosition()
+        {
+            if (stream == 0)
+            {
+                return .0;
+            }
+            return Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream));
+        }
+        
         public static string GetDirectLinkWithTrack(string trackId)
         {
             JObject result = Track.GetDownloadInfoWithToken(trackId);
