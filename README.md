@@ -10,31 +10,11 @@ cd libbass
 makepkg -si
 ```
 #### А как установить библиотеку не в ArchLinux, а на Ubuntu например?
-Если посмотреть PKGBUILD, то там можно увидеть что скачивается архив по ссылке http://www.un4seen.com/files/bass24-linux.zip. Потом он распаковывается и происходит такая магия:
+А для вас я подготовил скрипт install_lib.sh, запускать вот так:
 
-```
-package() {
-  case "$CARCH" in
-    i686) Если архитектура i686, распаковать libbass.so в /usr/lib и по той-же аналогии перемещайте файлы
-      install -D -m644 libbass.so "$pkgdir/usr/lib/libbass.so"
-	  ;;
-    x86_64)
-      install -D -m644 x64/libbass.so "$pkgdir/usr/lib/libbass.so"
-	  ;;
-    armv6h|armv7h)
-      install -D -m644 hardfp/libbass.so "$pkgdir/usr/lib/libbass.so"
-	  ;;
-    aarch64)
-      install -D -m644 aarch64/libbass.so "$pkgdir/usr/lib/libbass.so"
-	  ;;
-  esac
+`chmod +x install_lib.sh && ./install_lib.sh`
 
-  install -D -m644 bass.h "$pkgdir/usr/include/bass.h"
-  install -D -m644 bass.chm "$pkgdir/usr/share/doc/libbass/bass.chm"
-  install -D -m644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-}
-```
-### И так, я установил библиотеку, что дальше? (лучше бы скрипт сделал для установки :(  )
+### И так, я установил библиотеку, что дальше? 
 Теперь вам нужно установить dotnet 6 версии, команду для своего дистрибутива сами делайте (да, опять вам всё самим). Потом после установки, введите следующие команды:
 
 ```
