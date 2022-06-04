@@ -26,10 +26,9 @@
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkImage">
+              <object class="GtkImage" id="YandexImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="pixbuf">Svg/yandex_en_icon-icons.com_61632(1).png</property>
               </object>
               <packing>
                 <property name="expand">False</property>

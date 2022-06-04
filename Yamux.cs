@@ -186,14 +186,14 @@ namespace Yamux
         
                 if (coverUri[b] != "None")
                 {
-                    File.Delete("s.jpg");
+                    File.Delete(System.IO.Path.GetFullPath("s.jpg"));
                     string url = coverUri[b];
                     using (WebClient client = new WebClient())
                     {
                         string uri = url.Replace("%%", "100x100");
                         uri = "https://" + uri;
                         Console.WriteLine(uri);
-                        client.DownloadFile(new Uri(uri), "s.jpg");
+                        client.DownloadFile(new Uri(uri), System.IO.Path.GetFullPath("s.jpg"));
                     }
                     Pixbuf imagePixbuf;
                     imagePixbuf = new Pixbuf("s.jpg");
@@ -215,7 +215,7 @@ namespace Yamux
                 else
                 {
                     Pixbuf imagePixbuf;
-                    imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
+                    imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
                     Button buttonPlay = new Button();
@@ -223,7 +223,7 @@ namespace Yamux
                     buttonPlay.Relief = ReliefStyle.None;
                     if (typeResult != "playlist")
                     {
-                        string imageNotFound = "Svg/icons8_rock_music_100_negate.png";
+                        string imageNotFound = System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
                         buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
                     }
 

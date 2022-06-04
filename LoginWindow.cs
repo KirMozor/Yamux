@@ -16,6 +16,7 @@ namespace Yamux
         [UI] private Button _login_yamux = null;
         [UI] private Label _current_login = null;
         [UI] private Button _reset_password = null;
+        [UI] private Image YandexImage = null;
         private byte _countRun;
         public LoginWindow() : this(new Builder("Login.glade"))
         {
@@ -26,11 +27,12 @@ namespace Yamux
             builder.Autoconnect(this);
             WindowStateEvent += CheckConfig;
             DeleteEvent += Window_DeleteEvent;
-            SetDefaultIconFromFile("Svg/icon.svg");
+            SetDefaultIconFromFile(System.IO.Path.GetFullPath("Svg/icon.svg"));
             
             _set_password.Visibility = false;
             _reset_password.Clicked += ResetPasswordClick;
             _login_yamux.Clicked += LogInButton;
+            YandexImage.Pixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/yandex_en_icon-icons.com_61632(1).png"));
         }
         void CheckConfig(object sender, WindowStateEventArgs a)
         {

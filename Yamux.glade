@@ -39,12 +39,11 @@ Author: @KirMozorF
         <property name="spacing">15</property>
         <property name="baseline-position">top</property>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="AboutImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">12</property>
             <property name="margin-end">12</property>
-            <property name="pixbuf">Svg/about_icon.svg</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -266,10 +265,9 @@ Author: @KirMozorF
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="image1">
+  <object class="GtkImage" id="ImageSettings">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="pixbuf">Svg/icons8-settings-20.png</property>
   </object>
   <object class="GtkApplicationWindow" id="MainWindow">
     <property name="name">MainWindow</property>
@@ -463,7 +461,7 @@ Author: @KirMozorF
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
-                    <property name="image">image1</property>
+                    <property name="image">ImageSettings</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

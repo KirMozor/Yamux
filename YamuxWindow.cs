@@ -36,6 +36,8 @@ namespace Yamux
         [UI] private Box SearchBox = null;
         [UI] private Box ResultBox = null;
         [UI] private Label IfNoResult = null;
+        [UI] private Image AboutImage = null;
+        [UI] private Image ImageSettings = null;
         
         [UI] private Box PlayerBoxScale = null;
         [UI] private Box PlayerActionBox = null;
@@ -43,6 +45,7 @@ namespace Yamux
         [UI] private Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
+        
         
         public static Button PlayerStopTrack = new Button();
         public static Button PlayerPreviousTrack = new Button();
@@ -58,7 +61,7 @@ namespace Yamux
 
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
-            using (FileStream fstream = File.OpenRead("config.toml"))
+            using (FileStream fstream = File.OpenRead(System.IO.Path.GetFullPath("config.toml")))
             {
                 byte[] buffer = new byte[fstream.Length];
                 fstream.Read(buffer, 0, buffer.Length);
@@ -76,7 +79,9 @@ namespace Yamux
             SearchMusic.SearchChanged += SearchChangedOutput;
             
             PlayerPlayTrack.Clicked += ClickPauseOrPlay;
-            SetDefaultIconFromFile("Svg/icon.svg");
+            SetDefaultIconFromFile(System.IO.Path.GetFullPath("Svg/icon.svg"));
+            AboutImage.Pixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/about_icon.svg"));
+            ImageSettings.Pixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-settings-20.png"));
         }
 
         async private void LandingLoad()
@@ -271,7 +276,7 @@ namespace Yamux
                             string url = details["uri"].ToString();
                             using (WebClient client = new WebClient())
                             {
-                                client.DownloadFile(new Uri(url), "s.jpg");
+                                client.DownloadFile(new Uri(url), (System.IO.Path.GetFullPath("s.jpg")));
                             }
                             Pixbuf imagePixbuf;
                             imagePixbuf = new Pixbuf("s.jpg");
@@ -281,7 +286,7 @@ namespace Yamux
                         catch(Newtonsoft.Json.JsonReaderException)
                         {
                             Pixbuf imagePixbuf;
-                            imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
+                            imagePixbuf = new Pixbuf((System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png")));
                             PlayerImage.Pixbuf = imagePixbuf;
                         }
                     });
@@ -312,11 +317,11 @@ namespace Yamux
                     Pixbuf PlayerNextPixbuf;
                     Pixbuf PlayerDownloadPixbuf;
 
-                    PlayerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
-                    PlayerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
-                    PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-                    PlayerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
-                    PlayerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
+                    PlayerStopPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-stop.png"));
+                    PlayerPreviousPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png"));
+                    PlayerPlayPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-pause.png"));
+                    PlayerNextPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-next.png"));
+                    PlayerDownloadPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-download.png"));
 
                     PlayerStopTrack.Image = new Image(PlayerStopPixbuf);
                     PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
@@ -355,12 +360,12 @@ namespace Yamux
         {
             if (Player.PlayTrackOrPause)
             {
-                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-play.png");
+                Pixbuf PlayerPausePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-play.png"));
                 PlayerPlayTrack.Image = new Image(PlayerPausePixbuf);
             }
             else
             {
-                Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+                Pixbuf PlayerPlayPixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-pause.png"));
                 PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
             }
             Player.PauseOrStartPlay();

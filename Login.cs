@@ -12,7 +12,7 @@ namespace Yamux
         public static void WriteToken(string text)
         {
             text = "yandex_token = '" + text + "'";
-            using (FileStream fstream = new FileStream("config.toml", FileMode.OpenOrCreate))
+            using (FileStream fstream = new FileStream(System.IO.Path.GetFullPath("config.toml"), FileMode.OpenOrCreate))
             {
                 byte[] buffer = Encoding.Default.GetBytes(text);
                 fstream.Write(buffer, 0, buffer.Length);
@@ -46,12 +46,12 @@ namespace Yamux
         
         public static bool CheckAviabilityConfig()
         {
-            bool check = File.Exists("config.toml");
+            bool check = File.Exists(System.IO.Path.GetFullPath("config.toml"));
             if (check)
             {
                 try
                 {
-                    using (FileStream fstream = File.OpenRead("config.toml"))
+                    using (FileStream fstream = File.OpenRead(System.IO.Path.GetFullPath("config.toml")))
                     {
                         byte[] buffer = new byte[fstream.Length];
                         fstream.Read(buffer, 0, buffer.Length);
