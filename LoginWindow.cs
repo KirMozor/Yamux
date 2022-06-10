@@ -27,12 +27,13 @@ namespace Yamux
             builder.Autoconnect(this);
             WindowStateEvent += CheckConfig;
             DeleteEvent += Window_DeleteEvent;
-            SetDefaultIconFromFile(System.IO.Path.GetFullPath("Svg/icon.svg"));
-            
+            SetDefaultIconFromFile("Svg/icon.svg");
+            YandexImage.Pixbuf =
+                new Pixbuf("Svg/yandex_en_icon-icons.com_61632(1).png");
+
             _set_password.Visibility = false;
             _reset_password.Clicked += ResetPasswordClick;
             _login_yamux.Clicked += LogInButton;
-            YandexImage.Pixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/yandex_en_icon-icons.com_61632(1).png"));
         }
         void CheckConfig(object sender, WindowStateEventArgs a)
         {
@@ -66,7 +67,6 @@ namespace Yamux
 
             if (loginCheck == false && passwordCheck == false)
             {
-                //JObject token = Token.GetToken(loginText, passwordText);
                 try
                 {
                     JObject token = Token.GetToken(loginText, passwordText);

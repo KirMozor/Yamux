@@ -13,8 +13,8 @@ namespace Yamux
 {
     public class Player
     {
-        public static bool PlayTrackOrNo = false;
-        public static bool PlayTrackOrPause = false;
+        public static bool PlayTrackOrNo;
+        public static bool PlayTrackOrPause;
         private static int stream;
         public static void PlayUrlFile(string url)
         {
