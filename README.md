@@ -19,7 +19,7 @@ makepkg -si
 
 ```
 git clone https://github.com/KirMozor/Yamux.git
-cd Yamux/C#
+cd Yamux
 dotnet build --configuration Release
 cp -r Svg bin/Release/net6.0/
 ```
