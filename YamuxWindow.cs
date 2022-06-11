@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using Gdk;
 using Gtk;
+using ManagedBass;
 using Newtonsoft.Json.Linq;
 using Pango;
 using Tomlyn;
@@ -21,8 +22,11 @@ namespace Yamux
     class YamuxWindow : Window
     {
         public delegate void LenghtTrack();
-        public static event LenghtTrack ChangeLegthTrack;
-        public static double durationTrack = 1.0;
+        private static event LenghtTrack ChangeLegthTrack;
+        private static int durationTrack = 1;
+        public static string directLink;
+        public static string titleTrack = "";
+        public static string artistTrack = "";
         [UI] private Dialog DonateWindow = null;
         [UI] private Window AboutWindow = null;
 
@@ -64,7 +68,6 @@ namespace Yamux
 
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
-            SpyChangeDurationTrack();
             using (FileStream fstream = File.OpenRead("config.toml"))
             {
                 byte[] buffer = new byte[fstream.Length];
@@ -81,6 +84,7 @@ namespace Yamux
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
             PlayerPlayTrack.Clicked += ClickPauseOrPlay;
+            PlayerDownloadTrack.Clicked += PlayerDownloadTrackOnClicked;
             
             SetDefaultIconFromFile("Svg/icon.svg");
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
@@ -296,18 +300,16 @@ namespace Yamux
                     });
                     List<string> track = new List<string>();
                     track.Add(details["id"].ToString());
-                        
-                    string TitleTrack = "";
-                    string ArtistTrack = "";
+
                     await Task.Run(() =>
                     {
                         JObject InformTrack = Track.GetInformTrack(track); 
-                        TitleTrack = InformTrack["result"][0]["title"].ToString();
-                        ArtistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
+                        titleTrack = InformTrack["result"][0]["title"].ToString();
+                        artistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
                     });
 
-                    PlayerTitleTrack.Text = TitleTrack;
-                    PlayerNameArtist.Text = ArtistTrack;
+                    PlayerTitleTrack.Text = titleTrack;
+                    PlayerNameArtist.Text = artistTrack;
 
                     PlayerStopTrack.Relief = ReliefStyle.None;
                     PlayerPreviousTrack.Relief = ReliefStyle.None;
@@ -341,7 +343,6 @@ namespace Yamux
 
                     PlayerActionBox.ShowAll();
                 } 
-                string directLink = "";
                 await Task.Run(() =>
                 {
                     directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
@@ -354,19 +355,20 @@ namespace Yamux
                 PlayerScale.DrawValue = false;
                 PlayerBoxScale.Add(PlayerScale);
                 PlayerBoxScale.ShowAll();
+                SpyChangeDurationTrack();
 
-                ChangeLegthTrack += () => 
-                {
-                    Console.WriteLine(durationTrack);
-                };
+                ChangeLegthTrack += () => { PlayerScale.Value = durationTrack;; };
 
                 await Task.Run(() =>
                 {
                     while (true)
                     {
-                        Thread.Sleep(1000);
-                        durationTrack = Player.GetPosition();
-                        Console.WriteLine(Player.GetStatusPlayback());
+                        if (Player.GetStatusPlayback() != PlaybackState.Stopped)
+                        {
+                            Thread.Sleep(1000);
+                            durationTrack = Player.GetPosition();
+                        }
+                        else { break; }
                     }
                 });
 
@@ -376,7 +378,7 @@ namespace Yamux
             }
         }
 
-        async private void ClickPauseOrPlay(object sender, EventArgs a)
+        private void ClickPauseOrPlay(object sender, EventArgs a)
         {
             if (Player.PlayTrackOrPause)
             {
@@ -397,14 +399,26 @@ namespace Yamux
             {
                 while (true)
                 {
-                    Thread.Sleep(1000);
-                    if (oldDuration != durationTrack)
+                    if (Player.GetStatusPlayback() != PlaybackState.Stopped)
                     {
-                        ChangeLegthTrack.Invoke();
-                        oldDuration = durationTrack;
+                        Thread.Sleep(1000);
+                        if (oldDuration != durationTrack)
+                        {
+                            ChangeLegthTrack.Invoke();
+                            oldDuration = durationTrack;
+                        }
                     }
+                    else { break; }
                 }
             });
+        }
+        private void PlayerDownloadTrackOnClicked(object sender, EventArgs e)
+        {
+            Console.WriteLine(1231231);
+            if (!Directory.Exists("/home/kirill/YandexMusic/")) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
+
+            string nameTrackFile = "/home/kirill/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
+            Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
         }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {

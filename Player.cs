@@ -76,22 +76,16 @@ namespace Yamux
             return Bass.ChannelIsActive(stream);
         }
 
-        public static double GetLength()
+        public static int GetLength()
         {
-            if (stream == 0)
-            {
-                return .0;
-            }
-            return Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetLength(stream));
+            if (stream == 0) { return stream; }
+            return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetLength(stream)));
         }
 
-        public static double GetPosition()
+        public static int GetPosition()
         {
-            if (stream == 0)
-            {
-                return .0;
-            }
-            return Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream));
+            if (stream == 0) { return stream; }
+            return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream)));
         }
         
         public static string GetDirectLinkWithTrack(string trackId)
@@ -106,7 +100,7 @@ namespace Yamux
             return Track.GetDirectLink(url);
         }
         
-        public static async Task DownloadUriWithThrottling(Uri uri, string path, double speedKbps)
+        public static async Task DownloadUriWithThrottling(Uri uri, string path, double speedKbps = -0.0)
         {
             var req = WebRequest.CreateHttp(uri);
             using (var resp = await req.GetResponseAsync())
@@ -119,16 +113,18 @@ namespace Yamux
                 while (true)
                 {
                     var actuallyRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (actuallyRead == 0) // end of stream
+                    if (actuallyRead == 0)
                         return;
                     await outfile.WriteAsync(buffer, 0, actuallyRead);
                     totalDownloaded += actuallyRead;
 
-                    // recalc speed and wait
-                    var expectedTime = totalDownloaded / 1024.0 / speedKbps;
-                    var actualTime = (DateTime.Now - startTime).TotalSeconds;
-                    if (expectedTime > actualTime)
-                        await Task.Delay(TimeSpan.FromSeconds(expectedTime - actualTime));
+                    if (speedKbps != -0.0)
+                    {
+                        var expectedTime = totalDownloaded / 1024.0 / speedKbps;
+                        var actualTime = (DateTime.Now - startTime).TotalSeconds;
+                        if (expectedTime > actualTime)
+                            await Task.Delay(TimeSpan.FromSeconds(expectedTime - actualTime));   
+                    }
                 }
             }
         }
