@@ -308,6 +308,8 @@ namespace Yamux
                         artistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
                     });
 
+                    PlayerTitleTrack.MaxWidthChars = 17;
+                    PlayerNameArtist.MaxWidthChars = 17;
                     PlayerTitleTrack.Text = titleTrack;
                     PlayerNameArtist.Text = artistTrack;
 
@@ -357,7 +359,8 @@ namespace Yamux
                 PlayerBoxScale.ShowAll();
                 SpyChangeDurationTrack();
 
-                ChangeLegthTrack += () => { PlayerScale.Value = durationTrack;; };
+                ChangeLegthTrack += () => { PlayerScale.Value = durationTrack; };
+                PlayerScale.ValueChanged += SetPositionTrack;
 
                 await Task.Run(() =>
                 {
@@ -419,6 +422,11 @@ namespace Yamux
 
             string nameTrackFile = "/home/kirill/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
             Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
+        }
+
+        private void SetPositionTrack(object sender, EventArgs a)
+        {
+            
         }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {

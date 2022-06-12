@@ -390,8 +390,10 @@ Author: @KirMozorF
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
+                        <property name="justify">center</property>
                         <property name="wrap">True</property>
                         <property name="wrap-mode">char</property>
+                        <property name="ellipsize">end</property>
                         <attributes>
                           <attribute name="weight" value="semibold"/>
                           <attribute name="size" value="14336"/>
@@ -408,8 +410,10 @@ Author: @KirMozorF
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
+                        <property name="justify">center</property>
                         <property name="wrap">True</property>
                         <property name="wrap-mode">char</property>
+                        <property name="ellipsize">end</property>
                         <attributes>
                           <attribute name="weight" value="medium"/>
                           <attribute name="size" value="11264"/>

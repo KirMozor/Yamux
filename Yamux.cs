@@ -183,7 +183,9 @@ namespace Yamux
                 FontDescription tpfNameBest = new FontDescription();
                 tpfNameBest.Size = 11264;
                 nameBestLabel.ModifyFont(tpfNameBest);
-                nameBestLabel.Halign = Align.Fill;
+                nameBestLabel.MaxWidthChars = 20;
+                nameBestLabel.Ellipsize = EllipsizeMode.End;
+                nameBestLabel.Halign = Align.Center;
         
                 if (coverUri[b] != "None")
                 {
