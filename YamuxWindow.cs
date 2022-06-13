@@ -24,9 +24,10 @@ namespace Yamux
         public delegate void LenghtTrack();
         private static event LenghtTrack ChangeLegthTrack;
         private static int durationTrack = 1;
-        public static string directLink;
-        public static string titleTrack = "";
-        public static string artistTrack = "";
+        private static string directLink;
+        private static string titleTrack = "";
+        private static string artistTrack = "";
+        private static HScale PlayerScale = new HScale(0.0, 100.0, 0.1);
         [UI] private Dialog DonateWindow = null;
         [UI] private Window AboutWindow = null;
 
@@ -351,7 +352,7 @@ namespace Yamux
                     Player.PlayUrlFile(directLink);
                 });
                 
-                HScale PlayerScale = new HScale(0.0, Player.GetLength(), 1.0);
+                PlayerScale = new HScale(0.0, Player.GetLength(), 1.0);
                 PlayerScale.Hexpand = true;
                 PlayerScale.Valign = Align.Center;
                 PlayerScale.DrawValue = false;
@@ -426,7 +427,12 @@ namespace Yamux
 
         private void SetPositionTrack(object sender, EventArgs a)
         {
-            
+            string[] checkUserWrite = Convert.ToString(PlayerScale.Value).Split(",");
+
+            if (checkUserWrite.Length >= 2 && Player.GetStatusPlayback() != PlaybackState.Stopped)
+            {
+                Player.SetPosition(Convert.ToInt64(PlayerScale.Value));
+            }
         }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {

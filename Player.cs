@@ -87,6 +87,10 @@ namespace Yamux
             if (stream == 0) { return stream; }
             return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream)));
         }
+
+        public static void SetPosition(long position)
+        {
+        }
         
         public static string GetDirectLinkWithTrack(string trackId)
         {
@@ -125,6 +129,24 @@ namespace Yamux
                         if (expectedTime > actualTime)
                             await Task.Delay(TimeSpan.FromSeconds(expectedTime - actualTime));   
                     }
+                }
+            }
+        }
+        public static void DownloadWithSync(Uri uri, string path, double speedKbps = -0.0)
+        {
+            var req = WebRequest.CreateHttp(uri);
+            using (var resp = req.GetResponse())
+            using (var stream = resp.GetResponseStream())
+            using (var outfile = File.OpenWrite(path))
+            {
+                long totalDownloaded = 0;
+                var buffer = new byte[0x10000];
+                while (true)
+                {
+                    var actuallyRead = stream.Read(buffer, 0, buffer.Length);
+                    if (actuallyRead == 0)
+                        return;
+                    outfile.Write(buffer, 0, actuallyRead);
                 }
             }
         }
