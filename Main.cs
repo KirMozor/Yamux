@@ -40,6 +40,7 @@ namespace Yamux
                 Player.DownloadWithSync(IconList[9], "Svg/icons8-stop.png");
                 Player.DownloadWithSync(IconList[10], "Svg/yandex_en_icon-icons.com_61632(1).png");
                 Player.DownloadWithSync(IconList[11], "Svg/icons8_rock_music_100_negate50x50.png");
+                Console.WriteLine("Downloaded!");
             }
             Application.Init();
 

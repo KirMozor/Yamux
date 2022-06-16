@@ -48,7 +48,7 @@ namespace Yamux
         [UI] private Image AboutImage = null;
         [UI] private Image ImageSettings = null;
 
-        [UI] private Box InformTrackBox = null;
+        [UI] private Box informTrackBox = null;
         [UI] private Box PlayerBoxScale = null;
         [UI] private Box PlayerActionBox = null;
         [UI] private Box PlayerMoreActionBox = null;
@@ -89,6 +89,8 @@ namespace Yamux
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
             PlayerPlayTrack.Clicked += ClickPauseOrPlay;
+            PlayerPreviousTrack.Clicked += Player.LastTrack;
+            PlayerNextTrack.Clicked += Player.NextTrack;
             PlayerDownloadTrack.Clicked += PlayerDownloadTrackOnClicked;
             
             SetDefaultIconFromFile("Svg/icon.svg");
@@ -316,9 +318,9 @@ namespace Yamux
 
                     await Task.Run(() =>
                     {
-                        JObject InformTrack = Track.GetInformTrack(track); 
-                        titleTrack = InformTrack["result"][0]["title"].ToString();
-                        artistTrack = InformTrack["result"][0]["artists"][0]["name"].ToString();
+                        JObject informTrack = Track.GetInformTrack(track); 
+                        titleTrack = informTrack["result"][0]["title"].ToString();
+                        artistTrack = informTrack["result"][0]["artists"][0]["name"].ToString();
                     });
                     Console.WriteLine(titleTrack + ";" + artistTrack);
                     await Task.Run(() =>
@@ -326,9 +328,6 @@ namespace Yamux
                         directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
                         Player.PlayUrlFile(directLink);
                     });
-                    Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-                    PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
-                    
                     PlayerTitleTrack.Text = titleTrack;
                     PlayerNameArtist.Text = artistTrack;
                 }
@@ -340,9 +339,20 @@ namespace Yamux
                     await Task.Run(() =>
                     {
                         JObject artist = Artist.InformArtist(id);
-                        Console.WriteLine(artist);
+                        JToken popularTracks = artist["result"]["popularTracks"];
+                        artistTrack = artist["result"]["artist"]["name"].ToString();
+
+                        foreach (var i in popularTracks)
+                        {
+                            track.Add(i["id"].ToString());
+                        }
+                        Player.trackIds = track;
+                        Player.PlayPlaylist();
                     });
+                    PlayerNameArtist.Text = artistTrack; 
                 }
+                Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+                PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
                 PlayerScale.SetRange(0.0, Player.GetLength());
                 PlayerBoxScale.ShowAll();
                 PlayerActionBox.ShowAll();
@@ -350,7 +360,6 @@ namespace Yamux
                 SpyChangeDurationTrack();
 
                 ChangeLegthTrack += () => { PlayerScale.Value = durationTrack; };
-                PlayerScale.ValueChanged += SetPositionTrack;
 
                 await Task.Run(() =>
                 {
@@ -388,23 +397,23 @@ namespace Yamux
             PlayerNextTrack.Relief = ReliefStyle.None;
             PlayerDownloadTrack.Relief = ReliefStyle.None;
                         
-            Pixbuf PlayerStopPixbuf;
-            Pixbuf PlayerPreviousPixbuf;
-            Pixbuf PlayerPlayPixbuf;
-            Pixbuf PlayerNextPixbuf;
-            Pixbuf PlayerDownloadPixbuf;
+            Pixbuf playerStopPixbuf;
+            Pixbuf playerPreviousPixbuf;
+            Pixbuf playerPlayPixbuf;
+            Pixbuf playerNextPixbuf;
+            Pixbuf playerDownloadPixbuf;
                     
-            PlayerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
-            PlayerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
-            PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-            PlayerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
-            PlayerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
+            playerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
+            playerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
+            playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+            playerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
+            playerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
 
-            PlayerStopTrack.Image = new Image(PlayerStopPixbuf);
-            PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
-            PlayerPreviousTrack.Image = new Image(PlayerPreviousPixbuf);
-            PlayerNextTrack.Image = new Image(PlayerNextPixbuf);
-            PlayerDownloadTrack.Image = new Image(PlayerDownloadPixbuf);
+            PlayerStopTrack.Image = new Image(playerStopPixbuf);
+            PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
+            PlayerPreviousTrack.Image = new Image(playerPreviousPixbuf);
+            PlayerNextTrack.Image = new Image(playerNextPixbuf);
+            PlayerDownloadTrack.Image = new Image(playerDownloadPixbuf);
 
             PlayerActionBox.Add(PlayerStopTrack);
             PlayerActionBox.Add(PlayerPreviousTrack);
@@ -431,8 +440,8 @@ namespace Yamux
             }
             else
             {
-                Pixbuf PlayerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-                PlayerPlayTrack.Image = new Image(PlayerPlayPixbuf);
+                Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+                PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
             }
             Player.PauseOrStartPlay();
         }
@@ -463,16 +472,6 @@ namespace Yamux
 
             string nameTrackFile = "/home/kirill/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
             Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
-        }
-
-        private void SetPositionTrack(object sender, EventArgs a)
-        {
-            string[] checkUserWrite = Convert.ToString(PlayerScale.Value).Split(",");
-
-            if (checkUserWrite.Length >= 2 && Player.GetStatusPlayback() != PlaybackState.Stopped)
-            {
-                Player.SetPosition(Convert.ToInt64(PlayerScale.Value));
-            }
         }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {

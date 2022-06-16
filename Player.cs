@@ -1,8 +1,10 @@
 using ManagedBass;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Gdk;
 using Gtk;
@@ -16,27 +18,70 @@ namespace Yamux
         public static bool PlayTrackOrNo;
         public static bool PlayTrackOrPause;
         private static int stream;
+        public static int currentTrack = -1;
+        private static string nextOrLastTrack;
+        public static List<string> trackIds;
         public static void PlayUrlFile(string url)
         {
             if (!PlayTrackOrNo)
             {
                 Bass.Init();
-                stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
-                if (stream != 0)
-                {
-                    Bass.ChannelPlay(stream);
-                    PlayTrackOrNo = true;
-                    PlayTrackOrPause = true;
-                }
-                else Console.WriteLine("Error: {0}!", Bass.LastError);
             }
             else
             {
                 Bass.StreamFree(stream);
                 Bass.Free();
                 Bass.Init();
-                    
-                stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+            }
+            stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+            if (stream != 0)
+            {
+                Bass.ChannelPlay(stream);
+                PlayTrackOrNo = true;
+                PlayTrackOrPause = true;
+            }
+            else Console.WriteLine("Error: {0}!", Bass.LastError);
+        }
+
+        public static void NextTrack(object sender, EventArgs a)
+        {
+            nextOrLastTrack = "next";
+            if (trackIds.Count - 1 > currentTrack)
+            {
+                currentTrack++;
+            }
+        }
+
+        public static void LastTrack(object sender, EventArgs a)
+        {
+            nextOrLastTrack = "last";
+            if (currentTrack > 0)
+            {
+                currentTrack--;
+            }
+        }
+        async public static void PlayPlaylist()
+        {
+            while (true)
+            {
+                if (nextOrLastTrack != "last" && nextOrLastTrack != "next")
+                {
+                    currentTrack++;
+                }
+                if (!PlayTrackOrNo)
+                {
+                    Bass.Init();
+                }
+                else
+                {
+                    Bass.StreamFree(stream);
+                    Bass.Free();
+                    Bass.Init();
+                }
+                
+                string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
+                Console.WriteLine(directLinkToTrack);
+                stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                 if (stream != 0)
                 {
                     Bass.ChannelPlay(stream);
@@ -44,6 +89,30 @@ namespace Yamux
                     PlayTrackOrPause = true;
                 }
                 else Console.WriteLine("Error: {0}!", Bass.LastError);
+
+                await Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        int saveCurrentTrack = currentTrack;
+                        Thread.Sleep(1000);
+                        long length = Bass.ChannelGetLength(stream);
+                        long position = Bass.ChannelGetPosition(stream);
+
+                        if (length == position)
+                        {
+                            Bass.Free();
+                            Bass.Init();
+                            break;
+                        }
+
+                        if (currentTrack > saveCurrentTrack || currentTrack < saveCurrentTrack)
+                        {
+                            Bass.Free();
+                            Bass.Init();
+                        }
+                    }
+                });
             }
         }
 
@@ -88,10 +157,6 @@ namespace Yamux
             return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream)));
         }
 
-        public static void SetPosition(long position)
-        {
-        }
-        
         public static string GetDirectLinkWithTrack(string trackId)
         {
             JObject result = Track.GetDownloadInfoWithToken(trackId);
