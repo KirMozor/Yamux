@@ -162,7 +162,7 @@ namespace Yamux
             return artist;
         }
 
-        public static HBox CreateBoxResultSearch(List<string> name, List<string> coverUri, List<string> id, string typeResult = "dsad")
+        public static HBox CreateBoxResultSearch(List<string> name, List<string> coverUri, List<string> id, string typeResult)
         {
             HBox newBox = new HBox();
 
@@ -189,14 +189,14 @@ namespace Yamux
         
                 if (coverUri[b] != "None")
                 {
-                    File.Delete(System.IO.Path.GetFullPath("s.jpg"));
+                    File.Delete(Path.GetFullPath("s.jpg"));
                     string url = coverUri[b];
                     using (WebClient client = new WebClient())
                     {
                         string uri = url.Replace("%%", "100x100");
                         uri = "https://" + uri;
                         Console.WriteLine(uri);
-                        client.DownloadFile(new Uri(uri), System.IO.Path.GetFullPath("s.jpg"));
+                        client.DownloadFile(new Uri(uri), Path.GetFullPath("s.jpg"));
                     }
                     Pixbuf imagePixbuf;
                     imagePixbuf = new Pixbuf("s.jpg");
@@ -211,6 +211,13 @@ namespace Yamux
                         uri = "https://" + uri;
                         buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'uri': \""+ uri + "\" }";
                     }
+                    else
+                    {
+                        string uri = url.Replace("%%", "50x50");
+                        uri = "https://" + uri;
+                        buttonPlay.Name = "{'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.kindPlaylist[b] + "\", 'kind': \"" + YamuxWindow.uidPlaylist[b] + "\", 'uri': \"" + uri + "\" }";
+                        Console.WriteLine(buttonPlay.Name);
+                    }
 
                     ListButtonPlay.Add(buttonPlay);
                     coverImage.Add(buttonPlay);
@@ -218,7 +225,7 @@ namespace Yamux
                 else
                 {
                     Pixbuf imagePixbuf;
-                    imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
+                    imagePixbuf = new Pixbuf(Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
                     Image image = new Image(imagePixbuf);
                     image.Halign = Align.Fill;
                     Button buttonPlay = new Button();
@@ -226,8 +233,14 @@ namespace Yamux
                     buttonPlay.Relief = ReliefStyle.None;
                     if (typeResult != "playlist")
                     {
-                        string imageNotFound = System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
+                        string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
                         buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
+                    }
+                    else
+                    {
+                        string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
+                        buttonPlay.Name = "{'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.kindPlaylist[b] + "\", 'kind': \"" + YamuxWindow.uidPlaylist[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
+                        Console.WriteLine(buttonPlay.Name);
                     }
 
                     ListButtonPlay.Add(buttonPlay);
@@ -238,19 +251,6 @@ namespace Yamux
             }
                     
             return newBox;
-        }
-
-        public static HBox CreatePlayerBox(string name, string artistName, string coverUri)
-        {
-            HBox PlayerMenu = new HBox();
-            
-            HScale newScale = new HScale(0.0, 100.0, 0.1);
-            newScale.Hexpand = true;
-            newScale.DrawValue = false;
-            PlayerMenu.Add(newScale);
-            PlayerMenu.ShowAll();
-
-            return PlayerMenu;
         }
     }
 }

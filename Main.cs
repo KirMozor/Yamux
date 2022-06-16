@@ -24,7 +24,8 @@ namespace Yamux
                     new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1IoXzhgrOIyimcGJxzZYe6Nq6W2e3HgvL"), //icons8-previous.png
                     new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1w5jcd4h8lL8lWsxHdRkxMafDdYOqMmY2"), //icons8-settings-20.png
                     new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1ZQRsi_Il5cyM1P1lSZbyA1egwXCw4MKx"), //icons8-stop.png
-                    new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1cZccppheNu60uNeLfNatIsh-AtbA01AJ") //yandex_en_icon-icons.com_61632(1).png
+                    new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1cZccppheNu60uNeLfNatIsh-AtbA01AJ"), //yandex_en_icon-icons.com_61632(1).png
+                    new Uri("https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1QGFY6HVE1nz8l2hqfoHOCQOetAJghn1H"), //icons8_rock_music_100_negate50x50.png
                 };
                 Console.WriteLine("Icons are downloading\nPlease wait");
                 Player.DownloadWithSync(IconList[0], "Svg/about_icon.svg");
@@ -38,6 +39,7 @@ namespace Yamux
                 Player.DownloadWithSync(IconList[8], "Svg/icons8-settings-20.png");
                 Player.DownloadWithSync(IconList[9], "Svg/icons8-stop.png");
                 Player.DownloadWithSync(IconList[10], "Svg/yandex_en_icon-icons.com_61632(1).png");
+                Player.DownloadWithSync(IconList[11], "Svg/icons8_rock_music_100_negate50x50.png");
             }
             Application.Init();
 

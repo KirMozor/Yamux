@@ -359,7 +359,7 @@ Author: @KirMozorF
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkBox" id="InformTrackBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="valign">end</property>

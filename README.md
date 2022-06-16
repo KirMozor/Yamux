@@ -21,9 +21,9 @@ makepkg -si
 git clone https://github.com/KirMozor/Yamux.git
 cd Yamux
 dotnet build --configuration Release
-cp -r Svg bin/Release/net6.0/
+cp -r Svg bin/Release/net6.0/linux-x64
 ```
-А теперь файл для запуска будет лежать по пути bin/Release/net6.0/Yamux. Наслаждайтесь! (после такой инструкции наслаждения мало получишь (⌣̀_⌣́ ) )
+А теперь файл для запуска будет лежать по пути bin/Release/net6.0/linux-64/Yamux. Наслаждайтесь! (после такой инструкции наслаждения мало получишь (⌣̀_⌣́ ) )
 
 ### Кстатиии
 
