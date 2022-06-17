@@ -177,29 +177,58 @@ namespace Yamux
                                 break;
                         }
 
-                        Dictionary<string, List<string>> artist = Yamux.GetArtist(root);
-                        Dictionary<string, List<string>> track = Yamux.GetTrack(root);
-                        Dictionary<string, List<string>> podcast = Yamux.GetPodcast(root);
-                        Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
-                        List<string> artistName = artist["name"];
-                        List<string> artistCoverUri = artist["coverUri"];
-                        List<string> artistId = artist["id"];
-                        List<string> trackName = track["name"];
-                        List<string> trackCoverUri = track["coverUri"];
-                        List<string> trackId = track["id"];
-                        List<string> podcastName = podcast["name"];
-                        List<string> podcastCoverUri = podcast["coverUri"];
-                        List<string> podcastId = podcast["id"];
-                        List<string> playlistName = playlist["name"];
-                        List<string> playlistCoverUri = playlist["coverUri"];
-                        List<string> playlistId = new List<string>();
-                        kindPlaylist = playlist["kind"];
-                        uidPlaylist = playlist["uid"];
+                        HBox artistBox = new HBox();
+                        HBox trackBox = new HBox();
+                        HBox podcastBox = new HBox();
+                        HBox playlistBox = new HBox();
                         
-                        HBox artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri, artistId, "artist");
-                        HBox trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri, trackId, "track");
-                        HBox podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri, podcastId, "podcast");
-                        HBox playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri, playlistId, "playlist");
+                        try
+                        {
+                            Dictionary<string, List<string>> artist = Yamux.GetArtist(root);
+                            List<string> artistName = artist["name"];
+                            List<string> artistCoverUri = artist["coverUri"];
+                            List<string> artistId = artist["id"];
+                            artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri, artistId, "artist");
+                        }
+                        catch (NullReferenceException)
+                        {
+                        }
+                        try
+                        {
+                            Dictionary<string, List<string>> track = Yamux.GetTrack(root);
+                            List<string> trackName = track["name"];
+                            List<string> trackCoverUri = track["coverUri"];
+                            List<string> trackId = track["id"];
+                            trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri, trackId, "track");
+                        }
+                        catch (NullReferenceException)
+                        {
+                        }
+                        try
+                        {
+                            Dictionary<string, List<string>> podcast = Yamux.GetPodcast(root);
+                            List<string> podcastName = podcast["name"];
+                            List<string> podcastCoverUri = podcast["coverUri"];
+                            List<string> podcastId = podcast["id"];
+                            podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri, podcastId, "podcast");
+                        }
+                        catch (NullReferenceException)
+                        {
+                        }
+
+                        try
+                        {
+                            Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
+                            List<string> playlistName = playlist["name"];
+                            List<string> playlistCoverUri = playlist["coverUri"];
+                            List<string> playlistId = new List<string>();
+                            kindPlaylist = playlist["kind"];
+                            uidPlaylist = playlist["uid"];
+                            playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri, playlistId, "playlist");
+                        }
+                        catch (NullReferenceException)
+                        {
+                        }
 
                         ScrolledWindow scrolledArtist = new ScrolledWindow();
                         ScrolledWindow scrolledTrack = new ScrolledWindow();
