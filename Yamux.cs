@@ -45,7 +45,7 @@ namespace Yamux
             }
         }
 
-        public static Dictionary<string, List<string>> GetPlaylist(JToken root)
+        public static Dictionary<string, List<string>> GetPlaylists(JToken root)
         {
             Dictionary<string, List<string>> playlist = new Dictionary<string, List<string>>();
             List<string> playlistUid = new List<string>();
@@ -76,7 +76,7 @@ namespace Yamux
             return playlist;
         }
 
-        public static Dictionary<string, List<string>> GetPodcast(JToken root)
+        public static Dictionary<string, List<string>> GetPodcasts(JToken root)
         {
             Dictionary<string, List<string>> podcast = new Dictionary<string, List<string>>();
             List<string> podcastId = new List<string>();
@@ -104,7 +104,7 @@ namespace Yamux
             return podcast;
         }
 
-        public static Dictionary<string, List<string>> GetTrack(JToken root)
+        public static Dictionary<string, List<string>> GetTracks(JToken root)
         {
             Dictionary<string, List<string>> tracks = new Dictionary<string, List<string>>();
             List<string> trackId = new List<string>();
@@ -162,6 +162,43 @@ namespace Yamux
             return artist;
         }
 
+        public static Dictionary<string, List<string>> GetAlbums(JToken root)
+        {
+            Dictionary<string, List<string>> albums = new Dictionary<string, List<string>>();
+            List<string> albumsId = new List<string>();
+            List<string> albumsName = new List<string>();
+            List<string> albumsCoverUri = new List<string>();
+
+            foreach (JToken i in root["albums"]["results"])
+            {
+                albumsId.Add(i["id"].ToString());
+                albumsName.Add(i["title"].ToString());
+
+                try
+                {
+                    albumsCoverUri.Add(i["coverUri"].ToString());
+                }
+                catch (NullReferenceException)
+                {
+                    albumsCoverUri.Add("None");
+                }
+            }
+
+            albums.Add("id", albumsId);
+            albums.Add("name", albumsName);
+            albums.Add("coverUri", albumsCoverUri);
+
+            return albums;
+        }
+
+        public static Dictionary<string, string> GetBest(JToken root)
+        {
+            Dictionary<string, string> best = new Dictionary<string, string>();
+
+            best.Add("type", root["best"]["type"].ToString());
+
+            return best;
+        }
         public static HBox CreateBoxResultSearch(List<string> name, List<string> coverUri, List<string> id, string typeResult)
         {
             HBox newBox = new HBox();
@@ -205,7 +242,7 @@ namespace Yamux
                     Button buttonPlay = new Button();
                     buttonPlay.Image = image;
                     buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlist")
+                    if (typeResult != "playlists")
                     {
                         string uri = url.Replace("%%", "50x50");
                         uri = "https://" + uri;
@@ -231,7 +268,7 @@ namespace Yamux
                     Button buttonPlay = new Button();
                     buttonPlay.Image = image;
                     buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlist")
+                    if (typeResult != "playlists")
                     {
                         string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
                         buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";

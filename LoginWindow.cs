@@ -94,7 +94,7 @@ namespace Yamux
             }
             else
             {
-                _current_login.Text = "Ты ввёл пустую строку. Введи пароль и логин";
+                _current_login.Text = "Вы ввели пустую строку. Введите пароль и логин";
             }
         }
     }

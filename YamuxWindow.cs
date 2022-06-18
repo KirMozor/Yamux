@@ -23,12 +23,11 @@ namespace Yamux
     class YamuxWindow : Window
     {
         public delegate void LenghtTrack();
-        private static event LenghtTrack ChangeLegthTrack;
+        private static event LenghtTrack ChangeLengthTrack;
         private static int durationTrack = 1;
         private static string directLink;
         private static string titleTrack = "";
         private static string artistTrack = "";
-        private static HScale PlayerScale = new HScale(0.0, 100.0, 0.1);
         [UI] private Dialog DonateWindow = null;
         [UI] private Window AboutWindow = null;
 
@@ -55,17 +54,12 @@ namespace Yamux
         [UI] private Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
-
-        public static Button PlayerStopTrack = new Button();
-        public static Button PlayerPreviousTrack = new Button();
-        public static Button PlayerPlayTrack = new Button();
-        public static Button PlayerNextTrack = new Button();
-        public static Button PlayerDownloadTrack = new Button();
-
+        
         public static List<string> uidPlaylist = new List<string>();
         public static List<string> kindPlaylist = new List<string>();
-
-        private VBox _bestBox = new VBox();
+        public static bool SearchOrNot = true;
+        
+        private VBox ResultSearchBox = new VBox();
 
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
@@ -88,25 +82,10 @@ namespace Yamux
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
-            PlayerPlayTrack.Clicked += ClickPauseOrPlay;
-            PlayerPreviousTrack.Clicked += Player.LastTrack;
-            PlayerNextTrack.Clicked += Player.NextTrack;
-            PlayerDownloadTrack.Clicked += PlayerDownloadTrackOnClicked;
-            
+
             SetDefaultIconFromFile("Svg/icon.svg");
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
-            CreatePlayerBox();
-            PlayerBoxScale.Hide();
-            PlayerActionBox.Hide();
-            PlayerImage.Hide();
-        }
-
-        private async void LandingLoad()
-        {
-            await Task.Run(() =>
-            {
-            });
         }
 
         private void ShowAboutWindow(object sender, EventArgs a)
@@ -130,7 +109,7 @@ namespace Yamux
         private async void SearchChangedOutput(object sender, EventArgs a)
         {
             string text = SearchMusic.Text;
-            JToken root = "{}";
+            JToken root = "";
             await Task.Run(() =>
             {
                 Thread.Sleep(2000);
@@ -148,333 +127,141 @@ namespace Yamux
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
             {
-                if (root.Count() > 6)
+                if (root.Count() > 6 && SearchOrNot)
                 {
-                    _bestBox.Destroy();
-                    _bestBox = new VBox();
-                    ResultBox.Add(_bestBox);
-                    await Task.Run(() =>
+                    SearchOrNot = false;
+                    ResultSearchBox.Destroy();
+                    ResultSearchBox = new VBox();
+                    ResultBox.Add(ResultSearchBox);
+
+                    HBox albumsBox = new HBox();
+                    HBox playlistsBox = new HBox();
+                    HBox podcastsBox = new HBox();
+                    HBox tracksBox = new HBox();
+                    HBox artistsBox = new HBox();
+                    ScrolledWindow scrolledAlbums = new ScrolledWindow(); scrolledAlbums.PropagateNaturalHeight = true; scrolledAlbums.PropagateNaturalWidth = true;
+                    ScrolledWindow scrolledArtists = new ScrolledWindow(); scrolledArtists.PropagateNaturalHeight = true; scrolledArtists.PropagateNaturalWidth = true;
+                    ScrolledWindow scrolledTracks = new ScrolledWindow(); scrolledTracks.PropagateNaturalHeight = true; scrolledTracks.PropagateNaturalWidth = true;
+                    ScrolledWindow scrolledPodcasts = new ScrolledWindow(); scrolledPodcasts.PropagateNaturalHeight = true; scrolledPodcasts.PropagateNaturalWidth = true;
+                    ScrolledWindow scrolledPlaylists = new ScrolledWindow(); scrolledPlaylists.PropagateNaturalHeight = true; scrolledPlaylists.PropagateNaturalWidth = true;
+                    Viewport viewportAlbums = new Viewport();
+                    Viewport viewportArtists = new Viewport();
+                    Viewport viewportTracks = new Viewport();
+                    Viewport viewportPodcasts = new Viewport();
+                    Viewport viewportPlaylists = new Viewport();
+                    Dictionary<string, List<string>> albums;
+                    Dictionary<string, List<string>> playlists;
+                    Dictionary<string, List<string>> podcasts;
+                    Dictionary<string, List<string>> tracks;
+                    Dictionary<string, List<string>> artists;
+
+                    Dictionary<string, string> best = Yamux.GetBest(root);
+
+                    try
                     {
-                        IfNoResult.Text = "";
-                        string typeBest = root["best"]["type"].ToString();
-
-                        switch (typeBest)
+                        albums = Yamux.GetAlbums(root);
+                        await Task.Run(() =>
                         {
-                            case "artist":
-                                typeBest = "Артист";
-                                break;
-                            case "track":
-                                typeBest = "Трек";
-                                break;
-                            case "playlist":
-                                typeBest = "Плейлист";
-                                break;
-                            case "podcast":
-                                typeBest = "Выпуски подкастов";
-                                break;
-                            case "album":
-                                typeBest = "Альбом";
-                                break;
-                        }
-
-                        HBox artistBox = new HBox();
-                        HBox trackBox = new HBox();
-                        HBox podcastBox = new HBox();
-                        HBox playlistBox = new HBox();
-                        
-                        try
-                        {
-                            Dictionary<string, List<string>> artist = Yamux.GetArtist(root);
-                            List<string> artistName = artist["name"];
-                            List<string> artistCoverUri = artist["coverUri"];
-                            List<string> artistId = artist["id"];
-                            artistBox = Yamux.CreateBoxResultSearch(artistName, artistCoverUri, artistId, "artist");
-                        }
-                        catch (NullReferenceException)
-                        {
-                        }
-                        try
-                        {
-                            Dictionary<string, List<string>> track = Yamux.GetTrack(root);
-                            List<string> trackName = track["name"];
-                            List<string> trackCoverUri = track["coverUri"];
-                            List<string> trackId = track["id"];
-                            trackBox = Yamux.CreateBoxResultSearch(trackName, trackCoverUri, trackId, "track");
-                        }
-                        catch (NullReferenceException)
-                        {
-                        }
-                        try
-                        {
-                            Dictionary<string, List<string>> podcast = Yamux.GetPodcast(root);
-                            List<string> podcastName = podcast["name"];
-                            List<string> podcastCoverUri = podcast["coverUri"];
-                            List<string> podcastId = podcast["id"];
-                            podcastBox = Yamux.CreateBoxResultSearch(podcastName, podcastCoverUri, podcastId, "podcast");
-                        }
-                        catch (NullReferenceException)
-                        {
-                        }
-
-                        try
-                        {
-                            Dictionary<string, List<string>> playlist = Yamux.GetPlaylist(root);
-                            List<string> playlistName = playlist["name"];
-                            List<string> playlistCoverUri = playlist["coverUri"];
-                            List<string> playlistId = new List<string>();
-                            kindPlaylist = playlist["kind"];
-                            uidPlaylist = playlist["uid"];
-                            playlistBox = Yamux.CreateBoxResultSearch(playlistName, playlistCoverUri, playlistId, "playlist");
-                        }
-                        catch (NullReferenceException)
-                        {
-                        }
-
-                        ScrolledWindow scrolledArtist = new ScrolledWindow();
-                        ScrolledWindow scrolledTrack = new ScrolledWindow();
-                        ScrolledWindow scrolledPodcast = new ScrolledWindow();
-                        ScrolledWindow scrolledPlaylist = new ScrolledWindow();
-                        scrolledArtist.PropagateNaturalHeight = true;
-                        scrolledArtist.PropagateNaturalWidth = true;
-                        scrolledTrack.PropagateNaturalHeight = true;
-                        scrolledTrack.PropagateNaturalWidth = true;
-                        scrolledPodcast.PropagateNaturalHeight = true;
-                        scrolledPodcast.PropagateNaturalWidth = true;
-                        scrolledPlaylist.PropagateNaturalHeight = true;
-                        scrolledPlaylist.PropagateNaturalWidth = true;
-
-                        Viewport viewportArtist = new Viewport();
-                        Viewport viewportTrack = new Viewport();
-                        Viewport viewportPodcast = new Viewport();
-                        Viewport viewportPlaylist = new Viewport();
-
-                        Label artistLabel = new Label(typeBest);
-                        FontDescription tpfartist = new FontDescription();
-                        tpfartist.Size = 12288;
-                        artistLabel.ModifyFont(tpfartist);
-
-                        Label trackLabel = new Label("Треки");
-                        FontDescription tpftrack = new FontDescription();
-                        tpftrack.Size = 12288;
-                        trackLabel.ModifyFont(tpftrack);
-
-                        Label podcastLabel = new Label("Выпуски подкастов");
-                        FontDescription tpfpodcast = new FontDescription();
-                        tpfpodcast.Size = 12288;
-                        podcastLabel.ModifyFont(tpfpodcast);
-
-                        Label playlistLabel = new Label("Плейлисты");
-                        FontDescription tpfplaylist = new FontDescription();
-                        tpfplaylist.Size = 12288;
-                        playlistLabel.ModifyFont(tpfplaylist);
-
-                        scrolledArtist.Add(viewportArtist);
-                        viewportArtist.Add(artistBox);
-                        scrolledTrack.Add(viewportTrack); 
-                        viewportTrack.Add(trackBox);
-                        scrolledPodcast.Add(viewportPodcast);
-                        viewportPodcast.Add(podcastBox);
-                        scrolledPlaylist.Add(viewportPlaylist);
-                        viewportPlaylist.Add(playlistBox);
-
-                        _bestBox.Add(artistLabel);
-                        _bestBox.Add(scrolledArtist);
-                        _bestBox.Add(trackLabel);
-                        _bestBox.Add(scrolledTrack);
-                        _bestBox.Add(podcastLabel);
-                        _bestBox.Add(scrolledPodcast);
-                        _bestBox.Add(playlistLabel);
-                        _bestBox.Add(scrolledPlaylist);
-                    });
-                    ResultBox.ShowAll();
-                    _bestBox.ShowAll();
-                    foreach (Button i in Yamux.ListButtonPlay)
-                    {
-                        i.Clicked += PlayButtonClick;
+                            albumsBox = Yamux.CreateBoxResultSearch(albums["name"], albums["coverUri"], albums["id"], "albums");
+                        });
                     }
+                    catch (NullReferenceException) {}
+                    try
+                    {
+                        podcasts = Yamux.GetPodcasts(root);
+                        await Task.Run(() =>
+                        {
+                            podcastsBox = Yamux.CreateBoxResultSearch(podcasts["name"], podcasts["coverUri"], podcasts["id"], "podcasts");
+                        });
+                    }
+                    catch (NullReferenceException) {}
+                    try
+                    {
+                        tracks = Yamux.GetTracks(root);
+                        await Task.Run(() =>
+                        {
+                            tracksBox = Yamux.CreateBoxResultSearch(tracks["name"], tracks["coverUri"], tracks["id"],
+                                "tracks");
+                        });
+                    }
+                    catch (NullReferenceException) {}
+                    try
+                    {
+                        artists = Yamux.GetArtist(root);
+                        await Task.Run(() =>
+                        {
+                            artistsBox = Yamux.CreateBoxResultSearch(artists["name"], artists["coverUri"],
+                                artists["id"], "artists");
+                        });
+                    }
+                    catch (NullReferenceException) {}
+                    /*
+                    try
+                    {
+                        playlists = Yamux.GetPlaylists(root); 
+                        List<string> playlistsName = playlists["name"];
+                        List<string> playlistsCoverUri = playlists["coverUri"];
+                        kindPlaylist = playlists["kind"];
+                        uidPlaylist = playlists["uid"];
+                        await Task.Run(() =>
+                        {
+                            playlistsBox = Yamux.CreateBoxResultSearch(playlistsName, playlistsCoverUri, new List<string>(), "playlist");
+                        });
+                    }
+                    catch (NullReferenceException) {}
+                    */
+                    
+                    switch (best["type"])
+                    {
+                        case "artist":
+                        {
+                            scrolledArtists.Add(viewportArtists);
+                            viewportArtists.Add(artistsBox);
+                            ResultSearchBox.Add(scrolledArtists); 
+                            break;
+                        }
+                        case "track":
+                        {
+                            scrolledTracks.Add(viewportTracks);
+                            viewportTracks.Add(tracksBox);
+                            ResultSearchBox.Add(scrolledTracks); 
+                            break;
+                        }
+                        case "podcast":
+                        {
+                            scrolledPodcasts.Add(viewportPodcasts);
+                            viewportPodcasts.Add(playlistsBox);
+                            ResultSearchBox.Add(scrolledPodcasts); 
+                            break;
+                        }
+                        case "album":
+                        {
+                            scrolledAlbums.Add(viewportAlbums);
+                            viewportAlbums.Add(albumsBox);
+                            ResultSearchBox.Add(scrolledAlbums); 
+                            break;
+                        }
+                        case "playlist":
+                        {
+                            scrolledPlaylists.Add(viewportPlaylists);
+                            viewportPlaylists.Add(playlistsBox);
+                            ResultSearchBox.Add(scrolledPlaylists); 
+                            break;
+                        }
+                    }
+                    
+                    SearchBox.ShowAll();
+                    ResultBox.ShowAll();
+                    SearchOrNot = true;
                 }
                 else
                 {
-                    _bestBox.Destroy();
+                    ResultSearchBox.Destroy();
                     IfNoResult.Text = "Нет результата😢";
                 }
             }
         }
-
-        private async void PlayButtonClick(object sender, EventArgs a)
-        {
-            Button buttonPlay = (Button) sender;
-            try
-            {
-                JObject details = JObject.Parse(buttonPlay.Name);
-                string id = details["id"].ToString();
-
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        File.Delete("s.jpg");
-                        string url = details["uri"].ToString();
-                        using (WebClient client = new WebClient())
-                        {
-                            client.DownloadFile(new Uri(url), "s.jpg");
-                        }
-                        Pixbuf imagePixbuf;
-                        imagePixbuf = new Pixbuf("s.jpg");
-                        PlayerImage.Pixbuf = imagePixbuf;
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException)
-                    {
-                        Pixbuf imagePixbuf;
-                        imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
-                        PlayerImage.Pixbuf = imagePixbuf;
-                    }
-                    catch (NullReferenceException)
-                    {
-                        Pixbuf imagePixbuf;
-                        imagePixbuf = new Pixbuf("Svg/icons8_rock_music_100_negate.png");
-                        PlayerImage.Pixbuf = imagePixbuf;
-                    }
-                    catch (GLib.GException)
-                    {
-                    }
-                });
-                
-                if (Convert.ToString(details["type"]) == "track")
-                {
-                    List<string> track = new List<string>();
-                    track.Add(id);
-
-                    await Task.Run(() =>
-                    {
-                        JObject informTrack = Track.GetInformTrack(track); 
-                        titleTrack = informTrack["result"][0]["title"].ToString();
-                        artistTrack = informTrack["result"][0]["artists"][0]["name"].ToString();
-                    });
-                    Console.WriteLine(titleTrack + ";" + artistTrack);
-                    await Task.Run(() =>
-                    {
-                        directLink = Player.GetDirectLinkWithTrack(details["id"].ToString());
-                        Player.PlayUrlFile(directLink);
-                    });
-                    PlayerTitleTrack.Text = titleTrack;
-                    PlayerNameArtist.Text = artistTrack;
-                }
-
-                if (Convert.ToString(details["type"]) == "artist")
-                {
-                    List<string> track = new List<string>();
-
-                    await Task.Run(() =>
-                    {
-                        JObject artist = Artist.InformArtist(id);
-                        JToken popularTracks = artist["result"]["popularTracks"];
-                        artistTrack = artist["result"]["artist"]["name"].ToString();
-
-                        foreach (var i in popularTracks)
-                        {
-                            track.Add(i["id"].ToString());
-                        }
-                        Player.trackIds = track;
-                        Player.PlayPlaylist();
-                    });
-                    PlayerNameArtist.Text = artistTrack; 
-                }
-                Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-                PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
-                PlayerScale.SetRange(0.0, Player.GetLength());
-                PlayerBoxScale.ShowAll();
-                PlayerActionBox.ShowAll();
-                PlayerImage.ShowAll();
-                SpyChangeDurationTrack();
-
-                ChangeLegthTrack += () => { PlayerScale.Value = durationTrack; };
-
-                await Task.Run(() =>
-                {
-                    while (true)
-                    {
-                        if (Player.GetStatusPlayback() != PlaybackState.Stopped)
-                        {
-                            Thread.Sleep(1000);
-                            durationTrack = Player.GetPosition();
-                        }
-                        else
-                        {
-                            PlayerTitleTrack.Text = "";
-                            PlayerNameArtist.Text = "";
-                            PlayerBoxScale.Hide();
-                            PlayerActionBox.Hide();
-                            PlayerImage.Hide();
-                            break;
-                        }
-                    }
-                });
-            }
-            catch (Newtonsoft.Json.JsonReaderException)
-            {
-            }
-        }
-
-        private void CreatePlayerBox()
-        {
-            PlayerTitleTrack.MaxWidthChars = 17;
-            PlayerNameArtist.MaxWidthChars = 17;
-            PlayerStopTrack.Relief = ReliefStyle.None;
-            PlayerPreviousTrack.Relief = ReliefStyle.None;
-            PlayerPlayTrack.Relief = ReliefStyle.None;
-            PlayerNextTrack.Relief = ReliefStyle.None;
-            PlayerDownloadTrack.Relief = ReliefStyle.None;
-                        
-            Pixbuf playerStopPixbuf;
-            Pixbuf playerPreviousPixbuf;
-            Pixbuf playerPlayPixbuf;
-            Pixbuf playerNextPixbuf;
-            Pixbuf playerDownloadPixbuf;
-                    
-            playerStopPixbuf = new Pixbuf("Svg/icons8-stop.png");
-            playerPreviousPixbuf = new Pixbuf("Svg/icons8-previous.png");
-            playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-            playerNextPixbuf = new Pixbuf("Svg/icons8-next.png");
-            playerDownloadPixbuf = new Pixbuf("Svg/icons8-download.png");
-
-            PlayerStopTrack.Image = new Image(playerStopPixbuf);
-            PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
-            PlayerPreviousTrack.Image = new Image(playerPreviousPixbuf);
-            PlayerNextTrack.Image = new Image(playerNextPixbuf);
-            PlayerDownloadTrack.Image = new Image(playerDownloadPixbuf);
-
-            PlayerActionBox.Add(PlayerStopTrack);
-            PlayerActionBox.Add(PlayerPreviousTrack);
-            PlayerActionBox.Add(PlayerPlayTrack);
-            PlayerActionBox.Add(PlayerNextTrack);
-            PlayerActionBox.Add(PlayerDownloadTrack);
-
-            PlayerScale = new HScale(0.0, 100, 1.0);
-            PlayerScale.Hexpand = true;
-            PlayerScale.Valign = Align.Center;
-            PlayerScale.DrawValue = false;
-            PlayerBoxScale.Add(PlayerScale);
-
-            PlayerBoxScale.ShowAll();
-            PlayerActionBox.ShowAll();
-            PlayerImage.ShowAll();
-        }
-        private void ClickPauseOrPlay(object sender, EventArgs a)
-        {
-            if (Player.PlayTrackOrPause)
-            {
-                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-play.png");
-                PlayerPlayTrack.Image = new Image(PlayerPausePixbuf);
-            }
-            else
-            {
-                Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
-                PlayerPlayTrack.Image = new Image(playerPlayPixbuf);
-            }
-            Player.PauseOrStartPlay();
-        }
-        async static void SpyChangeDurationTrack()
+        private async static void SpyChangeDurationTrack()
         {
             double oldDuration = durationTrack;
             await Task.Run(() =>
@@ -486,7 +273,7 @@ namespace Yamux
                         Thread.Sleep(1000);
                         if (oldDuration != durationTrack)
                         {
-                            ChangeLegthTrack.Invoke();
+                            ChangeLengthTrack.Invoke();
                             oldDuration = durationTrack;
                         }
                     }
@@ -494,12 +281,12 @@ namespace Yamux
                 }
             });
         }
-        private void PlayerDownloadTrackOnClicked(object sender, EventArgs e)
+        private void PlayerDownloadTrackOnClicked()
         {
-            Console.WriteLine(1231231);
-            if (!Directory.Exists("/home/kirill/YandexMusic/")) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
+            string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (Directory.Exists(pathToHome + "/YandexMusic") == false) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
 
-            string nameTrackFile = "/home/kirill/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
+            string nameTrackFile = pathToHome + "/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
             Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
         }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)

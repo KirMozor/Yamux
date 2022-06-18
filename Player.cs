@@ -60,7 +60,7 @@ namespace Yamux
                 currentTrack--;
             }
         }
-        async public static void PlayPlaylist()
+        public async static void PlayPlaylist()
         {
             while (true)
             {
