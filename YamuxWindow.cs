@@ -136,11 +136,11 @@ namespace Yamux
 
                     Dictionary<string, string> best = Yamux.GetBest(root);;
                     List<Dictionary<string, List<string>>> all = new List<Dictionary<string, List<string>>>();
-                    all.Add(Yamux.GetAlbums(root));
-                    all.Add(Yamux.GetPlaylists(root));
-                    all.Add(Yamux.GetPodcasts(root));
-                    all.Add(Yamux.GetTracks(root));
                     all.Add(Yamux.GetArtist(root));
+                    all.Add(Yamux.GetAlbums(root));
+                    all.Add(Yamux.GetTracks(root));
+                    all.Add(Yamux.GetPodcasts(root));
+                    all.Add(Yamux.GetPlaylists(root));
 
                     int index = -1;
                     foreach (var i in all)
@@ -166,9 +166,31 @@ namespace Yamux
                             {
                                 box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], i["id"], i["type"][0]);   
                             }
+                            else
+                            {
+                                kindPlaylist = i["kind"];
+                                uidPlaylist = i["uid"];
+                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], new List<string>(), i["type"][0]);  
+                            }
                         });
+                        string typeResult = "";
+                        switch (i["type"][0])
+                        {
+                            case "playlist": { typeResult = "Плейлисты"; break; }
+                            case "album": { typeResult = "Альбомы"; break; }
+                            case "podcast": { typeResult = "Подкасты"; break; }
+                            case "track": { typeResult = "Треки"; break; }
+                            case "artist": { typeResult = "Артисты"; break; }
+                        }
+                        
+                        Label trackLabel = new Label(typeResult);
+                        FontDescription tpftrack = new FontDescription();
+                        tpftrack.Size = 12288;
+                        trackLabel.ModifyFont(tpftrack);
+                        
                         scrolledWindow.Add(viewportWindow);
                         viewportWindow.Add(box);
+                        ResultSearchBox.Add(trackLabel);
                         ResultSearchBox.Add(scrolledWindow);
                         
                         SearchBox.ShowAll();
