@@ -48,11 +48,13 @@ namespace Yamux
         public static Dictionary<string, List<string>> GetPlaylists(JToken root)
         {
             Dictionary<string, List<string>> playlist = new Dictionary<string, List<string>>();
+            List<string> type = new List<string>();
             List<string> playlistUid = new List<string>();
             List<string> playlistKind = new List<string>();
             List<string> playlistName = new List<string>();
             List<string> playlistCoverUri = new List<string>();
 
+            type.Add("playlist");
             foreach (JToken i in root["playlists"]["results"])
             {
                 playlistUid.Add(i["uid"].ToString());
@@ -68,6 +70,7 @@ namespace Yamux
                 }
             }
 
+            playlist.Add("type", type);
             playlist.Add("uid", playlistUid);
             playlist.Add("kind", playlistKind);
             playlist.Add("name", playlistName);
@@ -79,10 +82,12 @@ namespace Yamux
         public static Dictionary<string, List<string>> GetPodcasts(JToken root)
         {
             Dictionary<string, List<string>> podcast = new Dictionary<string, List<string>>();
+            List<string> type = new List<string>();
             List<string> podcastId = new List<string>();
             List<string> podcastName = new List<string>();
             List<string> podcastCoverUri = new List<string>();
 
+            type.Add("podcast");
             foreach (JToken i in root["podcast_episodes"]["results"])
             {
                 podcastId.Add(i["id"].ToString());
@@ -97,6 +102,7 @@ namespace Yamux
                 }
             }
 
+            podcast.Add("type", type);
             podcast.Add("id", podcastId);
             podcast.Add("name", podcastName);
             podcast.Add("coverUri", podcastCoverUri);
@@ -107,10 +113,12 @@ namespace Yamux
         public static Dictionary<string, List<string>> GetTracks(JToken root)
         {
             Dictionary<string, List<string>> tracks = new Dictionary<string, List<string>>();
+            List<string> type = new List<string>();
             List<string> trackId = new List<string>();
             List<string> trackName = new List<string>();
             List<string> trackCoverUri = new List<string>();
 
+            type.Add("track");
             foreach (JToken i in root["tracks"]["results"])
             {
                 trackId.Add(i["id"].ToString());
@@ -126,6 +134,7 @@ namespace Yamux
                 }
             }
 
+            tracks.Add("type", type);
             tracks.Add("id", trackId);
             tracks.Add("name", trackName);
             tracks.Add("coverUri", trackCoverUri);
@@ -136,10 +145,12 @@ namespace Yamux
         public static Dictionary<string, List<string>> GetArtist(JToken root)
         {
             Dictionary<string, List<string>> artist = new Dictionary<string, List<string>>();
+            List<string> type = new List<string>();
             List<string> artistId = new List<string>();
             List<string> artistName = new List<string>();
             List<string> artistCoverUri = new List<string>();
 
+            type.Add("artist");
             foreach (JToken i in root["artists"]["results"])
             {
                 artistId.Add(i["id"].ToString());
@@ -155,6 +166,7 @@ namespace Yamux
                 }
             }
 
+            artist.Add("type", type);
             artist.Add("id", artistId);
             artist.Add("name", artistName);
             artist.Add("coverUri", artistCoverUri);
@@ -165,10 +177,12 @@ namespace Yamux
         public static Dictionary<string, List<string>> GetAlbums(JToken root)
         {
             Dictionary<string, List<string>> albums = new Dictionary<string, List<string>>();
+            List<string> type = new List<string>();
             List<string> albumsId = new List<string>();
             List<string> albumsName = new List<string>();
             List<string> albumsCoverUri = new List<string>();
 
+            type.Add("album");
             foreach (JToken i in root["albums"]["results"])
             {
                 albumsId.Add(i["id"].ToString());
@@ -184,6 +198,7 @@ namespace Yamux
                 }
             }
 
+            albums.Add("type", type);
             albums.Add("id", albumsId);
             albums.Add("name", albumsName);
             albums.Add("coverUri", albumsCoverUri);
@@ -242,7 +257,7 @@ namespace Yamux
                     Button buttonPlay = new Button();
                     buttonPlay.Image = image;
                     buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlists")
+                    if (typeResult != "playlist")
                     {
                         string uri = url.Replace("%%", "50x50");
                         uri = "https://" + uri;
@@ -268,7 +283,7 @@ namespace Yamux
                     Button buttonPlay = new Button();
                     buttonPlay.Image = image;
                     buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlists")
+                    if (typeResult != "playlist")
                     {
                         string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
                         buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";

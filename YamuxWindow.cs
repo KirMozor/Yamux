@@ -134,124 +134,47 @@ namespace Yamux
                     ResultSearchBox = new VBox();
                     ResultBox.Add(ResultSearchBox);
 
-                    HBox albumsBox = new HBox();
-                    HBox playlistsBox = new HBox();
-                    HBox podcastsBox = new HBox();
-                    HBox tracksBox = new HBox();
-                    HBox artistsBox = new HBox();
-                    ScrolledWindow scrolledAlbums = new ScrolledWindow(); scrolledAlbums.PropagateNaturalHeight = true; scrolledAlbums.PropagateNaturalWidth = true;
-                    ScrolledWindow scrolledArtists = new ScrolledWindow(); scrolledArtists.PropagateNaturalHeight = true; scrolledArtists.PropagateNaturalWidth = true;
-                    ScrolledWindow scrolledTracks = new ScrolledWindow(); scrolledTracks.PropagateNaturalHeight = true; scrolledTracks.PropagateNaturalWidth = true;
-                    ScrolledWindow scrolledPodcasts = new ScrolledWindow(); scrolledPodcasts.PropagateNaturalHeight = true; scrolledPodcasts.PropagateNaturalWidth = true;
-                    ScrolledWindow scrolledPlaylists = new ScrolledWindow(); scrolledPlaylists.PropagateNaturalHeight = true; scrolledPlaylists.PropagateNaturalWidth = true;
-                    Viewport viewportAlbums = new Viewport();
-                    Viewport viewportArtists = new Viewport();
-                    Viewport viewportTracks = new Viewport();
-                    Viewport viewportPodcasts = new Viewport();
-                    Viewport viewportPlaylists = new Viewport();
-                    Dictionary<string, List<string>> albums;
-                    Dictionary<string, List<string>> playlists;
-                    Dictionary<string, List<string>> podcasts;
-                    Dictionary<string, List<string>> tracks;
-                    Dictionary<string, List<string>> artists;
+                    Dictionary<string, string> best = Yamux.GetBest(root);;
+                    List<Dictionary<string, List<string>>> all = new List<Dictionary<string, List<string>>>();
+                    all.Add(Yamux.GetAlbums(root));
+                    all.Add(Yamux.GetPlaylists(root));
+                    all.Add(Yamux.GetPodcasts(root));
+                    all.Add(Yamux.GetTracks(root));
+                    all.Add(Yamux.GetArtist(root));
 
-                    Dictionary<string, string> best = Yamux.GetBest(root);
-
-                    try
+                    int index = -1;
+                    foreach (var i in all)
                     {
-                        albums = Yamux.GetAlbums(root);
-                        await Task.Run(() =>
+                        index++;
+                        if (i["type"][0] == best["type"])
                         {
-                            albumsBox = Yamux.CreateBoxResultSearch(albums["name"], albums["coverUri"], albums["id"], "albums");
-                        });
+                            break;
+                        }
                     }
-                    catch (NullReferenceException) {}
-                    try
-                    {
-                        podcasts = Yamux.GetPodcasts(root);
-                        await Task.Run(() =>
-                        {
-                            podcastsBox = Yamux.CreateBoxResultSearch(podcasts["name"], podcasts["coverUri"], podcasts["id"], "podcasts");
-                        });
-                    }
-                    catch (NullReferenceException) {}
-                    try
-                    {
-                        tracks = Yamux.GetTracks(root);
-                        await Task.Run(() =>
-                        {
-                            tracksBox = Yamux.CreateBoxResultSearch(tracks["name"], tracks["coverUri"], tracks["id"],
-                                "tracks");
-                        });
-                    }
-                    catch (NullReferenceException) {}
-                    try
-                    {
-                        artists = Yamux.GetArtist(root);
-                        await Task.Run(() =>
-                        {
-                            artistsBox = Yamux.CreateBoxResultSearch(artists["name"], artists["coverUri"],
-                                artists["id"], "artists");
-                        });
-                    }
-                    catch (NullReferenceException) {}
-                    /*
-                    try
-                    {
-                        playlists = Yamux.GetPlaylists(root); 
-                        List<string> playlistsName = playlists["name"];
-                        List<string> playlistsCoverUri = playlists["coverUri"];
-                        kindPlaylist = playlists["kind"];
-                        uidPlaylist = playlists["uid"];
-                        await Task.Run(() =>
-                        {
-                            playlistsBox = Yamux.CreateBoxResultSearch(playlistsName, playlistsCoverUri, new List<string>(), "playlist");
-                        });
-                    }
-                    catch (NullReferenceException) {}
-                    */
+                    all.Move(index, 0);
                     
-                    switch (best["type"])
+                    foreach (var i in all)
                     {
-                        case "artist":
+                        HBox box = new HBox();
+                        ScrolledWindow scrolledWindow = new ScrolledWindow();
+                        Viewport viewportWindow = new Viewport();
+                        scrolledWindow.PropagateNaturalHeight = true;
+                        scrolledWindow.PropagateNaturalWidth = true;
+                        await Task.Run(() =>
                         {
-                            scrolledArtists.Add(viewportArtists);
-                            viewportArtists.Add(artistsBox);
-                            ResultSearchBox.Add(scrolledArtists); 
-                            break;
-                        }
-                        case "track":
-                        {
-                            scrolledTracks.Add(viewportTracks);
-                            viewportTracks.Add(tracksBox);
-                            ResultSearchBox.Add(scrolledTracks); 
-                            break;
-                        }
-                        case "podcast":
-                        {
-                            scrolledPodcasts.Add(viewportPodcasts);
-                            viewportPodcasts.Add(playlistsBox);
-                            ResultSearchBox.Add(scrolledPodcasts); 
-                            break;
-                        }
-                        case "album":
-                        {
-                            scrolledAlbums.Add(viewportAlbums);
-                            viewportAlbums.Add(albumsBox);
-                            ResultSearchBox.Add(scrolledAlbums); 
-                            break;
-                        }
-                        case "playlist":
-                        {
-                            scrolledPlaylists.Add(viewportPlaylists);
-                            viewportPlaylists.Add(playlistsBox);
-                            ResultSearchBox.Add(scrolledPlaylists); 
-                            break;
-                        }
+                            if (i["type"][0] != "playlist")
+                            {
+                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], i["id"], i["type"][0]);   
+                            }
+                        });
+                        scrolledWindow.Add(viewportWindow);
+                        viewportWindow.Add(box);
+                        ResultSearchBox.Add(scrolledWindow);
+                        
+                        SearchBox.ShowAll();
+                        ResultBox.ShowAll();
+                        ResultSearchBox.ShowAll();
                     }
-                    
-                    SearchBox.ShowAll();
-                    ResultBox.ShowAll();
                     SearchOrNot = true;
                 }
                 else
@@ -317,6 +240,24 @@ namespace Yamux
         private void ClickKofiDonate(object sender, EventArgs a)
         {
             Yamux.OpenLinkToWebBrowser("https://ko-fi.com/kirmozor");
+        }
+    }
+    static class Ext
+    {
+        public static void Move<T>(this List<T> list, int i, int j)
+        {
+            var elem = list[i];
+            list.RemoveAt(i);
+            list.Insert(j, elem);
+        }
+ 
+        public static void Swap<T>(this List<T> list, int i, int j)
+        {
+            var elem1 = list[i];
+            var elem2 = list[j];
+ 
+            list[i] = elem2;
+            list[j] = elem1;
         }
     }
 }
