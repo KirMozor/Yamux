@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Gdk;
 using Gtk;
 using Newtonsoft.Json.Linq;
@@ -217,16 +215,19 @@ namespace Yamux
         public static HBox CreateBoxResultSearch(List<string> name, List<string> coverUri, List<string> id, string typeResult)
         {
             HBox newBox = new HBox();
+            newBox.Valign = Align.Start;
 
             int b = -1;
             foreach (string i in name)
             {
                 b++;
                 VBox coverImage = new VBox();
+                Button buttonPlay = new Button();
                 coverImage.Spacing = 4;
                 coverImage.MarginTop = 20;
                 coverImage.MarginBottom = 15;
-                coverImage.Valign = Align.Fill;
+                coverImage.Valign = Align.Start;
+                coverImage.Halign = Align.Start;
                         
                 newBox.Add(coverImage);
                 newBox.Spacing = 8;
@@ -238,66 +239,44 @@ namespace Yamux
                 nameBestLabel.MaxWidthChars = 20;
                 nameBestLabel.Ellipsize = EllipsizeMode.End;
                 nameBestLabel.Halign = Align.Center;
-        
+                nameBestLabel.Valign = Align.Start;
+
+                string uri;
+                Pixbuf imagePixbuf;
                 if (coverUri[b] != "None")
                 {
-                    File.Delete(Path.GetFullPath("s.jpg"));
-                    string url = coverUri[b];
-                    using (WebClient client = new WebClient())
+                    uri = "https://" + coverUri[b].Replace("%%", "50x50");
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://" + coverUri[b].Replace("%%", "100x100"));
+                    HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+                    using (Stream stream = response.GetResponseStream())
                     {
-                        string uri = url.Replace("%%", "100x100");
-                        uri = "https://" + uri;
-                        Console.WriteLine(uri);
-                        client.DownloadFile(new Uri(uri), Path.GetFullPath("s.jpg"));
+                        imagePixbuf = new Pixbuf(stream);
                     }
-                    Pixbuf imagePixbuf;
-                    imagePixbuf = new Pixbuf("s.jpg");
-                    Image image = new Image(imagePixbuf);
-                    image.Halign = Align.Fill;
-                    Button buttonPlay = new Button();
-                    buttonPlay.Image = image;
-                    buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlist")
-                    {
-                        string uri = url.Replace("%%", "50x50");
-                        uri = "https://" + uri;
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'uri': \""+ uri + "\" }";
-                    }
-                    else
-                    {
-                        string uri = url.Replace("%%", "50x50");
-                        uri = "https://" + uri;
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.kindPlaylist[b] + "\", 'kind': \"" + YamuxWindow.uidPlaylist[b] + "\", 'uri': \"" + uri + "\" }";
-                        Console.WriteLine(buttonPlay.Name);
-                    }
-
-                    ListButtonPlay.Add(buttonPlay);
-                    coverImage.Add(buttonPlay);
+                    response.Close();
                 }
                 else
                 {
-                    Pixbuf imagePixbuf;
+                    uri = "null";
                     imagePixbuf = new Pixbuf(Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
-                    Image image = new Image(imagePixbuf);
-                    image.Halign = Align.Fill;
-                    Button buttonPlay = new Button();
-                    buttonPlay.Image = image;
-                    buttonPlay.Relief = ReliefStyle.None;
-                    if (typeResult != "playlist")
-                    {
-                        string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
-                    }
-                    else
-                    {
-                        string imageNotFound = Path.GetFullPath("Svg/icons8_rock_music_100_negate.png");
-                        buttonPlay.Name = "{'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.kindPlaylist[b] + "\", 'kind': \"" + YamuxWindow.uidPlaylist[b] + "\", 'imageNotFound': \""+ imageNotFound + "\" }";
-                        Console.WriteLine(buttonPlay.Name);
-                    }
-
-                    ListButtonPlay.Add(buttonPlay);
-                    coverImage.Add(buttonPlay);
                 }
+                
+                if (typeResult != "playlist")
+                {
+                    buttonPlay.Name = "{'type': \"" + typeResult + "\",'id': \"" + id[b] + "\", 'uri': \""+ uri + "\" }";   
+                }
+                else
+                {
+                    buttonPlay.Name = "{ 'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.uidPlaylist[b] + "\", 'kind': \"" + YamuxWindow.kindPlaylist[b] + "\", 'uri': \"" + uri + "\"}";
+                }
+                Console.WriteLine(buttonPlay.Name);
+                
+                Image image = new Image(imagePixbuf);
+                image.Halign = Align.Fill;
+                buttonPlay.Image = image;
+                buttonPlay.Relief = ReliefStyle.None;
+                
+                ListButtonPlay.Add(buttonPlay);
+                coverImage.Add(buttonPlay);
                 coverImage.Add(nameBestLabel);
                 newBox.Add(coverImage);
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using Gdk;
@@ -48,9 +49,9 @@ namespace Yamux
         [UI] private Image ImageSettings = null;
 
         [UI] private Box informTrackBox = null;
-        [UI] private Box PlayerBoxScale = null;
         [UI] private Box PlayerActionBox = null;
         [UI] private Box PlayerMoreActionBox = null;
+        [UI] private Box PlayerBoxScale = null;
         [UI] private Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
@@ -58,13 +59,12 @@ namespace Yamux
         public static List<string> uidPlaylist = new List<string>();
         public static List<string> kindPlaylist = new List<string>();
         public static bool SearchOrNot = true;
+        public static HScale PlayerScale = new HScale(0.0, 100, 1.0);
         
         private VBox ResultSearchBox = new VBox();
-
         public YamuxWindow() : this(new Builder("Yamux.glade"))
         {
         }
-
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             using (FileStream fstream = File.OpenRead("config.toml"))
@@ -78,7 +78,7 @@ namespace Yamux
             }
             builder.Autoconnect(this);
 
-            DeleteEvent += Window_DeleteEvent;
+            DeleteEvent += (o, args) => { Application.Quit(); };
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
@@ -87,24 +87,22 @@ namespace Yamux
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
         }
-
         private void ShowAboutWindow(object sender, EventArgs a)
         {
             AboutWindow.ShowAll();
             AboutWindow.Deletable = false;
             
-            CloseAboutWindow.Clicked += HideAboutWindow;
-            AboutGitHubProject.Clicked += ClickAboutGitHubProject;
-            AboutGitHubAuthor.Clicked += ClickAboutGitHubAuthor;
-            AboutTelegramChannel.Clicked += ClickTelegramChannel;
+            CloseAboutWindow.Clicked += (o, args) => { DonateWindow.Hide(); };
+            AboutGitHubProject.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor/Yamux"); };
+            AboutGitHubAuthor.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor"); };
+            AboutTelegramChannel.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://t.me/kirmozor"); };
         }
-
         private void ShowDonateWindow(object sender, EventArgs a)
         {
             DonateWindow.ShowAll();
             DonateWindow.Deletable = false;
-            CloseDonateWindow.Clicked += HideDonateWindow;
-            KofiDonate.Clicked += ClickKofiDonate;
+            CloseDonateWindow.Clicked += (o, args) => { DonateWindow.Hide(); };
+            KofiDonate.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://ko-fi.com/kirmozor"); };
         }
         private async void SearchChangedOutput(object sender, EventArgs a)
         {
@@ -115,7 +113,6 @@ namespace Yamux
                 Thread.Sleep(2000);
                 if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
                 {
-                    Console.WriteLine(text);
                     JObject resultSearch = YandexMusicApi.Default.Search(text);
                     root = resultSearch.Last.Last.Root;
                     root = root.SelectToken("result");
@@ -123,6 +120,7 @@ namespace Yamux
             });
             ShowResultSearch(root, text);
         }
+
         private async void ShowResultSearch(JToken root, string text)
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
@@ -130,29 +128,65 @@ namespace Yamux
                 if (root.Count() > 6 && SearchOrNot)
                 {
                     SearchOrNot = false;
+                    IfNoResult.Text = "";
                     ResultSearchBox.Destroy();
                     ResultSearchBox = new VBox();
                     ResultBox.Add(ResultSearchBox);
 
-                    Dictionary<string, string> best = Yamux.GetBest(root);;
+                    Dictionary<string, string> best = Yamux.GetBest(root);
+                    ;
                     List<Dictionary<string, List<string>>> all = new List<Dictionary<string, List<string>>>();
-                    all.Add(Yamux.GetArtist(root));
-                    all.Add(Yamux.GetAlbums(root));
-                    all.Add(Yamux.GetTracks(root));
-                    all.Add(Yamux.GetPodcasts(root));
-                    all.Add(Yamux.GetPlaylists(root));
+
+                    try
+                    {
+                        all.Add(Yamux.GetArtist(root));
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+
+                    try
+                    {
+                        all.Add(Yamux.GetAlbums(root));
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+
+                    try
+                    {
+                        all.Add(Yamux.GetTracks(root));
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+
+                    try
+                    {
+                        all.Add(Yamux.GetPodcasts(root));
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+
+                    try
+                    {
+                        all.Add(Yamux.GetPlaylists(root));
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
 
                     int index = -1;
                     foreach (var i in all)
                     {
                         index++;
                         if (i["type"][0] == best["type"])
-                        {
                             break;
-                        }
                     }
+
                     all.Move(index, 0);
-                    
+
                     foreach (var i in all)
                     {
                         HBox box = new HBox();
@@ -163,41 +197,62 @@ namespace Yamux
                         await Task.Run(() =>
                         {
                             if (i["type"][0] != "playlist")
-                            {
-                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], i["id"], i["type"][0]);   
-                            }
+                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], i["id"], i["type"][0]);
                             else
                             {
                                 kindPlaylist = i["kind"];
                                 uidPlaylist = i["uid"];
-                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], new List<string>(), i["type"][0]);  
+                                box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], new List<string>(),
+                                    i["type"][0]);
                             }
                         });
                         string typeResult = "";
                         switch (i["type"][0])
                         {
-                            case "playlist": { typeResult = "Плейлисты"; break; }
-                            case "album": { typeResult = "Альбомы"; break; }
-                            case "podcast": { typeResult = "Подкасты"; break; }
-                            case "track": { typeResult = "Треки"; break; }
-                            case "artist": { typeResult = "Артисты"; break; }
+                            case "playlist":
+                            {
+                                typeResult = "Плейлисты";
+                                break;
+                            }
+                            case "album":
+                            {
+                                typeResult = "Альбомы";
+                                break;
+                            }
+                            case "podcast":
+                            {
+                                typeResult = "Подкасты";
+                                break;
+                            }
+                            case "track":
+                            {
+                                typeResult = "Треки";
+                                break;
+                            }
+                            case "artist":
+                            {
+                                typeResult = "Артисты";
+                                break;
+                            }
                         }
-                        
+
                         Label trackLabel = new Label(typeResult);
                         FontDescription tpftrack = new FontDescription();
                         tpftrack.Size = 12288;
                         trackLabel.ModifyFont(tpftrack);
-                        
+
                         scrolledWindow.Add(viewportWindow);
                         viewportWindow.Add(box);
                         ResultSearchBox.Add(trackLabel);
                         ResultSearchBox.Add(scrolledWindow);
-                        
+
                         SearchBox.ShowAll();
                         ResultBox.ShowAll();
                         ResultSearchBox.ShowAll();
                     }
-                    SearchOrNot = true;
+
+                    foreach (Button i in Yamux.ListButtonPlay)
+                        i.Clicked += PlayButtonClick;
                 }
                 else
                 {
@@ -206,7 +261,69 @@ namespace Yamux
                 }
             }
         }
-        private async static void SpyChangeDurationTrack()
+        private async void PlayButtonClick(object sender, EventArgs a)
+        {
+            Button buttonPlay = (Button) sender;
+            PlayerBoxScale.Destroy();
+            PlayerBoxScale = new HBox();
+            PlayerBoxScale.Valign = Align.Start;
+            PlayerBoxScale.Vexpand = true;
+
+            PlayerScale.Vexpand = true;
+            PlayerScale.Valign = Align.Start;
+            PlayerScale.DrawValue = false;
+            PlayerBoxScale.Add(PlayerScale);
+
+            JObject details = JObject.Parse(buttonPlay.Name);
+            JToken informTrack = "{}";
+
+            Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
+            if (details["uri"].ToString() != "None")
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(details["uri"].ToString());
+                HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+                using (Stream stream = response.GetResponseStream())
+                {
+                    imagePixbuf = new Pixbuf(stream);
+                }
+                response.Close();
+            }
+            switch (details["type"].ToString())
+            {
+                case "track":
+                {
+                    List<string> ids = new List<string>();
+                    ids.Add(details["id"].ToString());
+                    await Task.Run(() =>
+                    {
+                        informTrack = Track.GetInformTrack(ids)["result"];
+                    });
+                    break;
+                }
+            }
+            PlayerImage.Pixbuf = imagePixbuf;
+
+            SearchBox.Add(PlayerBoxScale);
+            CreatePlayer(informTrack);
+            SearchBox.ShowAll();
+            PlayerBoxScale.ShowAll();
+        }
+
+        private void CreatePlayer(JToken informTrack)
+        {
+            try
+            {
+                PlayerTitleTrack.MaxWidthChars = 17;
+                PlayerNameArtist.MaxWidthChars = 17;
+                PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
+                PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
+            }
+            catch (SystemException)
+            {
+                Console.WriteLine(informTrack);
+            }
+        }
+        private async void SpyChangeDurationTrack()
         {
             double oldDuration = durationTrack;
             await Task.Run(() =>
@@ -233,35 +350,6 @@ namespace Yamux
 
             string nameTrackFile = pathToHome + "/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
             Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
-        }
-        private void Window_DeleteEvent(object sender, DeleteEventArgs a)
-        {
-            Application.Quit();
-        }
-        private void HideAboutWindow(object sender, EventArgs a)
-        {
-            AboutWindow.Hide();
-        }
-        private void HideDonateWindow(object sender, EventArgs a)
-        {
-            DonateWindow.Hide();
-        }
-        private void ClickAboutGitHubProject(object sender, EventArgs a)
-        {
-            Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor/Yamux");
-        }
-        private void ClickAboutGitHubAuthor(object sender, EventArgs a)
-        {
-            Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor");
-        }
-        private void ClickTelegramChannel(object sender, EventArgs a)
-        {
-            Yamux.OpenLinkToWebBrowser("https://t.me/kirmozor");
-        }
-
-        private void ClickKofiDonate(object sender, EventArgs a)
-        {
-            Yamux.OpenLinkToWebBrowser("https://ko-fi.com/kirmozor");
         }
     }
     static class Ext
