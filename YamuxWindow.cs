@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using Gdk;
 using Gtk;
@@ -83,6 +81,7 @@ namespace Yamux
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
 
+            CreatePlayer();
             SetDefaultIconFromFile("Svg/icon.svg");
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
@@ -129,63 +128,35 @@ namespace Yamux
                 {
                     SearchOrNot = false;
                     IfNoResult.Text = "";
+                    PlayerNameArtist.Text = "";
+                    PlayerTitleTrack.Text = "";
+                    PlayerImage.Hide();
+                    PlayerBoxScale.Hide();
+                    PlayerActionBox.Hide();
+                    
                     ResultSearchBox.Destroy();
                     ResultSearchBox = new VBox();
                     ResultBox.Add(ResultSearchBox);
 
                     Dictionary<string, string> best = Yamux.GetBest(root);
-                    ;
                     List<Dictionary<string, List<string>>> all = new List<Dictionary<string, List<string>>>();
 
-                    try
-                    {
-                        all.Add(Yamux.GetArtist(root));
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
-
-                    try
-                    {
-                        all.Add(Yamux.GetAlbums(root));
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
-
-                    try
-                    {
-                        all.Add(Yamux.GetTracks(root));
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
-
-                    try
-                    {
-                        all.Add(Yamux.GetPodcasts(root));
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
-
-                    try
-                    {
-                        all.Add(Yamux.GetPlaylists(root));
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
+                    try {all.Add(Yamux.GetArtist(root)); } catch (NullReferenceException) { } 
+                    try { all.Add(Yamux.GetAlbums(root)); } catch (NullReferenceException) { } 
+                    try { all.Add(Yamux.GetTracks(root)); } catch (NullReferenceException) { }
+                    try { all.Add(Yamux.GetPodcasts(root)); } catch (NullReferenceException){ }
+                    try { all.Add(Yamux.GetPlaylists(root)); } catch (NullReferenceException) { }
 
                     int index = -1;
                     foreach (var i in all)
                     {
                         index++;
                         if (i["type"][0] == best["type"])
+                        {
+                            all.Move(index, 0);
                             break;
+                        } 
                     }
-
-                    all.Move(index, 0);
 
                     foreach (var i in all)
                     {
@@ -209,31 +180,11 @@ namespace Yamux
                         string typeResult = "";
                         switch (i["type"][0])
                         {
-                            case "playlist":
-                            {
-                                typeResult = "Плейлисты";
-                                break;
-                            }
-                            case "album":
-                            {
-                                typeResult = "Альбомы";
-                                break;
-                            }
-                            case "podcast":
-                            {
-                                typeResult = "Подкасты";
-                                break;
-                            }
-                            case "track":
-                            {
-                                typeResult = "Треки";
-                                break;
-                            }
-                            case "artist":
-                            {
-                                typeResult = "Артисты";
-                                break;
-                            }
+                            case "playlist": { typeResult = "Плейлисты"; break; }
+                            case "album": { typeResult = "Альбомы"; break; }
+                            case "podcast": { typeResult = "Подкасты"; break; }
+                            case "track": { typeResult = "Треки"; break; }
+                            case "artist": { typeResult = "Артисты"; break; }
                         }
 
                         Label trackLabel = new Label(typeResult);
@@ -245,17 +196,25 @@ namespace Yamux
                         viewportWindow.Add(box);
                         ResultSearchBox.Add(trackLabel);
                         ResultSearchBox.Add(scrolledWindow);
-
+                        
                         SearchBox.ShowAll();
                         ResultBox.ShowAll();
                         ResultSearchBox.ShowAll();
+                        PlayerBoxScale.Hide();
+                        PlayerActionBox.Hide();
                     }
 
                     foreach (Button i in Yamux.ListButtonPlay)
                         i.Clicked += PlayButtonClick;
+                    SearchOrNot = true;
                 }
                 else
                 {
+                    PlayerNameArtist.Text = "";
+                    PlayerTitleTrack.Text = "";
+                    PlayerImage = new Image();
+                    PlayerBoxScale.Hide();
+                    PlayerActionBox.Hide();
                     ResultSearchBox.Destroy();
                     IfNoResult.Text = "Нет результата😢";
                 }
@@ -264,21 +223,13 @@ namespace Yamux
         private async void PlayButtonClick(object sender, EventArgs a)
         {
             Button buttonPlay = (Button) sender;
-            PlayerBoxScale.Destroy();
-            PlayerBoxScale = new HBox();
-            PlayerBoxScale.Valign = Align.Start;
-            PlayerBoxScale.Vexpand = true;
-
-            PlayerScale.Vexpand = true;
-            PlayerScale.Valign = Align.Start;
-            PlayerScale.DrawValue = false;
-            PlayerBoxScale.Add(PlayerScale);
 
             JObject details = JObject.Parse(buttonPlay.Name);
             JToken informTrack = "{}";
 
-            Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate.png"));
-            if (details["uri"].ToString() != "None")
+            PlayerImage.Show();
+            Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
+            if (details["uri"].ToString() != "null")
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(details["uri"].ToString());
                 HttpWebResponse response = (HttpWebResponse) request.GetResponse();
@@ -302,26 +253,60 @@ namespace Yamux
                 }
             }
             PlayerImage.Pixbuf = imagePixbuf;
+            
+            PlayTrack(informTrack);
+            PlayerBoxScale.ShowAll();
+            PlayerActionBox.ShowAll();
+        }
+        private void PlayTrack(JToken informTrack)
+        {
+            PlayerTitleTrack.MaxWidthChars = 17;
+            PlayerNameArtist.MaxWidthChars = 17;
+            PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
+            PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
+            string directLink = Player.GetDirectLinkWithTrack(informTrack[0]["id"].ToString());
+            Player.PlayUrlFile(directLink);
+        }
+        private void CreatePlayer()
+        {
+            PlayerNameArtist.Text = "";
+            PlayerTitleTrack.Text = "";
+            PlayerBoxScale = new HBox();
+            PlayerBoxScale.Valign = Align.Start;
+            PlayerBoxScale.Vexpand = true;
+
+            PlayerScale.Vexpand = true;
+            PlayerScale.Valign = Align.Start;
+            PlayerScale.DrawValue = false;
+            PlayerBoxScale.Add(PlayerScale);
+            Button playPauseButton = new Button();
+            Button nextTrackButton = new Button();
+            Button lastTrackButton = new Button();
+            Button stopButton = new Button();
+            Button downloadTrack = new Button();
+            playPauseButton.Relief = ReliefStyle.None;
+            nextTrackButton.Relief = ReliefStyle.None;
+            lastTrackButton.Relief = ReliefStyle.None;
+            stopButton.Relief = ReliefStyle.None;
+            downloadTrack.Relief = ReliefStyle.None;
+            
+            playPauseButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-play.png")));
+            nextTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-next.png")));
+            lastTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png")));
+            stopButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png")));
+            downloadTrack.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-download.png")));
+            
+            PlayerActionBox.Add(stopButton);
+            PlayerActionBox.Add(lastTrackButton);
+            PlayerActionBox.Add(playPauseButton);
+            PlayerActionBox.Add(nextTrackButton);
+            PlayerActionBox.Add(downloadTrack);
 
             SearchBox.Add(PlayerBoxScale);
-            CreatePlayer(informTrack);
-            SearchBox.ShowAll();
-            PlayerBoxScale.ShowAll();
-        }
-
-        private void CreatePlayer(JToken informTrack)
-        {
-            try
-            {
-                PlayerTitleTrack.MaxWidthChars = 17;
-                PlayerNameArtist.MaxWidthChars = 17;
-                PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
-                PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
-            }
-            catch (SystemException)
-            {
-                Console.WriteLine(informTrack);
-            }
+            SearchBox.Add(PlayerActionBox);
+            PlayerBoxScale.Hide();
+            PlayerActionBox.Hide();
+            SearchBox.Hide();
         }
         private async void SpyChangeDurationTrack()
         {
