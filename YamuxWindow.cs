@@ -270,6 +270,25 @@ namespace Yamux
                     Player.PlayPlaylist();
                     break;
                 }
+                case "playlist":
+                {
+                    Player.trackIds = new List<string>();
+                    JToken informPlaylist = "{}";
+                    JToken trackPlaylist = "{}";
+
+                    await Task.Run(() => { informPlaylist = Playlist.InformPlaylist(details["uid"].ToString(), details["kind"].ToString()); });
+                    await Task.Run(() => { trackPlaylist = Playlist.GetTrack(details["uid"].ToString(), details["kind"].ToString()); });
+                    PlayerTitleTrack.Text = informPlaylist["result"]["title"].ToString();
+                    PlayerNameArtist.Text = informPlaylist["result"]["description"].ToString();
+
+                    foreach (var i in trackPlaylist["result"]["tracks"])
+                    {
+                        Player.trackIds.Add(i["id"].ToString());
+                        Console.WriteLine(i["id"]);
+                    }
+                    Player.PlayPlaylist();
+                    break;
+                }
             }
             SpyChangeDurationTrack();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
