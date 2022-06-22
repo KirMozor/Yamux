@@ -223,8 +223,9 @@ namespace Yamux
         private async void PlayButtonClick(object sender, EventArgs a)
         {
             Button buttonPlay = (Button) sender;
-
             JObject details = JObject.Parse(buttonPlay.Name);
+            PlayerTitleTrack.MaxWidthChars = 17;
+            PlayerNameArtist.MaxWidthChars = 17;
             JToken informTrack = "{}";
 
             PlayerImage.Show();
@@ -239,31 +240,44 @@ namespace Yamux
                 }
                 response.Close();
             }
+
             switch (details["type"].ToString())
             {
                 case "track":
                 {
                     List<string> ids = new List<string>();
                     ids.Add(details["id"].ToString());
-                    await Task.Run(() =>
+                    await Task.Run(() => { informTrack = Track.GetInformTrack(ids)["result"]; });
+                    PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
+                    PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
+                    break;
+                }
+                case "artist":
+                {
+                    List<string> idTracks = new List<string>();
+                    JToken informArtist = "{}";
+                    JToken trackArtist = "{}";
+                    
+                    await Task.Run(() => { informArtist = Artist.InformArtist(details["id"].ToString())["result"]; });
+                    await Task.Run(() => { trackArtist = Artist.GetTrack(informArtist["artist"]["id"].ToString()); });
+                    PlayerNameArtist.Text = informArtist["artist"]["name"].ToString();
+
+                    foreach (var i in trackArtist["result"]["tracks"])
                     {
-                        informTrack = Track.GetInformTrack(ids)["result"];
-                    });
+                        idTracks.Add(i["id"].ToString());
+                        Console.WriteLine(i["id"]);
+                    }
                     break;
                 }
             }
             PlayerImage.Pixbuf = imagePixbuf;
             
-            PlayTrack(informTrack);
+            //PlayTrack(informTrack);
             PlayerBoxScale.ShowAll();
             PlayerActionBox.ShowAll();
         }
         private void PlayTrack(JToken informTrack)
         {
-            PlayerTitleTrack.MaxWidthChars = 17;
-            PlayerNameArtist.MaxWidthChars = 17;
-            PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
-            PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
             string directLink = Player.GetDirectLinkWithTrack(informTrack[0]["id"].ToString());
             Player.PlayUrlFile(directLink);
         }
