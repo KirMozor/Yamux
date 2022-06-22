@@ -86,8 +86,9 @@ namespace Yamux
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
-
+            
             CreatePlayer();
+            SpyChangeDurationTrack();
             SetDefaultIconFromFile("Svg/icon.svg");
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
@@ -348,7 +349,6 @@ namespace Yamux
                 }
             }
 
-            SpyChangeDurationTrack();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
             PlayerImage.Pixbuf = imagePixbuf;
             
@@ -407,6 +407,7 @@ namespace Yamux
                 {
                     if (Player.GetStatusPlayback() != PlaybackState.Stopped)
                     {
+                        durationTrack = Player.GetPosition();
                         Thread.Sleep(1000);
                         if (oldDuration != durationTrack)
                         {
@@ -414,7 +415,7 @@ namespace Yamux
                             oldDuration = durationTrack;
                         }
                     }
-                    else { break; }
+                    else { Thread.Sleep(1000); }
                 }
             });
         }
