@@ -64,55 +64,63 @@ namespace Yamux
         {
             while (true)
             {
-                if (nextOrLastTrack != "last" && nextOrLastTrack != "next")
+                try
                 {
-                    currentTrack++;
-                }
-                if (!PlayTrackOrNo)
-                {
-                    Bass.Init();
-                }
-                else
-                {
-                    Bass.StreamFree(stream);
-                    Bass.Free();
-                    Bass.Init();
-                }
-                
-                string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
-                Console.WriteLine(directLinkToTrack);
-                stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
-                if (stream != 0)
-                {
-                    Bass.ChannelPlay(stream);
-                    PlayTrackOrNo = true;
-                    PlayTrackOrPause = true;
-                }
-                else Console.WriteLine("Error: {0}!", Bass.LastError);
-
-                await Task.Run(() =>
-                {
-                    while (true)
+                    if (nextOrLastTrack != "last" && nextOrLastTrack != "next")
                     {
-                        int saveCurrentTrack = currentTrack;
-                        Thread.Sleep(1000);
-                        long length = Bass.ChannelGetLength(stream);
-                        long position = Bass.ChannelGetPosition(stream);
-
-                        if (length == position)
-                        {
-                            Bass.Free();
-                            Bass.Init();
-                            break;
-                        }
-
-                        if (currentTrack > saveCurrentTrack || currentTrack < saveCurrentTrack)
-                        {
-                            Bass.Free();
-                            Bass.Init();
-                        }
+                        currentTrack++;
                     }
-                });
+
+                    if (!PlayTrackOrNo)
+                    {
+                        Bass.Init();
+                    }
+                    else
+                    {
+                        Bass.StreamFree(stream);
+                        Bass.Free();
+                        Bass.Init();
+                    }
+
+                    string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
+                    stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+                    if (stream != 0)
+                    {
+                        Bass.ChannelPlay(stream);
+                        PlayTrackOrNo = true;
+                        PlayTrackOrPause = true;
+                    }
+                    else Console.WriteLine("Error: {0}!", Bass.LastError);
+
+                    await Task.Run(() =>
+                    {
+                        while (true)
+                        {
+                            int saveCurrentTrack = currentTrack;
+                            Thread.Sleep(1000);
+                            long length = Bass.ChannelGetLength(stream);
+                            long position = Bass.ChannelGetPosition(stream);
+
+                            if (length == position)
+                            {
+                                Bass.Free();
+                                Bass.Init();
+                                break;
+                            }
+
+                            if (currentTrack > saveCurrentTrack || currentTrack < saveCurrentTrack)
+                            {
+                                Bass.Free();
+                                Bass.Init();
+                            }
+                        }
+                    });
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    Console.WriteLine("End playlist");
+                    break;
+                }
             }
         }
 

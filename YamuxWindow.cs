@@ -119,7 +119,6 @@ namespace Yamux
             });
             ShowResultSearch(root, text);
         }
-
         private async void ShowResultSearch(JToken root, string text)
         {
             if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
@@ -164,7 +163,7 @@ namespace Yamux
                         ScrolledWindow scrolledWindow = new ScrolledWindow();
                         Viewport viewportWindow = new Viewport();
                         scrolledWindow.PropagateNaturalHeight = true;
-                        scrolledWindow.PropagateNaturalWidth = true;
+                        
                         await Task.Run(() =>
                         {
                             if (i["type"][0] != "playlist")
@@ -176,13 +175,15 @@ namespace Yamux
                                 box = Yamux.CreateBoxResultSearch(i["name"], i["coverUri"], new List<string>(),
                                     i["type"][0]);
                             }
+
+                            box.Halign = Align.Start;
                         });
                         string typeResult = "";
                         switch (i["type"][0])
                         {
                             case "playlist": { typeResult = "Плейлисты"; break; }
                             case "album": { typeResult = "Альбомы"; break; }
-                            case "podcast": { typeResult = "Подкасты"; break; }
+                            case "podcast": { typeResult = "Выпуски подкастов"; break; }
                             case "track": { typeResult = "Треки"; break; }
                             case "artist": { typeResult = "Артисты"; break; }
                         }
@@ -358,7 +359,7 @@ namespace Yamux
             playPauseButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-play.png")));
             nextTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-next.png")));
             lastTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png")));
-            stopButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png")));
+            stopButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-stop.png")));
             downloadTrack.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-download.png")));
             
             PlayerActionBox.Add(stopButton);
