@@ -254,7 +254,7 @@ namespace Yamux
                 }
                 case "artist":
                 {
-                    List<string> idTracks = new List<string>();
+                    Player.trackIds = new List<string>();
                     JToken informArtist = "{}";
                     JToken trackArtist = "{}";
                     
@@ -264,12 +264,15 @@ namespace Yamux
 
                     foreach (var i in trackArtist["result"]["tracks"])
                     {
-                        idTracks.Add(i["id"].ToString());
+                        Player.trackIds.Add(i["id"].ToString());
                         Console.WriteLine(i["id"]);
                     }
+                    Player.PlayPlaylist();
                     break;
                 }
             }
+            SpyChangeDurationTrack();
+            ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
             PlayerImage.Pixbuf = imagePixbuf;
             
             //PlayTrack(informTrack);
