@@ -54,6 +54,12 @@ namespace Yamux
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
         
+        private Button playPauseButton = new Button();
+        private Button nextTrackButton = new Button();
+        private Button lastTrackButton = new Button();
+        private Button stopButton = new Button();
+        private Button downloadTrack = new Button();
+        
         public static List<string> uidPlaylist = new List<string>();
         public static List<string> kindPlaylist = new List<string>();
         public static bool SearchOrNot = true;
@@ -361,18 +367,14 @@ namespace Yamux
             PlayerScale.Valign = Align.Start;
             PlayerScale.DrawValue = false;
             PlayerBoxScale.Add(PlayerScale);
-            Button playPauseButton = new Button();
-            Button nextTrackButton = new Button();
-            Button lastTrackButton = new Button();
-            Button stopButton = new Button();
-            Button downloadTrack = new Button();
+            
             playPauseButton.Relief = ReliefStyle.None;
             nextTrackButton.Relief = ReliefStyle.None;
             lastTrackButton.Relief = ReliefStyle.None;
             stopButton.Relief = ReliefStyle.None;
             downloadTrack.Relief = ReliefStyle.None;
             
-            playPauseButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-play.png")));
+            playPauseButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-pause.png")));
             nextTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-next.png")));
             lastTrackButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-previous.png")));
             stopButton.Image = new Image(new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8-stop.png")));
@@ -384,6 +386,12 @@ namespace Yamux
             PlayerActionBox.Add(nextTrackButton);
             PlayerActionBox.Add(downloadTrack);
 
+            stopButton.Clicked += Player.StopTrack;
+            playPauseButton.Clicked += ClickPauseOrPlay;
+            lastTrackButton.Clicked += Player.LastTrack;
+            nextTrackButton.Clicked += Player.NextTrack;
+            downloadTrack.Clicked += (sender, args) => { PlayerDownloadTrackOnClicked(); };
+            
             SearchBox.Add(PlayerBoxScale);
             SearchBox.Add(PlayerActionBox);
             PlayerBoxScale.Hide();
@@ -417,6 +425,20 @@ namespace Yamux
 
             string nameTrackFile = pathToHome + "/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
             Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
+        }
+        private void ClickPauseOrPlay(object sender, EventArgs a)
+        {
+            if (Player.PlayTrackOrPause)
+            {
+                Pixbuf PlayerPausePixbuf = new Pixbuf("Svg/icons8-play.png");
+                playPauseButton.Image = new Image(PlayerPausePixbuf);
+            }
+            else
+            {
+                Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+                playPauseButton.Image = new Image(playerPlayPixbuf);
+            }
+            Player.PauseOrStartPlay();
         }
     }
     static class Ext
