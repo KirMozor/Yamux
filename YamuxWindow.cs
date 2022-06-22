@@ -257,7 +257,7 @@ namespace Yamux
                     Player.trackIds = new List<string>();
                     JToken informArtist = "{}";
                     JToken trackArtist = "{}";
-                    
+
                     await Task.Run(() => { informArtist = Artist.InformArtist(details["id"].ToString())["result"]; });
                     await Task.Run(() => { trackArtist = Artist.GetTrack(informArtist["artist"]["id"].ToString()); });
                     PlayerNameArtist.Text = informArtist["artist"]["name"].ToString();
@@ -267,6 +267,7 @@ namespace Yamux
                         Player.trackIds.Add(i["id"].ToString());
                         Console.WriteLine(i["id"]);
                     }
+
                     Player.PlayPlaylist();
                     break;
                 }
@@ -276,8 +277,15 @@ namespace Yamux
                     JToken informPlaylist = "{}";
                     JToken trackPlaylist = "{}";
 
-                    await Task.Run(() => { informPlaylist = Playlist.InformPlaylist(details["uid"].ToString(), details["kind"].ToString()); });
-                    await Task.Run(() => { trackPlaylist = Playlist.GetTrack(details["uid"].ToString(), details["kind"].ToString()); });
+                    await Task.Run(() =>
+                    {
+                        informPlaylist =
+                            Playlist.InformPlaylist(details["uid"].ToString(), details["kind"].ToString());
+                    });
+                    await Task.Run(() =>
+                    {
+                        trackPlaylist = Playlist.GetTrack(details["uid"].ToString(), details["kind"].ToString());
+                    });
                     PlayerTitleTrack.Text = informPlaylist["result"]["title"].ToString();
                     PlayerNameArtist.Text = informPlaylist["result"]["description"].ToString();
 
@@ -286,15 +294,36 @@ namespace Yamux
                         Player.trackIds.Add(i["id"].ToString());
                         Console.WriteLine(i["id"]);
                     }
+
                     Player.PlayPlaylist();
                     break;
                 }
+                case "album":
+                {
+                    Player.trackIds = new List<string>();
+                    JToken informAlbum = "{}";
+                    JToken trackAlbum = "{}";
+
+                    await Task.Run(() => { informAlbum = Album.InformAlbum(details["id"].ToString()); });
+                    await Task.Run(() => { trackAlbum = Album.GetTracks(details["id"].ToString()); });
+                    
+                    PlayerTitleTrack.Text = informAlbum["result"]["title"].ToString();
+                    PlayerNameArtist.Text = informAlbum["result"]["artists"][0]["name"].ToString();
+
+                    foreach (var i in trackAlbum["result"]["volumes"][0])
+                    {
+                        Player.trackIds.Add(i["id"].ToString());
+                    }
+                    Player.PlayPlaylist();
+                    
+                    break;
+                }
             }
+
             SpyChangeDurationTrack();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
             PlayerImage.Pixbuf = imagePixbuf;
             
-            //PlayTrack(informTrack);
             PlayerBoxScale.ShowAll();
             PlayerActionBox.ShowAll();
         }
