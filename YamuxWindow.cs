@@ -227,7 +227,6 @@ namespace Yamux
             JObject details = JObject.Parse(buttonPlay.Name);
             PlayerTitleTrack.MaxWidthChars = 17;
             PlayerNameArtist.MaxWidthChars = 17;
-            JToken informTrack = "{}";
 
             PlayerImage.Show();
             Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
@@ -247,8 +246,12 @@ namespace Yamux
                 case "track":
                 {
                     List<string> ids = new List<string>();
+                    JToken informTrack = "{}";
+                    
                     ids.Add(details["id"].ToString());
+                    
                     await Task.Run(() => { informTrack = Track.GetInformTrack(ids)["result"]; });
+                    
                     PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
                     PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
                     break;
@@ -319,6 +322,22 @@ namespace Yamux
                     
                     break;
                 }
+                case "podcast":
+                {
+                    Player.trackIds = new List<string>();
+                    List<string> ids = new List<string>();
+                    JToken informPodcast = "{}";
+
+                    ids.Add(details["id"].ToString());
+                    await Task.Run(() => { informPodcast = Track.GetInformTrack(ids)["result"]; });
+                    
+                    PlayerTitleTrack.Text = informPodcast[0]["title"].ToString();
+                    PlayerNameArtist.Text = informPodcast[0]["albums"][0]["title"].ToString();
+                    
+                    Player.trackIds.Add(details["id"].ToString());
+                    Player.PlayPlaylist();
+                    break;
+                }
             }
 
             SpyChangeDurationTrack();
@@ -327,11 +346,6 @@ namespace Yamux
             
             PlayerBoxScale.ShowAll();
             PlayerActionBox.ShowAll();
-        }
-        private void PlayTrack(JToken informTrack)
-        {
-            string directLink = Player.GetDirectLinkWithTrack(informTrack[0]["id"].ToString());
-            Player.PlayUrlFile(directLink);
         }
         private void CreatePlayer()
         {
