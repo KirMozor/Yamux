@@ -1,38 +1,49 @@
 using ManagedBass;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Gdk;
-using Gtk;
 using Newtonsoft.Json.Linq;
+using Tomlyn.Syntax;
 using YandexMusicApi;
 
 namespace Yamux
 {
     public class Player
     {
-        public static bool PlayTrackOrNo;
+        public delegate void PlayerTrack();
+
+        public static event PlayerTrack TrackStop;
+        public static event PlayerTrack TrackLast;
+        public static event PlayerTrack TrackNext;
+        public static event PlayerTrack TrackPause;
+        public static event PlayerTrack TrackPlay;
+        
+        public static event PlayerTrack ChangeCurrentTrack;
+
+        private static bool NextOrLastTrack = false;
+        private static bool PlayTrackOrNo;
+        private static bool boolStopTrack = false;
         public static bool PlayTrackOrPause;
         private static int stream;
         public static int currentTrack = -1;
-        private static string nextOrLastTrack;
         public static List<string> trackIds;
+        
         public static void PlayUrlFile(string url)
         {
-            if (!PlayTrackOrNo)
-            {
-                Bass.Init();
-            }
+            if (!PlayTrackOrNo) { Bass.Init(); }
             else
             {
                 Bass.StreamFree(stream);
                 Bass.Free();
                 Bass.Init();
             }
+            currentTrack = -1;
+            
             stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
             if (stream != 0)
             {
@@ -42,93 +53,91 @@ namespace Yamux
             }
             else Console.WriteLine("Error: {0}!", Bass.LastError);
         }
-
-        public static void NextTrack(object sender, EventArgs a)
-        {
-            nextOrLastTrack = "next";
-            if (trackIds.Count - 1 > currentTrack)
-            {
-                currentTrack++;
-            }
-        }
-
-        public static void LastTrack(object sender, EventArgs a)
-        {
-            nextOrLastTrack = "last";
-            if (currentTrack > 0)
-            {
-                currentTrack--;
-            }
-        }
+        public static void NextTrack(object sender, EventArgs a) { TrackNext.Invoke(); }
+        public static void LastTrack(object sender, EventArgs a) { TrackLast.Invoke(); }
         public async static void PlayPlaylist()
         {
+            currentTrack = -1;
             while (true)
             {
                 try
                 {
-                    if (nextOrLastTrack != "last" && nextOrLastTrack != "next")
+                    if (boolStopTrack) { boolStopTrack = false; break;} // Если трек приказали остановить, останавливаем
+                    if (PlayTrackOrNo) // Если трек играет сейчас
                     {
-                        currentTrack++;
-                    }
-
-                    if (!PlayTrackOrNo)
-                    {
-                        Bass.Init();
-                    }
-                    else
-                    {
-                        Bass.StreamFree(stream);
                         Bass.Free();
-                        Bass.Init();
+                        Bass.StreamFree(stream);
+                        TrackStop.Invoke(); // Закрыть текущие проигрывание, сообщить циклам о том чтобы заканчивали слежку за концом трека и их проигрывание
+                        break;
                     }
-
+                    if (NextOrLastTrack) // Если трек перематывали вперёд или назад
+                    {
+                        Bass.Free();
+                        Bass.StreamFree(stream);
+                        TrackStop.Invoke(); // Закрыть проигрывание, сказать async циклу о конце слежке за треком
+                        NextOrLastTrack = false;
+                    }
+                    currentTrack++;
+                    
                     string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
+                    Console.WriteLine(directLinkToTrack);
+                    Bass.Init();
                     stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                     if (stream != 0)
                     {
-                        Bass.ChannelPlay(stream);
                         PlayTrackOrNo = true;
-                        PlayTrackOrPause = true;
+                        Bass.ChannelPlay(stream);
                     }
                     else Console.WriteLine("Error: {0}!", Bass.LastError);
-
+                    
+                    TrackStop += () => { boolStopTrack = true; }; //Если получил сигнал о стопе трека или о включении других треков, закончить этот цикл
+                    TrackNext += () =>
+                    {
+                        if (NextOrLastTrack == false) // Если кнопка не нажималась до этого (баг в GTK, кнопка может несколько раз "якобы нажатся"
+                        {
+                            PlayTrackOrNo = false; // Закрыть стрим и агента по слежке за треками
+                            NextOrLastTrack = true; // Сказать что трек перематывался
+                        }
+                    };
+                    TrackLast += () =>
+                    {
+                        if (NextOrLastTrack == false)
+                        {
+                            currentTrack -= 2; 
+                            PlayTrackOrNo = false; 
+                            NextOrLastTrack = true;   
+                        }
+                    };
+                    
                     await Task.Run(() =>
                     {
                         while (true)
                         {
-                            int saveCurrentTrack = currentTrack;
-                            Thread.Sleep(1000);
-                            long length = Bass.ChannelGetLength(stream);
-                            long position = Bass.ChannelGetPosition(stream);
-
-                            if (length == position)
+                            Thread.Sleep(1000);//Просто сон async метода, чтобы пк не офигел от проверки
+                            if (Bass.ChannelGetLength(stream) == Bass.ChannelGetPosition(stream)) //Если трек закончился, начать следующию песню
                             {
+                                PlayTrackOrNo = false;
                                 Bass.Free();
                                 Bass.Init();
                                 break;
                             }
-
-                            if (currentTrack > saveCurrentTrack || currentTrack < saveCurrentTrack)
-                            {
-                                Bass.Free();
-                                Bass.Init();
-                            }
+                            if (PlayTrackOrNo == false) { break; }
                         }
                     });
                 }
                 catch (ArgumentOutOfRangeException)
                 {
+                    currentTrack = -1;
                     Console.WriteLine("End playlist");
                     break;
                 }
             }
         }
-
         public static void StopTrack(object sender, EventArgs a)
         {
             Bass.StreamFree(stream);
             Bass.Free();
-            PlayTrackOrNo = false;
+            TrackStop.Invoke();
         }
 
         public static void PauseOrStartPlay()

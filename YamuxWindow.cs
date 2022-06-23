@@ -83,6 +83,7 @@ namespace Yamux
             builder.Autoconnect(this);
 
             DeleteEvent += (o, args) => { Application.Quit(); };
+            AboutProgram.Relief = ReliefStyle.None;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
             SearchMusic.SearchChanged += SearchChangedOutput;
@@ -230,6 +231,8 @@ namespace Yamux
         }
         private async void PlayButtonClick(object sender, EventArgs a)
         {
+            Player.trackIds = new List<string>();
+            Player.currentTrack = -1;
             Button buttonPlay = (Button) sender;
             JObject details = JObject.Parse(buttonPlay.Name);
             PlayerTitleTrack.MaxWidthChars = 17;
@@ -248,6 +251,11 @@ namespace Yamux
                 response.Close();
             }
 
+            Player.ChangeCurrentTrack += () =>
+            {
+                try { Console.WriteLine(Player.trackIds[Player.currentTrack]); }
+                catch (IndexOutOfRangeException) { Console.WriteLine("End playlist (event)"); }
+            };
             switch (details["type"].ToString())
             {
                 case "track":
@@ -267,7 +275,6 @@ namespace Yamux
                 }
                 case "artist":
                 {
-                    Player.trackIds = new List<string>();
                     JToken informArtist = "{}";
                     JToken trackArtist = "{}";
 
@@ -278,7 +285,6 @@ namespace Yamux
                     foreach (var i in trackArtist["result"]["tracks"])
                     {
                         Player.trackIds.Add(i["id"].ToString());
-                        Console.WriteLine(i["id"]);
                     }
 
                     Player.PlayPlaylist();
@@ -286,7 +292,6 @@ namespace Yamux
                 }
                 case "playlist":
                 {
-                    Player.trackIds = new List<string>();
                     JToken informPlaylist = "{}";
                     JToken trackPlaylist = "{}";
 
@@ -302,18 +307,13 @@ namespace Yamux
                     PlayerTitleTrack.Text = informPlaylist["result"]["title"].ToString();
                     PlayerNameArtist.Text = informPlaylist["result"]["description"].ToString();
 
-                    foreach (var i in trackPlaylist["result"]["tracks"])
-                    {
-                        Player.trackIds.Add(i["id"].ToString());
-                        Console.WriteLine(i["id"]);
-                    }
+                    foreach (var i in trackPlaylist["result"]["tracks"]) { Player.trackIds.Add(i["id"].ToString()); }
 
                     Player.PlayPlaylist();
                     break;
                 }
                 case "album":
                 {
-                    Player.trackIds = new List<string>();
                     JToken informAlbum = "{}";
                     JToken trackAlbum = "{}";
 
@@ -323,17 +323,13 @@ namespace Yamux
                     PlayerTitleTrack.Text = informAlbum["result"]["title"].ToString();
                     PlayerNameArtist.Text = informAlbum["result"]["artists"][0]["name"].ToString();
 
-                    foreach (var i in trackAlbum["result"]["volumes"][0])
-                    {
-                        Player.trackIds.Add(i["id"].ToString());
-                    }
+                    foreach (var i in trackAlbum["result"]["volumes"][0]) { Player.trackIds.Add(i["id"].ToString()); }
                     Player.PlayPlaylist();
                     
                     break;
                 }
                 case "podcast":
                 {
-                    Player.trackIds = new List<string>();
                     List<string> ids = new List<string>();
                     JToken informPodcast = "{}";
 
@@ -342,13 +338,13 @@ namespace Yamux
                     
                     PlayerTitleTrack.Text = informPodcast[0]["title"].ToString();
                     PlayerNameArtist.Text = informPodcast[0]["albums"][0]["title"].ToString();
-                    
                     Player.trackIds.Add(details["id"].ToString());
                     Player.PlayPlaylist();
                     break;
                 }
             }
 
+            PlayerScale.FillLevel = Player.GetLength();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
             PlayerImage.Pixbuf = imagePixbuf;
             
