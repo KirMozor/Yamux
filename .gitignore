@@ -6,3 +6,6 @@
 .vscode
 .vscode/launch.json
 start.sh
+bin
+obj
+libbass_x86_64.zip

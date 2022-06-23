@@ -98,7 +98,7 @@ namespace Yamux
             AboutWindow.ShowAll();
             AboutWindow.Deletable = false;
             
-            CloseAboutWindow.Clicked += (o, args) => { DonateWindow.Hide(); };
+            CloseAboutWindow.Clicked += (o, args) => { AboutWindow.Hide(); };
             AboutGitHubProject.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor/Yamux"); };
             AboutGitHubAuthor.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://github.com/KirMozor"); };
             AboutTelegramChannel.Clicked += (o, args) => { Yamux.OpenLinkToWebBrowser("https://t.me/kirmozor"); };
