@@ -44,7 +44,7 @@ namespace Yamux
             }
             Application.Init();
 
-            Application app = new Application("org.KirMozor.Yamux", GLib.ApplicationFlags.None);
+            Application app = new Application("com.github.KirMozor.Yamux", GLib.ApplicationFlags.None);
             app.Register(GLib.Cancellable.Current);
 
             LoginWindow win = new LoginWindow();
