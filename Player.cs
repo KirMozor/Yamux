@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Pango;
 using Tomlyn.Syntax;
 using YandexMusicApi;
 
@@ -25,9 +26,13 @@ namespace Yamux
         
         public static event PlayerTrack ChangeCurrentTrack;
 
-        private static bool NextOrLastTrack = false;
-        private static bool PlayTrackOrNo;
+        private static bool boolNextTrack = false;
+        private static bool boolLastTrack = false;
         private static bool boolStopTrack = false;
+        private static bool StopAwait = false;
+        private static bool ClickButtonOrNo = false;
+        
+        private static bool PlayTrackOrNo;
         public static bool PlayTrackOrPause;
         private static int stream;
         public static int currentTrack = -1;
@@ -62,22 +67,23 @@ namespace Yamux
             {
                 try
                 {
-                    if (boolStopTrack) { boolStopTrack = false; break;} // Если трек приказали остановить, останавливаем
-                    if (PlayTrackOrNo) // Если трек играет сейчас
+                    ClickButtonOrNo = false;
+                    if (boolStopTrack)
                     {
-                        Bass.Free();
                         Bass.StreamFree(stream);
-                        TrackStop.Invoke(); // Закрыть текущие проигрывание, сообщить циклам о том чтобы заканчивали слежку за концом трека и их проигрывание
-                        break;
+                        Bass.Free();
+                        Bass.Init();
+                        boolStopTrack = false; 
                     }
-                    if (NextOrLastTrack) // Если трек перематывали вперёд или назад
+                    if (PlayTrackOrNo == false) { Bass.Init(); }
+                    else
                     {
-                        Bass.Free();
                         Bass.StreamFree(stream);
-                        TrackStop.Invoke(); // Закрыть проигрывание, сказать async циклу о конце слежке за треком
-                        NextOrLastTrack = false;
+                        Bass.Free();
+                        Bass.Init();
                     }
                     currentTrack++;
+                    StopAwait = false;
                     
                     string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
                     Console.WriteLine(directLinkToTrack);
@@ -90,44 +96,41 @@ namespace Yamux
                     }
                     else Console.WriteLine("Error: {0}!", Bass.LastError);
                     
-                    TrackStop += () => { boolStopTrack = true; }; //Если получил сигнал о стопе трека или о включении других треков, закончить этот цикл
-                    TrackNext += () =>
-                    {
-                        if (NextOrLastTrack == false) // Если кнопка не нажималась до этого (баг в GTK, кнопка может несколько раз "якобы нажатся"
-                        {
-                            PlayTrackOrNo = false; // Закрыть стрим и агента по слежке за треками
-                            NextOrLastTrack = true; // Сказать что трек перематывался
-                        }
-                    };
-                    TrackLast += () =>
-                    {
-                        if (NextOrLastTrack == false)
-                        {
-                            currentTrack -= 2; 
-                            PlayTrackOrNo = false; 
-                            NextOrLastTrack = true;   
-                        }
-                    };
-                    
                     await Task.Run(() =>
                     {
+                        TrackNext += () => { StopAwait = true; };
+                        TrackStop += () => { boolStopTrack = true; StopAwait = true; };
+                        TrackLast += () =>
+                        {
+                            if (ClickButtonOrNo == false)
+                            {
+                                currentTrack -= 2; 
+                                ClickButtonOrNo = true;
+                                StopAwait = true;
+                            }
+                        };
+
                         while (true)
                         {
+                            
                             Thread.Sleep(1000);//Просто сон async метода, чтобы пк не офигел от проверки
-                            if (Bass.ChannelGetLength(stream) == Bass.ChannelGetPosition(stream)) //Если трек закончился, начать следующию песню
+                            if (Bass.ChannelGetPosition(stream) != -1)
                             {
-                                PlayTrackOrNo = false;
-                                Bass.Free();
-                                Bass.Init();
-                                break;
+                                if (Bass.ChannelGetLength(stream) == Bass.ChannelGetPosition(stream) || StopAwait) //Если трек закончился, начать следующию песню
+                                {
+                                    StopAwait = false;
+                                    Bass.Free();
+                                    Bass.Init();
+                                    break;
+                                }   
                             }
-                            if (PlayTrackOrNo == false) { break; }
                         }
                     });
                 }
                 catch (ArgumentOutOfRangeException)
                 {
                     currentTrack = -1;
+                    PlayTrackOrNo = false;
                     Console.WriteLine("End playlist");
                     break;
                 }

@@ -277,7 +277,7 @@ namespace Yamux
                 {
                     JToken informArtist = "{}";
                     JToken trackArtist = "{}";
-
+                    
                     await Task.Run(() => { informArtist = Artist.InformArtist(details["id"].ToString())["result"]; });
                     await Task.Run(() => { trackArtist = Artist.GetTrack(informArtist["artist"]["id"].ToString()); });
                     PlayerNameArtist.Text = informArtist["artist"]["name"].ToString();
@@ -322,8 +322,8 @@ namespace Yamux
                     
                     PlayerTitleTrack.Text = informAlbum["result"]["title"].ToString();
                     PlayerNameArtist.Text = informAlbum["result"]["artists"][0]["name"].ToString();
-
-                    foreach (var i in trackAlbum["result"]["volumes"][0]) { Player.trackIds.Add(i["id"].ToString()); }
+                    
+                    foreach (var i in trackAlbum["result"]["volumes"][0]) { Player.trackIds.Add(i["id"].ToString()); Console.WriteLine(i["id"]);}
                     Player.PlayPlaylist();
                     
                     break;
