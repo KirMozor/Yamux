@@ -147,23 +147,53 @@ namespace Yamux
 
         private async void PlayMyWave(object sender, EventArgs a)
         {
-            JObject myWaveReturn = new JObject();
-            List<string> ids = new List<string>();
-            await Task.Run(() => { myWaveReturn = Rotor.GetTrack("user:onyourwave"); });
+            bool StopAwait = false;
+            bool StopWave = false;
+            stopButton.Clicked += (o, args) => { StopWave = true; };
+            while (true)
+            {
+                if (StopWave)
+                {
+                    StopWave = false;
+                    Bass.Free();
+                    Bass.Init();
+                    break;
+                }
+                JObject myWaveReturn = new JObject();
+                await Task.Run(() => { myWaveReturn = Rotor.GetTrack("user:onyourwave"); });
             
-            ids.Add(myWaveReturn["result"]["sequence"][0]["track"]["id"].ToString());
-            JToken informTrack = "{}";
-            await Task.Run(() => { informTrack = Track.GetInformTrack(ids)["result"]; });
+                JToken informTrack = "{}";
+                string ids = myWaveReturn["result"]["sequence"][0]["track"]["id"].ToString();
+                await Task.Run(() => { informTrack = Track.GetInformTrack(new List<string> {ids})["result"]; });
                     
-            PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
-            PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
-            string directLinkToTrack = Player.GetDirectLinkWithTrack(ids[0]);
-            Player.PlayUrlFile(directLinkToTrack);
+                PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
+                PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
+                string directLinkToTrack = Player.GetDirectLinkWithTrack(ids);
+                Player.PlayUrlFile(directLinkToTrack);
             
-            PlayerScale.FillLevel = Player.GetLength();
-            ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
-            PlayerBoxScale.ShowAll();
-            PlayerActionBox.ShowAll();
+                PlayerScale.FillLevel = Player.GetLength();
+                ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
+                PlayerBoxScale.ShowAll();
+                PlayerActionBox.ShowAll();
+                
+                await Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(1000);//Просто сон async метода, чтобы пк не офигел от проверки
+                        if (Bass.ChannelGetPosition(Player.stream) != -1)
+                        {
+                            if (Bass.ChannelGetLength(Player.stream) == Bass.ChannelGetPosition(Player.stream) || StopAwait) //Если трек закончился, начать следующию песню
+                            {
+                                StopAwait = false;
+                                Bass.Free();
+                                Bass.Init();
+                                break;
+                            }   
+                        }
+                    }
+                });
+            }
         }
         private void ShowAboutWindow(object sender, EventArgs a)
         {

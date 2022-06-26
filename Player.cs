@@ -34,7 +34,7 @@ namespace Yamux
         
         private static bool PlayTrackOrNo;
         public static bool PlayTrackOrPause;
-        private static int stream;
+        public static int stream;
         public static int currentTrack = -1;
         public static List<string> trackIds;
         
@@ -140,9 +140,11 @@ namespace Yamux
         {
             Bass.StreamFree(stream);
             Bass.Free();
-            TrackStop.Invoke();
+            try
+            {
+                TrackStop.Invoke();
+            }catch (NullReferenceException){}
         }
-
         public static void PauseOrStartPlay()
         {
             if (PlayTrackOrPause)
@@ -159,24 +161,20 @@ namespace Yamux
                 PlayTrackOrPause = true;
             }
         }
-
         public static PlaybackState GetStatusPlayback()
         {
             return Bass.ChannelIsActive(stream);
         }
-
         public static int GetLength()
         {
             if (stream == 0) { return stream; }
             return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetLength(stream)));
         }
-
         public static int GetPosition()
         {
             if (stream == 0) { return stream; }
             return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream)));
         }
-
         public static string GetDirectLinkWithTrack(string trackId)
         {
             JObject result = Track.GetDownloadInfoWithToken(trackId);
@@ -188,7 +186,6 @@ namespace Yamux
             string url = resultData.ToList()[3].ToList()[0].ToString();
             return Track.GetDirectLink(url);
         }
-        
         public static async Task DownloadUriWithThrottling(string url, string path, double speedKbps = -0.0)
         {
             Uri uri = new Uri(url);
