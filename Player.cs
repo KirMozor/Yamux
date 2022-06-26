@@ -189,8 +189,9 @@ namespace Yamux
             return Track.GetDirectLink(url);
         }
         
-        public static async Task DownloadUriWithThrottling(Uri uri, string path, double speedKbps = -0.0)
+        public static async Task DownloadUriWithThrottling(string url, string path, double speedKbps = -0.0)
         {
+            Uri uri = new Uri(url);
             var req = WebRequest.CreateHttp(uri);
             using (var resp = await req.GetResponseAsync())
             using (var stream = resp.GetResponseStream())

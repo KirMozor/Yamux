@@ -23,7 +23,6 @@ Author: @KirMozorF
 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- interface-css-provider-path gtk-dark.css -->
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Yamux -->
   <!-- interface-description Yamux - Yandex Music client for Unix -->
@@ -300,7 +299,7 @@ Author: @KirMozorF
                 <property name="orientation">vertical</property>
                 <property name="spacing">4</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="LandingPageButton">
                     <property name="label" translatable="yes">Главная</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

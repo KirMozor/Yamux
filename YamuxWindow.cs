@@ -38,6 +38,7 @@ namespace Yamux
         [UI] private Button CloseAboutWindow = null;
         [UI] private Button CloseDonateWindow = null;
 
+        [UI] private Button LandingPageButton = null;
         [UI] private Button AboutProgram = null;
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box SearchBox = null;
@@ -59,7 +60,9 @@ namespace Yamux
         private Button lastTrackButton = new Button();
         private Button stopButton = new Button();
         private Button downloadTrack = new Button();
-        
+
+        public static Button myWaveButton = new Button();
+        public static VBox LandingBox = new VBox();
         public static List<string> uidPlaylist = new List<string>();
         public static List<string> kindPlaylist = new List<string>();
         public static bool SearchOrNot = true;
@@ -86,6 +89,7 @@ namespace Yamux
             AboutProgram.Relief = ReliefStyle.None;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
+            LandingPageButton.Clicked += (sender, args) => { GenerateLanding(); };
             SearchMusic.SearchChanged += SearchChangedOutput;
             
             CreatePlayer();
@@ -93,6 +97,73 @@ namespace Yamux
             SetDefaultIconFromFile("Svg/icon.svg");
             AboutImage.Pixbuf = new Pixbuf("Svg/about_icon.svg");
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
+            
+            GenerateLanding();
+        }
+
+        private void GenerateLanding()
+        {
+            IfNoResult.Text = "";
+            PlayerNameArtist.Text = "";
+            PlayerTitleTrack.Text = "";
+            PlayerImage.Hide();
+            PlayerBoxScale.Hide();
+            PlayerActionBox.Hide();
+                    
+            LandingBox.Destroy();
+            ResultSearchBox.Destroy();
+            ResultSearchBox = new VBox();
+            LandingBox = new VBox();
+            ResultBox.Add(LandingBox);
+
+            myWaveButton = new Button();
+            JToken myWaveImage = Rotor.GetInfo("user:onyourwave")["result"][0]["station"]["fullImageUrl"];
+            
+            myWaveImage = myWaveImage.ToString().Replace("%%", "100x100");
+            Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
+            
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://" + myWaveImage);
+            HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+            using (Stream stream = response.GetResponseStream())
+            {
+                imagePixbuf = new Pixbuf(stream);
+            }
+
+            Image waveButtonImage = new Image();
+            waveButtonImage.Pixbuf = imagePixbuf;
+            response.Close();
+
+            myWaveButton.Relief = ReliefStyle.None;
+            myWaveButton.Image = waveButtonImage;
+            LandingBox.Add(myWaveButton);
+            myWaveButton.Clicked += PlayMyWave;
+            
+            SearchBox.ShowAll();
+            LandingBox.ShowAll();
+            ResultBox.ShowAll();
+            PlayerBoxScale.Hide();
+            PlayerActionBox.Hide();
+        }
+
+        private async void PlayMyWave(object sender, EventArgs a)
+        {
+            JObject myWaveReturn = new JObject();
+            List<string> ids = new List<string>();
+            await Task.Run(() => { myWaveReturn = Rotor.GetTrack("user:onyourwave"); });
+            
+            ids.Add(myWaveReturn["result"]["sequence"][0]["track"]["id"].ToString());
+            JToken informTrack = "{}";
+            await Task.Run(() => { informTrack = Track.GetInformTrack(ids)["result"]; });
+                    
+            PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
+            PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
+            string directLinkToTrack = Player.GetDirectLinkWithTrack(ids[0]);
+            Player.PlayUrlFile(directLinkToTrack);
+            
+            PlayerScale.FillLevel = Player.GetLength();
+            ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
+            PlayerBoxScale.ShowAll();
+            PlayerActionBox.ShowAll();
         }
         private void ShowAboutWindow(object sender, EventArgs a)
         {
@@ -141,6 +212,8 @@ namespace Yamux
                     PlayerBoxScale.Hide();
                     PlayerActionBox.Hide();
                     
+                    LandingBox.Destroy();
+                    LandingBox = new VBox();
                     ResultSearchBox.Destroy();
                     ResultSearchBox = new VBox();
                     ResultBox.Add(ResultSearchBox);
@@ -421,7 +494,8 @@ namespace Yamux
             if (Directory.Exists(pathToHome + "/YandexMusic") == false) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
 
             string nameTrackFile = pathToHome + "/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
-            Player.DownloadUriWithThrottling(new Uri(directLink), nameTrackFile);
+            Console.WriteLine(directLink);
+            Player.DownloadUriWithThrottling(directLink, nameTrackFile);
         }
         private void ClickPauseOrPlay(object sender, EventArgs a)
         {
