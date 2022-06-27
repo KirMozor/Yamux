@@ -266,7 +266,7 @@ namespace Yamux
                 }
                 else
                 {
-                    buttonPlay.Name = "{ 'type': \"" + typeResult + "\", 'uid': \"" + YamuxWindow.uidPlaylist[b] + "\", 'kind': \"" + YamuxWindow.kindPlaylist[b] + "\", 'uri': \"" + uri + "\"}";
+                    buttonPlay.Name = "{ 'type': \"" + typeResult + "\", 'uid': \"" + Search.uidPlaylist[b] + "\", 'kind': \"" + Search.kindPlaylist[b] + "\", 'uri': \"" + uri + "\"}";
                 }
                 Console.WriteLine(buttonPlay.Name);
                 
