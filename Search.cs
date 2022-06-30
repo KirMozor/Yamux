@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using Gdk;
 using Gtk;
 using ManagedBass;
 using Newtonsoft.Json.Linq;
 using Pango;
-using Tomlyn;
 using YandexMusicApi;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
@@ -23,10 +21,11 @@ namespace Yamux
         public delegate void LenghtTrack();
         private static event LenghtTrack ChangeLengthTrack;
         private static int durationTrack = 1;
-        private static string directLink;
+        public static string directLink;
         private static string titleTrack = "";
         private static string artistTrack = "";
 
+        [UI] private Spinner spinnerProgress = null;
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box SearchBox = null;
         [UI] private Box ResultBox = null;
@@ -40,13 +39,14 @@ namespace Yamux
         [UI] private Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
-
+        [UI] private Box SearchMusicBox = null;
+        
         public static List<string> uidPlaylist = new List<string>();
         public static List<string> kindPlaylist = new List<string>();
         public static bool SearchOrNot = true;
         public static HScale PlayerScale = new HScale(0.0, 100, 1.0);
         
-        private VBox ResultSearchBox = new VBox();
+        public static VBox ResultSearchBox = new VBox();
 
         public Search() : this(YamuxWindow.YamuxWindowBuilder)
         {
@@ -54,15 +54,6 @@ namespace Yamux
 
         public Search(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
-            using (FileStream fstream = File.OpenRead("config.toml"))
-            {
-                byte[] buffer = new byte[fstream.Length];
-                fstream.Read(buffer, 0, buffer.Length);
-                string textFromFile = Encoding.Default.GetString(buffer);
-
-                var model = Toml.ToModel(textFromFile);
-                Token.token = (string)model["yandex_token"]!;
-            }
             builder.Autoconnect(this);
             SpyChangeDurationTrack();
             YamuxWindow.stopButton.Clicked += Player.StopTrack;
@@ -82,9 +73,11 @@ namespace Yamux
                 Thread.Sleep(2000);
                 if (text == SearchMusic.Text && !string.IsNullOrEmpty(SearchMusic.Text) && !string.IsNullOrEmpty(text))
                 {
+                    spinnerProgress.Active = true;
                     JObject resultSearch = YandexMusicApi.Default.Search(text);
                     root = resultSearch.Last.Last.Root;
                     root = root.SelectToken("result");
+                    spinnerProgress.Active = false;
                 }
             });
             ShowResultSearch(root, text);
@@ -95,6 +88,7 @@ namespace Yamux
             {
                 if (root.Count() > 6 && SearchOrNot)
                 {
+                    spinnerProgress.Active = true;
                     SearchOrNot = false;
                     IfNoResult.Text = "";
                     PlayerNameArtist.Text = "";
@@ -181,6 +175,7 @@ namespace Yamux
                     foreach (Button i in Yamux.ListButtonPlay)
                         i.Clicked += PlayButtonClick;
                     SearchOrNot = true;
+                    spinnerProgress.Active = false;
                 }
                 else
                 {
@@ -323,17 +318,24 @@ namespace Yamux
             {
                 while (true)
                 {
-                    if (Player.GetStatusPlayback() != PlaybackState.Stopped)
+                    try
                     {
-                        durationTrack = Player.GetPosition();
-                        Thread.Sleep(1000);
-                        if (oldDuration != durationTrack)
+                        if (Player.GetStatusPlayback() != PlaybackState.Stopped)
                         {
-                            ChangeLengthTrack.Invoke();
-                            oldDuration = durationTrack;
+                            durationTrack = Player.GetPosition();
+                            Thread.Sleep(1000);
+                            if (oldDuration != durationTrack)
+                            {
+                                ChangeLengthTrack.Invoke();
+                                oldDuration = durationTrack;
+                            }
+                        }
+                        else
+                        {
+                            Thread.Sleep(1000);
                         }
                     }
-                    else { Thread.Sleep(1000); }
+                    catch (NullReferenceException) { break; }
                 }
             });
         }

@@ -37,6 +37,7 @@ namespace Yamux
         
         public static void PlayUrlFile(string url)
         {
+            Search.directLink = url;
             if (!PlayTrackOrNo) { Bass.Init(); }
             else
             {
@@ -57,7 +58,7 @@ namespace Yamux
         }
         public static void NextTrack(object sender, EventArgs a) { TrackNext.Invoke(); }
         public static void LastTrack(object sender, EventArgs a) { TrackLast.Invoke(); }
-        public async static void PlayPlaylist()
+        public static async void PlayPlaylist()
         {
             currentTrack = -1;
             while (true)
@@ -84,6 +85,7 @@ namespace Yamux
                     
                     string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
                     Console.WriteLine(directLinkToTrack);
+                    Search.directLink = directLinkToTrack;
                     Bass.Init();
                     stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                     if (stream != 0)
@@ -138,9 +140,7 @@ namespace Yamux
             Bass.StreamFree(stream);
             Bass.Free();
             try
-            {
-                TrackStop.Invoke();
-            }catch (NullReferenceException){}
+            { TrackStop.Invoke(); }catch (NullReferenceException){}
         }
         public static void PauseOrStartPlay()
         {
