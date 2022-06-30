@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using YandexMusicApi;
 using Application = Gtk.Application;
 
 namespace Yamux

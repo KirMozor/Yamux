@@ -30,7 +30,7 @@ namespace Yamux
         private static bool ClickButtonOrNo = false;
         
         private static bool PlayTrackOrNo;
-        public static bool PlayTrackOrPause;
+        public static bool PlayTrackOrPause = true;
         public static int stream;
         public static int currentTrack = -1;
         public static List<string> trackIds;
@@ -82,8 +82,9 @@ namespace Yamux
                     }
                     currentTrack++;
                     StopAwait = false;
-                    
-                    string directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]);
+
+                    string directLinkToTrack = "";
+                    await Task.Run(() => { directLinkToTrack = GetDirectLinkWithTrack(trackIds[currentTrack]); });
                     Console.WriteLine(directLinkToTrack);
                     Search.directLink = directLinkToTrack;
                     Bass.Init();

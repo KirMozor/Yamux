@@ -229,7 +229,8 @@ namespace Yamux
                     
                     PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
                     PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
-                    string directLinkToTrack = Player.GetDirectLinkWithTrack(details["id"].ToString());
+                    string directLinkToTrack = "";
+                    await Task.Run(() => { directLinkToTrack = Player.GetDirectLinkWithTrack(details["id"].ToString()); });
                     Player.PlayUrlFile(directLinkToTrack);
                     break;
                 }
