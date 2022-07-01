@@ -13,18 +13,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run a multi-line script
+      - name: Clone repository
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-          ls -al /home/runner/work/Yamux/
-      - uses: AppImageCrafters/build-appimage@master
-        with:
-          recipe: "./AppImageBuilder.yml"
+          git clone https://github.com/KirMozor/Yamux.git
+      - name: Create directory
+        run: |
+          mkdir Yamux/AppImageBuild/usr
+          mkdir Yamux/AppImageBuild/usr/bin
+          mkdir Yamux/AppImageBuild/usr/lib
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y wget unzip curl binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
+          wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          rm packages-microsoft-prod.deb
+          sudo apt-get install -y apt-transport-https dotnet-sdk-6.0 dotnet-runtime-6.0
+          sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/local/bin/appimagetool
+          sudo chmod +x /usr/local/bin/appimagetool
+          curl -o "libbass_x86_64.zip" http://www.un4seen.com/files/bass24-linux.zip
+          unzip libbass_x86_64.zip -d libbass
+          cp libbass/x64/libbass.so Yamux/AppImageBuild/usr/lib/libbass.so
+      - name: Build project
+        run: |
+          cd Yamux
+          dotnet build --configuration Release
+          cp -r bin/Release/net6.0/linux-x64/* AppImageBuild/usr/bin/
+      - name: Build AppImage
+        run: |
+          ARCH=x86_64 appimagetool Yamux/AppImageBuild/
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
-          
-      - uses: actions/upload-artifact@v2
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: AppImage
-          path: './*.AppImage*'
+          tag_name: Yamux-v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./Yamux-x86_64.AppImage
+          asset_name: Yamux-v$${{ github.run_number }}.AppImage
+          asset_content_type: application/octet-stream
