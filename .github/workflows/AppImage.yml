@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: AppImageCrafters/build-appimage@master
         with:
-          recipe: "./Yamux/AppImageBuilder.yml"
+          recipe: "./Yamux/AppImageBuild/AppImageBuilder.yml"
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
           
