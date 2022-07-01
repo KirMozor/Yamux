@@ -19,9 +19,9 @@ jobs:
           ls -al Yamux
       - name: Create directory
         run: |
-          mkdir Yamux/Yamux/AppImageBuild/usr
-          mkdir Yamux/Yamux/AppImageBuild/usr/bin
-          mkdir Yamux/Yamux/AppImageBuild/usr/lib
+          mkdir Yamux/AppImageBuild/usr
+          mkdir Yamux/AppImageBuild/usr/bin
+          mkdir Yamux/AppImageBuild/usr/lib
       - name: Install dependencies
         run: |
           sudo apt-get install -y wget unzip curl binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
@@ -33,7 +33,7 @@ jobs:
           sudo chmod +x /usr/local/bin/appimagetool
           curl -o "libbass_x86_64.zip" http://www.un4seen.com/files/bass24-linux.zip
           unzip libbass_x86_64.zip -d libbass
-          cp libbass/x64/libbass.so /home/runner/work/Yamux/Yamux/AppImageBuild/usr/lib/libbass.so
+          cp libbass/x64/libbass.so Yamux/AppImageBuild/usr/lib/libbass.so
       - name: Build project
         run: |
           cd /home/runner/work/Yamux/Yamux
