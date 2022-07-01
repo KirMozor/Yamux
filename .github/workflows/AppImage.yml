@@ -13,9 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+          ls -al
       - uses: AppImageCrafters/build-appimage@master
         with:
-          recipe: "./Yamux/AppImageBuild/AppImageBuilder.yml"
+          recipe: "./AppImageBuilder.yml"
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
           
