@@ -20,7 +20,7 @@ jobs:
           ls -al /home/runner/work/Yamux/Yamux
       - uses: AppImageCrafters/build-appimage@master
         with:
-          recipe: "./AppImageBuilder.yml"
+          recipe: "./AppImageBuild/AppImageBuilder.yml"
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
           
