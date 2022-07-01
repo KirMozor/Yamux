@@ -19,6 +19,10 @@ jobs:
           echo test, and deploy your project.
           ls -al /home/runner/work/Yamux/Yamux
       - uses: AppImageCrafters/build-appimage@master
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+          ls -al /home/runner/work
         with:
           recipe: "./AppImageBuild/AppImageBuilder.yml"
         env:
