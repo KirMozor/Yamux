@@ -16,6 +16,9 @@ jobs:
       - name: Clone repository
         run: |
           git clone https://github.com/KirMozor/Yamux.git
+          ls -al /home/runner/work/Yamux/
+          ls -al /home/runner/work/Yamux/Yamux/
+          ls -al /home/runner/work/Yamux/Yamux/AppImageBuild
           mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr
           mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr/bin
           mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr/lib
