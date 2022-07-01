@@ -16,7 +16,6 @@ jobs:
       - name: Clone repository
         run: |
           git clone https://github.com/KirMozor/Yamux.git
-          ls -al Yamux
       - name: Create directory
         run: |
           mkdir Yamux/AppImageBuild/usr
@@ -36,7 +35,7 @@ jobs:
           cp libbass/x64/libbass.so Yamux/AppImageBuild/usr/lib/libbass.so
       - name: Build project
         run: |
-          cd /home/runner/work/Yamux/Yamux
+          cd Yamux
           dotnet build --configuration Release
           cp -r bin/Release/net6.0/linux-x64/* /home/runner/work/Yamux/Yamux/AppImageBuild/usr/bin/
       - name: Build AppImage
