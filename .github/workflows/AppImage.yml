@@ -19,10 +19,10 @@ jobs:
           echo test, and deploy your project.
           ls -al /home/runner/work/Yamux/Yamux
       - uses: AppImageCrafters/build-appimage@master
-        with:
-          recipe: "./AppImageBuilder.yml"
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
+        with:
+          recipe: "AppImageBuilder.yml"
           
       - uses: actions/upload-artifact@v2
         with:
