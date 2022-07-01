@@ -15,12 +15,7 @@ jobs:
     steps:
       - name: Run a multi-line script
         run: |
-          ls -al /
-          ls -al /home/
-          ls -al /home/runner
-          ls -al /home/runner/work
-          ls -al /home/runner/work/Yamux
-          ls -al /home/runner/work/Yamux/Yamux
+          ls -al ./
       - uses: AppImageCrafters/build-appimage@master
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
