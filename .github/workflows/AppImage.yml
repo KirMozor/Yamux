@@ -16,12 +16,12 @@ jobs:
       - name: Clone repository
         run: |
           git clone https://github.com/KirMozor/Yamux.git
-          ls -al /home/runner/work/Yamux/
-          ls -al /home/runner/work/Yamux/Yamux/
-          ls -al /home/runner/work/Yamux/Yamux/AppImageBuild
-          mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr
-          mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr/bin
-          mkdir /home/runner/work/Yamux/Yamux/AppImageBuild/usr/lib
+          ls -al Yamux
+      - name: Create directory
+        run: |
+          mkdir Yamux/Yamux/AppImageBuild/usr
+          mkdir Yamux/Yamux/AppImageBuild/usr/bin
+          mkdir Yamux/Yamux/AppImageBuild/usr/lib
       - name: Install dependencies
         run: |
           sudo apt-get install -y wget unzip curl binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
