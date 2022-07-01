@@ -15,7 +15,8 @@ jobs:
     steps:
       - name: Run a multi-line script
         run: |
-          ls -al ./
+          git clone https://github.com/KirMozor/Yamux.git
+          ls -al ./Yamux
       - uses: AppImageCrafters/build-appimage@master
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
