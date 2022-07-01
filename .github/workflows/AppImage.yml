@@ -40,8 +40,8 @@ jobs:
           cp -r bin/Release/net6.0/linux-x64/* AppImageBuild/usr/bin/
       - name: Build AppImage
         run: |
-          ls -al
-          ARCH=x86_64 appimagetool AppImageBuild/
+          ls -al Yamux
+          ARCH=x86_64 appimagetool Yamux/AppImageBuild/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
