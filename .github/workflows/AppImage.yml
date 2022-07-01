@@ -16,12 +16,12 @@ jobs:
       - name: Run a multi-line script
         run: |
           git clone https://github.com/KirMozor/Yamux.git
-          ls -al ./Yamux
+          ls -al /home/runner/work/Yamux/Yamux
       - uses: AppImageCrafters/build-appimage@master
         env:
           UPDATE_INFO: gh-releases-zsync|KirMozor|Yamux|latest|*x86_64.AppImage.zsync
         with:
-          recipe: "./Yamux/AppImageBuild/AppImageBuilder.yml"
+          recipe: "/home/runner/work/Yamux/YamuxAppImageBuilder.yml"
           
       - uses: actions/upload-artifact@v2
         with:
