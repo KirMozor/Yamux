@@ -96,12 +96,14 @@ namespace Yamux
         private void GenerateRotor()
         {
             IfNoResult.Text = "";
-            PlayerNameArtist.Text = "";
-            PlayerTitleTrack.Text = "";
-            PlayerImage.Hide();
-            PlayerBoxScale.Hide();
-            PlayerActionBox.Hide();
-            
+            if (Player.currentTrack != -1)
+            {
+                PlayerNameArtist.Text = "";
+                PlayerTitleTrack.Text = "";
+                PlayerImage.Hide();
+                PlayerBoxScale.Hide();
+                PlayerActionBox.Hide();   
+            }
             LandingBox.Destroy();
             Search.ResultSearchBox.Destroy();
             Search.ResultSearchBox = new VBox();
@@ -113,12 +115,15 @@ namespace Yamux
         private void GenerateLanding()
         {
             IfNoResult.Text = "";
-            PlayerNameArtist.Text = "";
-            PlayerTitleTrack.Text = "";
-            PlayerImage.Hide();
-            PlayerBoxScale.Hide();
-            PlayerActionBox.Hide();
-                    
+            if (Player.stream == 0)
+            {
+                Console.WriteLine("sda");
+                PlayerNameArtist.Text = "";
+                PlayerTitleTrack.Text = "";
+                PlayerImage.Hide();
+                PlayerBoxScale.Hide();
+                PlayerActionBox.Hide();   
+            }
             LandingBox.Destroy();
             Search.ResultSearchBox.Destroy();
             Search.ResultSearchBox = new VBox();
@@ -150,8 +155,12 @@ namespace Yamux
             SearchBox.ShowAll();
             LandingBox.ShowAll();
             ResultBox.ShowAll();
-            PlayerBoxScale.Hide();
-            PlayerActionBox.Hide();
+            if (Player.stream == 0)
+            {
+                Console.WriteLine("sda213");
+                PlayerBoxScale.Hide();
+                PlayerActionBox.Hide();   
+            }
             new Search();
         }
         private async void PlayMyWave(object sender, EventArgs a)
