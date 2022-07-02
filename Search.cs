@@ -241,8 +241,6 @@ namespace Yamux
                     
                     await Task.Run(() => { informArtist = Artist.InformArtist(details["id"].ToString())["result"]; });
                     await Task.Run(() => { trackArtist = Artist.GetTrack(informArtist["artist"]["id"].ToString()); });
-                    PlayerNameArtist.Text = informArtist["artist"]["name"].ToString();
-
                     foreach (var i in trackArtist["result"]["tracks"])
                     {
                         Player.trackIds.Add(i["id"].ToString());
@@ -265,9 +263,6 @@ namespace Yamux
                     {
                         trackPlaylist = Playlist.GetTrack(details["uid"].ToString(), details["kind"].ToString());
                     });
-                    PlayerTitleTrack.Text = informPlaylist["result"]["title"].ToString();
-                    PlayerNameArtist.Text = informPlaylist["result"]["description"].ToString();
-
                     foreach (var i in trackPlaylist["result"]["tracks"]) { Player.trackIds.Add(i["id"].ToString()); }
 
                     Player.PlayPlaylist();
@@ -280,10 +275,6 @@ namespace Yamux
 
                     await Task.Run(() => { informAlbum = Album.InformAlbum(details["id"].ToString()); });
                     await Task.Run(() => { trackAlbum = Album.GetTracks(details["id"].ToString()); });
-                    
-                    PlayerTitleTrack.Text = informAlbum["result"]["title"].ToString();
-                    PlayerNameArtist.Text = informAlbum["result"]["artists"][0]["name"].ToString();
-                    
                     foreach (var i in trackAlbum["result"]["volumes"][0]) { Player.trackIds.Add(i["id"].ToString()); Console.WriteLine(i["id"]);}
                     Player.PlayPlaylist();
                     
@@ -296,9 +287,6 @@ namespace Yamux
 
                     ids.Add(details["id"].ToString());
                     await Task.Run(() => { informPodcast = Track.GetInformTrack(ids)["result"]; });
-                    
-                    PlayerTitleTrack.Text = informPodcast[0]["title"].ToString();
-                    PlayerNameArtist.Text = informPodcast[0]["albums"][0]["title"].ToString();
                     Player.trackIds.Add(details["id"].ToString());
                     Player.PlayPlaylist();
                     break;

@@ -91,6 +91,7 @@ namespace Yamux
                     stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
                     if (stream != 0)
                     {
+                        ChangeCurrentTrack.Invoke();
                         PlayTrackOrNo = true;
                         Bass.ChannelPlay(stream);
                     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.Loader;
 using System.Text;
 using Gdk;
 using Gtk;
@@ -80,6 +81,7 @@ namespace Yamux
             AboutProgram.Relief = ReliefStyle.None;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
+            Player.ChangeCurrentTrack += () => { ShowCurrentTrack(); };
             LandingPageButton.Clicked += (sender, args) => { GenerateLanding(); };
             RotorPageButton.Clicked += (sender, args) => { GenerateRotor(); };
             
@@ -193,6 +195,11 @@ namespace Yamux
                 PlayerScale.FillLevel = Player.GetLength();
                 ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
                 Player.TrackNext += () => { StopAwait = true; };
+                
+                PlayerTitleTrack.Show();
+                PlayerNameArtist.Show();
+                PlayerImage.Show();
+                
                 PlayerScale.Show();
                 PlayerBoxScale.ShowAll();
                 PlayerActionBox.ShowAll();
@@ -272,6 +279,18 @@ namespace Yamux
             PlayerBoxScale.Hide();
             PlayerActionBox.Hide();
             SearchBox.Hide();
+        }
+        private async void ShowCurrentTrack()
+        {
+            if (Player.currentTrack != -1)
+            {
+                Console.WriteLine(Player.trackIds[Player.currentTrack]);
+                JToken trackInform = "";
+                await Task.Run(() => { trackInform = Track.GetInformTrack(new List<string>() { Player.trackIds[Player.currentTrack] })["result"]; });
+
+                PlayerTitleTrack.Text = trackInform[0]["title"].ToString();
+                PlayerNameArtist.Text = trackInform[0]["artists"][0]["name"].ToString();
+            }
         }
     }
     static class Ext
