@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using Tomlyn;
@@ -46,7 +45,7 @@ namespace Yamux
         
         public static bool CheckAviabilityConfig()
         {
-            bool check = File.Exists(System.IO.Path.GetFullPath("config.toml"));
+            bool check = File.Exists(Path.GetFullPath("config.toml"));
             if (check)
             {
                 try

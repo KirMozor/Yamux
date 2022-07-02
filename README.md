@@ -5,6 +5,8 @@
 ![](https://raw.githubusercontent.com/KirMozor/Yamux/main/Demonstration/MainWindow.png)
 ![](https://raw.githubusercontent.com/KirMozor/Yamux/main/Demonstration/LoginWindow.png)
 ![](https://raw.githubusercontent.com/KirMozor/Yamux/main/Demonstration/ImagineDragons.png)
+## Можно не компилировать из исходников
+Я настроил сборку AppImage при каждом коммите, поэтому, можете скачать вот по этой [ссылке](https://github.com/KirMozor/Yamux/releases)
 
 ## Сборка на C#
 В вашей системе должна находится библиотека Bass (в Yamux она используется для вывода звука). Для установки в ArchLinux используется следующая команда:
