@@ -30,22 +30,6 @@ public class RotorWindow : Window
         JToken stationList = "";
         await Task.Run(() => { stationList = Rotor.StationList()["result"]; });
 
-        /*
-        Label a = new Label(stationList[0]["station"]["name"].ToString());
-        a.MarginStart = 9;
-        sdasd.Attach(a, 0, 0, 1, 1);
-        Label b = new Label(stationList[1]["station"]["name"].ToString());
-        b.MarginStart = 9;
-        sdasd.Attach(b, 0, 0, 6, 1);
-        
-        Label c = new Label(stationList[2]["station"]["name"].ToString());
-        c.MarginStart = 9;
-        sdasd.Attach(c, 0, 0, 6, 2);
-        Label d = new Label(stationList[3]["station"]["name"].ToString());
-        d.MarginStart = 9;
-        sdasd.Attach(d, 0, 0, 1, 2);
-        */
-        
         int labelPositionHeight = 1;
         bool labelPositonWidth = false;
         foreach (var i in stationList)

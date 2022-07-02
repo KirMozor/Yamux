@@ -45,7 +45,7 @@ namespace Yamux
 
         [UI] private Box PlayerActionBox = null;
         [UI] private Box PlayerBoxScale = null;
-        [UI] private Label PlayerNameArtist = null;
+        [UI] private  Label PlayerNameArtist = null;
         [UI] private Label PlayerTitleTrack = null;
         [UI] private Image PlayerImage = null;
         

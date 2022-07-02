@@ -22,9 +22,6 @@ namespace Yamux
         private static event LenghtTrack ChangeLengthTrack;
         private static int durationTrack = 1;
         public static string directLink;
-        private static string titleTrack = "";
-        private static string artistTrack = "";
-
         [UI] private Spinner spinnerProgress = null;
         [UI] private SearchEntry SearchMusic = null;
         [UI] private Box SearchBox = null;
@@ -336,7 +333,7 @@ namespace Yamux
             string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             if (Directory.Exists(pathToHome + "/YandexMusic") == false) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
 
-            string nameTrackFile = pathToHome + "/YandexMusic/" + artistTrack + " - " + titleTrack + ".mp3";
+            string nameTrackFile = pathToHome + "/YandexMusic/" + PlayerNameArtist.Text + " - " + PlayerTitleTrack.Text + ".mp3";
             Console.WriteLine(directLink);
             Player.DownloadUriWithThrottling(directLink, nameTrackFile);
         }
