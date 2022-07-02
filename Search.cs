@@ -191,6 +191,9 @@ namespace Yamux
         }
         private async void PlayButtonClick(object sender, EventArgs a)
         {
+            Player.PlayTrackOrPause = true;
+            Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+            YamuxWindow.playPauseButton.Image = new Image(playerPlayPixbuf);
             Player.trackIds = new List<string>();
             Player.currentTrack = -1;
             Button buttonPlay = (Button) sender;
