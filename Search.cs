@@ -168,7 +168,7 @@ namespace Yamux
                 }
                 else
                 {
-                    Console.WriteLine(root);
+                    Console.WriteLine(root.Count());
                     PlayerNameArtist.Text = "";
                     PlayerTitleTrack.Text = "";
                     PlayerImage = new Image();

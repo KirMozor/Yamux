@@ -97,7 +97,6 @@ namespace Yamux
             
             GenerateLanding();
         }
-
         private void GenerateRotor()
         {
             IfNoResult.Text = "";
@@ -273,7 +272,6 @@ namespace Yamux
                 JToken trackInform = "";
                 if (Player.currentTrack != -1)
                 {
-                    Console.WriteLine(123);
                     await Task.Run(() => { trackInform = Track.GetInformTrack(new List<string>() { Player.trackIds[Player.currentTrack] })["result"][0]; });
                 }
                 else
@@ -283,6 +281,12 @@ namespace Yamux
                 Console.WriteLine(trackInform);
                 
                 Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
+                PlayerImage.Pixbuf = imagePixbuf;
+                PlayerTitleTrack.Text = trackInform["title"].ToString();
+                PlayerNameArtist.Text = trackInform["artists"][0]["name"].ToString();
+                PlayerScale.Show();
+                PlayerBoxScale.ShowAll();
+                PlayerActionBox.ShowAll();
                 await Task.Run(() =>
                 {
                     string url = "https://" + trackInform["albums"][0]["coverUri"].ToString().Replace("%%", "50x50");
@@ -295,13 +299,7 @@ namespace Yamux
                     }
                     response.Close();
                 });
-
                 PlayerImage.Pixbuf = imagePixbuf;
-                PlayerTitleTrack.Text = trackInform["title"].ToString();
-                PlayerNameArtist.Text = trackInform["artists"][0]["name"].ToString();
-                PlayerScale.Show();
-                PlayerBoxScale.ShowAll();
-                PlayerActionBox.ShowAll();
                 PlayerImage.ShowAll();
             }
         }
