@@ -42,7 +42,6 @@ namespace Yamux
                 }
             }
         }
-
         public static Dictionary<string, List<string>> GetPlaylists(JToken root)
         {
             Dictionary<string, List<string>> playlist = new Dictionary<string, List<string>>();
@@ -76,7 +75,6 @@ namespace Yamux
 
             return playlist;
         }
-
         public static Dictionary<string, List<string>> GetPodcasts(JToken root)
         {
             Dictionary<string, List<string>> podcast = new Dictionary<string, List<string>>();
@@ -107,7 +105,6 @@ namespace Yamux
 
             return podcast;
         }
-
         public static Dictionary<string, List<string>> GetTracks(JToken root)
         {
             Dictionary<string, List<string>> tracks = new Dictionary<string, List<string>>();
@@ -139,7 +136,6 @@ namespace Yamux
 
             return tracks;
         }
-
         public static Dictionary<string, List<string>> GetArtist(JToken root)
         {
             Dictionary<string, List<string>> artist = new Dictionary<string, List<string>>();
@@ -171,7 +167,6 @@ namespace Yamux
 
             return artist;
         }
-
         public static Dictionary<string, List<string>> GetAlbums(JToken root)
         {
             Dictionary<string, List<string>> albums = new Dictionary<string, List<string>>();
@@ -203,7 +198,6 @@ namespace Yamux
 
             return albums;
         }
-
         public static Dictionary<string, string> GetBest(JToken root)
         {
             Dictionary<string, string> best = new Dictionary<string, string>();

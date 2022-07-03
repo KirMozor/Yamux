@@ -48,19 +48,12 @@ namespace Yamux
         public Search() : this(YamuxWindow.YamuxWindowBuilder)
         {
         }
-
-        public Search(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
+        private Search(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
-            YamuxWindow.stopButton.Clicked += Player.StopTrack;
-            YamuxWindow.playPauseButton.Clicked += ClickPauseOrPlay;
-            YamuxWindow.lastTrackButton.Clicked += Player.LastTrack;
-            YamuxWindow.nextTrackButton.Clicked += Player.NextTrack;
-            YamuxWindow.downloadTrack.Clicked += (sender, args) => { PlayerDownloadTrackOnClicked(); };
-            
             SearchMusic.SearchChanged += (object sender, EventArgs a) => { SearchChangedOutput(); };
         }
-        public async void SearchChangedOutput()
+        private async void SearchChangedOutput()
         {
             string text = SearchMusic.Text;
             JToken root = "";
@@ -175,6 +168,7 @@ namespace Yamux
                 }
                 else
                 {
+                    Console.WriteLine(root);
                     PlayerNameArtist.Text = "";
                     PlayerTitleTrack.Text = "";
                     PlayerImage = new Image();
@@ -276,16 +270,7 @@ namespace Yamux
             PlayerScale.FillLevel = Player.GetLength();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
         }
-        private void PlayerDownloadTrackOnClicked()
-        {
-            string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (Directory.Exists(pathToHome + "/YandexMusic") == false) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
-
-            string nameTrackFile = pathToHome + "/YandexMusic/" + PlayerNameArtist.Text + " - " + PlayerTitleTrack.Text + ".mp3";
-            Console.WriteLine(directLink);
-            Player.DownloadUriWithThrottling(directLink, nameTrackFile);
-        }
-        private void ClickPauseOrPlay(object sender, EventArgs a)
+        public static void ClickPauseOrPlay(object sender, EventArgs a)
         {
             if (Player.PlayTrackOrPause)
             {

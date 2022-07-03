@@ -91,6 +91,7 @@ namespace Yamux
                     if (stream != 0)
                     {
                         ChangeCurrentTrack.Invoke();
+                        PlayTrackOrPause = true;
                         PlayTrackOrNo = true;
                         Bass.ChannelPlay(stream);
                     }
@@ -109,10 +110,8 @@ namespace Yamux
                                 StopAwait = true;
                             }
                         };
-
                         while (true)
                         {
-                            
                             Thread.Sleep(1000);//Просто сон async метода, чтобы пк не офигел от проверки
                             if (Bass.ChannelGetPosition(stream) != -1)
                             {
@@ -131,6 +130,7 @@ namespace Yamux
                 {
                     currentTrack = -1;
                     PlayTrackOrNo = false;
+                    PlayTrackOrPause = false;
                     Console.WriteLine("End playlist");
                     break;
                 }

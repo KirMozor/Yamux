@@ -63,6 +63,11 @@ namespace Yamux
         public static Builder YamuxWindowBuilder = new Builder("Yamux.glade");
         public YamuxWindow() : this(YamuxWindowBuilder)
         {
+            stopButton.Clicked += Player.StopTrack;
+            playPauseButton.Clicked += Search.ClickPauseOrPlay;
+            lastTrackButton.Clicked += Player.LastTrack;
+            nextTrackButton.Clicked += Player.NextTrack;
+            downloadTrack.Clicked += PlayerDownloadTrackOnClicked;
         }
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
@@ -299,6 +304,15 @@ namespace Yamux
                 PlayerActionBox.ShowAll();
                 PlayerImage.ShowAll();
             }
+        }
+        private void PlayerDownloadTrackOnClicked(object sender, EventArgs a)
+        {
+            string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (Directory.Exists(pathToHome + "/YandexMusic") == false) { Directory.CreateDirectory("/home/kirill/YandexMusic/"); }
+
+            string nameTrackFile = pathToHome + "/YandexMusic/" + PlayerNameArtist.Text + " - " + PlayerTitleTrack.Text + ".mp3";
+            Console.WriteLine(Search.directLink);
+            Player.DownloadUriWithThrottling(Search.directLink, nameTrackFile);
         }
     }
     static class Ext
