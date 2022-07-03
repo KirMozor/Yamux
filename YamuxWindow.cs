@@ -267,6 +267,8 @@ namespace Yamux
         }
         private async void ShowCurrentTrack()
         {
+            Pixbuf playerPlayPixbuf = new Pixbuf("Svg/icons8-pause.png");
+            playPauseButton.Image = new Image(playerPlayPixbuf);
             if (Player.currentTrack != -1 || Player.trackIds.Count == 1)
             {
                 JToken trackInform = "";
