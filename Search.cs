@@ -52,7 +52,6 @@ namespace Yamux
         public Search(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
-            SpyChangeDurationTrack();
             YamuxWindow.stopButton.Clicked += Player.StopTrack;
             YamuxWindow.playPauseButton.Clicked += ClickPauseOrPlay;
             YamuxWindow.lastTrackButton.Clicked += Player.LastTrack;
@@ -197,25 +196,7 @@ namespace Yamux
             JObject details = JObject.Parse(buttonPlay.Name);
             PlayerTitleTrack.MaxWidthChars = 17;
             PlayerNameArtist.MaxWidthChars = 17;
-
-            PlayerImage.Show();
-            Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
-            if (details["uri"].ToString() != "null")
-            {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(details["uri"].ToString());
-                HttpWebResponse response = (HttpWebResponse) request.GetResponse();
-                using (Stream stream = response.GetResponseStream())
-                {
-                    imagePixbuf = new Pixbuf(stream);
-                }
-                response.Close();
-            }
-
-            Player.ChangeCurrentTrack += () =>
-            {
-                try { Console.WriteLine(Player.trackIds[Player.currentTrack]); }
-                catch (IndexOutOfRangeException) { Console.WriteLine("End playlist (event)"); }
-            };
+            
             switch (details["type"].ToString())
             {
                 case "track":
@@ -229,9 +210,8 @@ namespace Yamux
                     
                     PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
                     PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
-                    string directLinkToTrack = "";
-                    await Task.Run(() => { directLinkToTrack = Player.GetDirectLinkWithTrack(details["id"].ToString()); });
-                    Player.PlayUrlFile(directLinkToTrack);
+                    Player.trackIds.Add(details["id"].ToString());
+                    Player.PlayUrlFile();
                     break;
                 }
                 case "artist":
@@ -295,38 +275,6 @@ namespace Yamux
 
             PlayerScale.FillLevel = Player.GetLength();
             ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
-            PlayerImage.Pixbuf = imagePixbuf;
-            
-            PlayerBoxScale.ShowAll();
-            PlayerActionBox.ShowAll();
-        }
-        private async void SpyChangeDurationTrack()
-        {
-            double oldDuration = durationTrack;
-            await Task.Run(() =>
-            {
-                while (true)
-                {
-                    try
-                    {
-                        if (Player.GetStatusPlayback() != PlaybackState.Stopped)
-                        {
-                            durationTrack = Player.GetPosition();
-                            Thread.Sleep(1000);
-                            if (oldDuration != durationTrack)
-                            {
-                                ChangeLengthTrack.Invoke();
-                                oldDuration = durationTrack;
-                            }
-                        }
-                        else
-                        {
-                            Thread.Sleep(1000);
-                        }
-                    }
-                    catch (NullReferenceException) { break; }
-                }
-            });
         }
         private void PlayerDownloadTrackOnClicked()
         {

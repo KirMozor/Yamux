@@ -14,13 +14,9 @@ namespace Yamux
     public class Player
     {
         public delegate void PlayerTrack();
-
         public static event PlayerTrack TrackStop;
         public static event PlayerTrack TrackLast;
         public static event PlayerTrack TrackNext;
-        public static event PlayerTrack TrackPause;
-        public static event PlayerTrack TrackPlay;
-        
         public static event PlayerTrack ChangeCurrentTrack;
 
         private static bool boolNextTrack = false;
@@ -35,9 +31,8 @@ namespace Yamux
         public static int currentTrack = -1;
         public static List<string> trackIds;
         
-        public static void PlayUrlFile(string url)
+        public static async void PlayUrlFile()
         {
-            Search.directLink = url;
             if (!PlayTrackOrNo) { Bass.Init(); }
             else
             {
@@ -46,13 +41,17 @@ namespace Yamux
                 Bass.Init();
             }
             currentTrack = -1;
+            string directLinkToTrack = "";
+            await Task.Run(() => { directLinkToTrack = GetDirectLinkWithTrack(trackIds[0]); });
+            Search.directLink = directLinkToTrack;
             
-            stream = Bass.CreateStream(url, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
+            stream = Bass.CreateStream(directLinkToTrack, 0, BassFlags.StreamDownloadBlocks, null, IntPtr.Zero);
             if (stream != 0)
             {
                 Bass.ChannelPlay(stream);
                 PlayTrackOrNo = true;
                 PlayTrackOrPause = true;
+                ChangeCurrentTrack.Invoke();
             }
             else Console.WriteLine("Error: {0}!", Bass.LastError);
         }
@@ -160,21 +159,12 @@ namespace Yamux
                 PlayTrackOrPause = true;
             }
         }
-        public static PlaybackState GetStatusPlayback()
-        {
-            return Bass.ChannelIsActive(stream);
-        }
         public static int GetLength()
         {
             if (stream == 0) { return stream; }
             return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetLength(stream)));
         }
-        public static int GetPosition()
-        {
-            if (stream == 0) { return stream; }
-            return Convert.ToInt32(Bass.ChannelBytes2Seconds(stream, Bass.ChannelGetPosition(stream)));
-        }
-        public static string GetDirectLinkWithTrack(string trackId)
+        private static string GetDirectLinkWithTrack(string trackId)
         {
             JObject result = Track.GetDownloadInfoWithToken(trackId);
             Console.WriteLine(result);

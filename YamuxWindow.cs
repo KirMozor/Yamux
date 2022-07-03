@@ -117,7 +117,6 @@ namespace Yamux
             IfNoResult.Text = "";
             if (Player.stream == 0)
             {
-                Console.WriteLine("sda");
                 PlayerNameArtist.Text = "";
                 PlayerTitleTrack.Text = "";
                 PlayerImage.Hide();
@@ -157,7 +156,6 @@ namespace Yamux
             ResultBox.ShowAll();
             if (Player.stream == 0)
             {
-                Console.WriteLine("sda213");
                 PlayerBoxScale.Hide();
                 PlayerActionBox.Hide();   
             }
@@ -170,6 +168,7 @@ namespace Yamux
             stopButton.Clicked += (o, args) => { StopWave = true; };
             while (true)
             {
+                Player.trackIds = new List<string>();
                 if (StopWave)
                 {
                     StopWave = false;
@@ -180,43 +179,16 @@ namespace Yamux
                 JObject myWaveReturn = new JObject();
                 await Task.Run(() => { myWaveReturn = Rotor.GetTrack("user:onyourwave"); });
                 Console.WriteLine(Rotor.GetInfo("user:onyourwave"));
-                
-                JToken informTrack = "{}";
                 string ids = myWaveReturn["result"]["sequence"][0]["track"]["id"].ToString();
-                await Task.Run(() => { informTrack = Track.GetInformTrack(new List<string> {ids})["result"]; });
-                    
-                Console.WriteLine(informTrack[0]["coverUri"]);
-                string url = informTrack[0]["coverUri"].ToString();
-                url = url.Replace("%%", "50x50");
-
-                Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
-                await Task.Run(() => { 
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://" + url);
-                    HttpWebResponse response = (HttpWebResponse) request.GetResponse();
-                    using (Stream stream = response.GetResponseStream()) { imagePixbuf = new Pixbuf(stream); }
-                    response.Close(); 
-                });
-
-                PlayerImage.Pixbuf = imagePixbuf;
-                PlayerTitleTrack.Text = informTrack[0]["title"].ToString();
-                PlayerNameArtist.Text = informTrack[0]["artists"][0]["name"].ToString();
 
                 PlayerScale.FillLevel = Player.GetLength();
                 ChangeLengthTrack += () => { PlayerScale.Value = durationTrack; };
                 Player.TrackNext += () => { StopAwait = true; };
+                Console.WriteLine(ids);
+                Player.trackIds.Add(ids);
+                Console.WriteLine(Player.trackIds.Count);
+                Player.PlayUrlFile();
                 
-                PlayerTitleTrack.Show();
-                PlayerNameArtist.Show();
-                PlayerImage.Show();
-                
-                PlayerScale.Show();
-                PlayerBoxScale.ShowAll();
-                PlayerActionBox.ShowAll();
-
-                string directLinkToTrack = "";
-                await Task.Run(() => { directLinkToTrack = Player.GetDirectLinkWithTrack(ids); });
-                Search.directLink = directLinkToTrack;
-                Player.PlayUrlFile(directLinkToTrack);
                 await Task.Run(() =>
                 {
                     while (true)
@@ -291,14 +263,41 @@ namespace Yamux
         }
         private async void ShowCurrentTrack()
         {
-            if (Player.currentTrack != -1)
+            if (Player.currentTrack != -1 || Player.trackIds.Count == 1)
             {
-                Console.WriteLine(Player.trackIds[Player.currentTrack]);
                 JToken trackInform = "";
-                await Task.Run(() => { trackInform = Track.GetInformTrack(new List<string>() { Player.trackIds[Player.currentTrack] })["result"]; });
+                if (Player.currentTrack != -1)
+                {
+                    Console.WriteLine(123);
+                    await Task.Run(() => { trackInform = Track.GetInformTrack(new List<string>() { Player.trackIds[Player.currentTrack] })["result"][0]; });
+                }
+                else
+                {
+                    await Task.Run(() => { trackInform = Track.GetInformTrack(new List<string>() { Player.trackIds[0] })["result"][0]; });
+                }
+                Console.WriteLine(trackInform);
+                
+                Pixbuf imagePixbuf = new Pixbuf(System.IO.Path.GetFullPath("Svg/icons8_rock_music_100_negate50x50.png"));
+                await Task.Run(() =>
+                {
+                    string url = "https://" + trackInform["albums"][0]["coverUri"].ToString().Replace("%%", "50x50");
+                    Console.WriteLine(url);
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+                    using (Stream stream = response.GetResponseStream()) 
+                    { 
+                        imagePixbuf = new Pixbuf(stream);
+                    }
+                    response.Close();
+                });
 
-                PlayerTitleTrack.Text = trackInform[0]["title"].ToString();
-                PlayerNameArtist.Text = trackInform[0]["artists"][0]["name"].ToString();
+                PlayerImage.Pixbuf = imagePixbuf;
+                PlayerTitleTrack.Text = trackInform["title"].ToString();
+                PlayerNameArtist.Text = trackInform["artists"][0]["name"].ToString();
+                PlayerScale.Show();
+                PlayerBoxScale.ShowAll();
+                PlayerActionBox.ShowAll();
+                PlayerImage.ShowAll();
             }
         }
     }
