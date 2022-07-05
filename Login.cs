@@ -2,6 +2,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System;
+using Newtonsoft.Json.Linq;
+using YandexMusicApi;
 using Tomlyn;
 
 namespace Yamux
@@ -42,7 +45,6 @@ namespace Yamux
                 }
             }
         }
-        
         public static bool CheckAviabilityConfig()
         {
             bool check = File.Exists(Path.GetFullPath("config.toml"));
@@ -69,6 +71,39 @@ namespace Yamux
             {
                 return false;
             } 
+        }
+        public static string LogInButton(string loginText, string passwordText)
+        {
+            bool loginCheck = String.IsNullOrWhiteSpace(loginText);
+            bool passwordCheck = String.IsNullOrWhiteSpace(passwordText);
+
+            if (loginCheck == false && passwordCheck == false)
+            {
+                try
+                {
+                    JObject token = Token.GetToken(loginText, passwordText);
+                    JToken jTokentoken = token.First.First;
+                    WriteToken(jTokentoken.ToString());
+                }
+                catch (System.Net.WebException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    if (ex.Message == "The remote server returned an error: (400) Bad Request.")
+                    {
+                        return "400: Данные не верные";
+                    }
+                    if (ex.Message == "The remote server returned an error: (403) Forbidden.")
+                    {
+                        return "403: Yandex включил защиту от брутфорса";
+                    }
+                }
+            }
+            else
+            {
+                return "Вы ввели пустую строку. Введите пароль и логин";
+            }
+
+            return "ok";
         }
     }
 }

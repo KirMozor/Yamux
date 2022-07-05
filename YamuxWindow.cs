@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Runtime.Loader;
 using System.Text;
 using Gdk;
 using Gtk;
@@ -25,6 +24,19 @@ namespace Yamux
         private static int durationTrack = 1;
         [UI] private Dialog DonateWindow = null;
         [UI] private Window AboutWindow = null;
+        [UI] private ApplicationWindow LoginYamux = null;
+        [UI] private Window PreStartWindow = null;
+
+        [UI] private Window HowToYourTheme = null;
+        [UI] private Button DarkButton = null;
+        [UI] private Button LightButton = null;
+
+        [UI] private Image YandexImage = null;
+        [UI] private Entry SetLogin = null;
+        [UI] private Entry SetPassword = null;
+        [UI] private Button ResetPassword = null;
+        [UI] private Label ResultLogin = null;
+        [UI] private Button LoginYamuxButton = null;
 
         [UI] private Button AboutGitHubProject = null;
         [UI] private Button AboutGitHubAuthor = null;
@@ -50,14 +62,14 @@ namespace Yamux
         [UI] private Image PlayerImage = null;
         
         public static Button playPauseButton = new Button();
-        public static Button nextTrackButton = new Button();
-        public static Button lastTrackButton = new Button();
-        public static Button stopButton = new Button();
-        public static Button downloadTrack = new Button();
+        private static Button nextTrackButton = new Button();
+        private static Button lastTrackButton = new Button();
+        private static Button stopButton = new Button();
+        private static Button downloadTrack = new Button();
 
         private static Button myWaveButton = new Button();
         public static VBox LandingBox = new VBox();
-        public static HScale PlayerScale = new HScale(0.0, 100, 1.0);
+        private static HScale PlayerScale = new HScale(0.0, 100, 1.0);
         
         private VBox ResultSearchBox = new VBox();
         public static Builder YamuxWindowBuilder = new Builder("Yamux.glade");
@@ -71,18 +83,12 @@ namespace Yamux
         }
         private YamuxWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
-            using (FileStream fstream = File.OpenRead("config.toml"))
-            {
-                byte[] buffer = new byte[fstream.Length];
-                fstream.Read(buffer, 0, buffer.Length);
-                string textFromFile = Encoding.Default.GetString(buffer);
-
-                var model = Toml.ToModel(textFromFile);
-                Token.token = (string) model["yandex_token"]!;
-            }
             builder.Autoconnect(this);
 
             DeleteEvent += (o, args) => { Application.Quit(); };
+            if (Directory.Exists("Svg")) {SetDefaultIconFromFile("Svg/yandex_en_icon-icons.com_61632(1).png");}
+            
+            /*
             AboutProgram.Relief = ReliefStyle.None;
             AboutProgram.Clicked += ShowAboutWindow;
             AboutDonateMe.Clicked += ShowDonateWindow;
@@ -96,6 +102,59 @@ namespace Yamux
             ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
             
             GenerateLanding();
+            */
+            PreStart();
+        }
+
+        private async void PreStart()
+        {
+            if (!Directory.Exists("Svg"))
+            {
+                HowToYourTheme.ShowAll();
+                DarkButton.Clicked += (sender, args) => { DownloadIcons("dark"); };
+                LightButton.Clicked += (sender, args) => { DownloadIcons("light"); };
+            }
+            else if (!File.Exists("config.toml")) { GetTokenGui(); }
+            else
+            {
+                PreStartWindow.ShowAll();
+                using (FileStream fstream = File.OpenRead("config.toml"))
+                {
+                    byte[] buffer = new byte[fstream.Length];
+                    fstream.Read(buffer, 0, buffer.Length);
+                    string textFromFile = Encoding.Default.GetString(buffer);
+
+                    var model = Toml.ToModel(textFromFile);
+                    Token.token = (string) model["yandex_token"]!;
+                }
+
+                try
+                {
+                    await Task.Run(() => { Account.ShowSettings(); });
+                    PreStartWindow.Hide();
+                    LoginYamux.Hide();
+                    
+                    AboutProgram.Relief = ReliefStyle.None;
+                    AboutProgram.Clicked += ShowAboutWindow;
+                    AboutDonateMe.Clicked += ShowDonateWindow;
+                    Player.ChangeCurrentTrack += () => { ShowCurrentTrack(); };
+                    LandingPageButton.Clicked += (sender, args) => { GenerateLanding(); };
+                    RotorPageButton.Clicked += (sender, args) => { GenerateRotor(); };
+            
+                    CreatePlayer();
+                    SetDefaultIconFromFile("Svg/yandex_en_icon-icons.com_61632(1).png");
+                    AboutImage.Pixbuf = new Pixbuf("Svg/yandex_en_icon-icons.com_61632(1).png");
+                    ImageSettings.Pixbuf = new Pixbuf("Svg/icons8-settings-20.png");
+            
+                    GenerateLanding();
+                }
+                catch (WebException)
+                {
+                    PreStartWindow.Hide();
+                    LoginYamux.Hide();
+                    GetTokenGui();
+                }
+            }
         }
         private void GenerateRotor()
         {
@@ -305,6 +364,20 @@ namespace Yamux
                 PlayerImage.ShowAll();
             }
         }
+        private void GetTokenGui()
+        {
+            if (File.Exists("config.toml")) { File.Delete("config.toml"); }
+            LoginYamux.ShowAll();
+            ResetPassword.Clicked += (sender, args) => { Login.ResetPasswordOpen(); }; 
+            LoginYamuxButton.Clicked += (sender, args) =>
+            {
+                ResultLogin.Text = Login.LogInButton(SetLogin.Text, SetPassword.Text);
+                if (ResultLogin.Text == "ok")
+                {
+                    PreStart();
+                }
+            };
+        }
         private void PlayerDownloadTrackOnClicked(object sender, EventArgs a)
         {
             string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -313,6 +386,61 @@ namespace Yamux
             string nameTrackFile = pathToHome + "/YandexMusic/" + PlayerNameArtist.Text + " - " + PlayerTitleTrack.Text + ".mp3";
             Console.WriteLine(Search.directLink);
             Player.DownloadUriWithThrottling(Search.directLink, nameTrackFile);
+        }
+        private void DownloadIcons(string theme)
+        {
+            Directory.CreateDirectory("Svg");
+            List<Uri> IconList = new List<Uri>();
+            if (theme == "dark")
+            {
+                IconList = new List<Uri>()
+                {
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/about_icon.svg"), //about_icon.svg
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icon.svg"), //icon.svg
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8_rock_music_100_negate.png"), //icons8_rock_music_100_negate.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-download.png"), //icons8-download.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-next.png"), //icons8-next.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-pause.png"), //icons8-pause.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-play.png"), //icons8-play.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-previous.png"), //icons8-previous.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-settings-20.png"), //icons8-settings-20.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8-stop.png"), //icons8-stop.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/yandex_en_icon-icons.com_61632(1).png"), //yandex_en_icon-icons.com_61632(1).png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/dark/icons8_rock_music_100_negate50x50.png"), //icons8_rock_music_100_negate50x50.png
+                };
+            }
+            else
+            {
+                IconList = new List<Uri>()
+                {
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/about_icon.svg"), //about_icon.svg
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icon.svg"), //icon.svg
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_rock_music_100_negate.png"), //icons8_rock_music_100_negate.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_download.png"), //icons8-download.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_next.png"), //icons8-next.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_pause.png"), //icons8-pause.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_play.png"), //icons8-play.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_previous.png"), //icons8-previous.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_settings_20.png"), //icons8-settings-20.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_stop.png"), //icons8-stop.png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/yandex_en_icon-icons.com_61632(1).png"), //yandex_en_icon-icons.com_61632(1).png
+                    new Uri("https://raw.githubusercontent.com/KirMozor/Yamux/main/Svg/light/icons8_rock_music_100_negate50x50.png"), //icons8_rock_music_100_negate50x50.png
+                };
+            }
+            Player.DownloadWithSync(IconList[0], "Svg/about_icon.svg");
+            Player.DownloadWithSync(IconList[1], "Svg/icon.svg");
+            Player.DownloadWithSync(IconList[2], "Svg/icons8_rock_music_100_negate.png");
+            Player.DownloadWithSync(IconList[3], "Svg/icons8-download.png");
+            Player.DownloadWithSync(IconList[4], "Svg/icons8-next.png");
+            Player.DownloadWithSync(IconList[5], "Svg/icons8-pause.png");
+            Player.DownloadWithSync(IconList[6], "Svg/icons8-play.png");
+            Player.DownloadWithSync(IconList[7], "Svg/icons8-previous.png");
+            Player.DownloadWithSync(IconList[8], "Svg/icons8-settings-20.png");
+            Player.DownloadWithSync(IconList[9], "Svg/icons8-stop.png");
+            Player.DownloadWithSync(IconList[10], "Svg/yandex_en_icon-icons.com_61632(1).png");
+            Player.DownloadWithSync(IconList[11], "Svg/icons8_rock_music_100_negate50x50.png");
+            
+            HowToYourTheme.Hide();
         }
     }
     static class Ext
