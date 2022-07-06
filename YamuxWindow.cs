@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Yamux
     class YamuxWindow : Window
     {
         public delegate void LenghtTrack();
+        public static event EventHandler Closed;
         private static event LenghtTrack ChangeLengthTrack;
         private static int durationTrack = 1;
         [UI] private Dialog DonateWindow = null;
@@ -441,6 +443,13 @@ namespace Yamux
             Player.DownloadWithSync(IconList[11], "Svg/icons8_rock_music_100_negate50x50.png");
             
             HowToYourTheme.Hide();
+            Closed += OnClose;
+            Closed(Process.GetCurrentProcess(), null);
+        }
+        private static void OnClose(object sender, EventArgs e)
+        {
+            Process.Start(((Process)sender).ProcessName);
+            Environment.Exit(0);
         }
     }
     static class Ext
