@@ -1,0 +1,30 @@
+# Maintainer:
+pkgname=yamux
+pkgver=v52
+pkgrel=1
+epoch=1
+pkgdesc="This is a yandex music client for Unix written in C# with YandexMusicAPI"
+arch=("x86_64")
+url="https://github.com/KirMozor/Yamux/tree/main"
+license=('GPL3')
+depends=("libbass" "dotnet-runtime>=6.0.0")
+makedepends=("dotnet-sdk>=6.0.0")
+source=("https://github.com/KirMozor/Yamux/archive/refs/tags/Yamux-v52.tar.gz")
+md5sums=(SKIP)
+install=post.install
+
+build() {
+    cd Yamux-Yamux-$pkgver
+    dotnet build --configuration Release
+}
+
+package() {
+    cd Yamux-Yamux-$pkgver
+    cp -r Svg ./bin/Release/net6.0/linux-x64
+    mkdir -p $pkgdir/opt/
+    cp -r ./bin/Release/net6.0/linux-x64/. $pkgdir/opt/Yamux
+    # mkdir -p $pkgdir/usr/local/bin/Yamux
+    # ln -sf $pkgdir/usr/local/bin/Yamux/Yamux $pkgdir/usr/bin/Yamux
+    # cp ./bin/Release/net6.0/linux-x64/Yamux $pkgdir/usr/bin
+    # chmod +x "$pkgdir/usr/bin/Yamux"
+}
